@@ -1,0 +1,46 @@
+{
+  "wb_dashboard_store_tags": {
+    "6320103 南京雨花万象店": {
+      "type": "new",
+      "startTheme": "8月-落座&点餐&核单",
+      "startWeek": 4
+    },
+    "6150101 呼和浩特万达店": {
+      "type": "new",
+      "startTheme": "8月-落座&点餐&核单",
+      "startWeek": 7
+    },
+    "6610602 延安吾悦店": {
+      "type": "new",
+      "startTheme": "8月-落座&点餐&核单",
+      "startWeek": 7
+    },
+    "610108 熙地港店": {
+      "type": "closed",
+      "mode": "temp",
+      "skipThemes": [
+        "8月-落座&点餐&核单"
+      ],
+      "closedFrom": 4,
+      "closedTo": 9
+    }
+  },
+  "wb_dashboard_week_rulings": {
+    "611101杨凌万达店|8月-落座&点餐&核单|4": {
+      "val": "pass",
+      "note": ""
+    },
+    "610402咸阳丽彩万达店|7月-撤台&清台|7": {
+      "val": "pass",
+      "note": ""
+    },
+    "610402咸阳丽彩万达店|7月-撤台&清台|6": {
+      "val": "pass",
+      "note": ""
+    },
+    "6150101 呼和浩特万达店|8月-落座&点餐&核单|8": {
+      "val": "pass",
+      "note": ""
+    }
+  }
+}
