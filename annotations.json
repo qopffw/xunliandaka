@@ -14,15 +14,6 @@
       "type": "new",
       "startTheme": "8月-落座&点餐&核单",
       "startWeek": 7
-    },
-    "610108 熙地港店": {
-      "type": "closed",
-      "mode": "temp",
-      "skipThemes": [
-        "8月-落座&点餐&核单"
-      ],
-      "closedFrom": 4,
-      "closedTo": 9
     }
   },
   "wb_dashboard_week_rulings": {
