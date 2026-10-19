@@ -366,7 +366,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub">在线版（手机随时打开）· 数据更新：2026-10-19 14:12:47 · 构建 v202610191417</div>
+    <div class="sub">在线版（手机随时打开）· 数据更新：2026-10-19 14:45:58 · 构建 v202610191453</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -3501,7 +3501,7 @@ function raAnomReason(e) {
   // 区域追踪「异常人员」备注只呈现异常原因标签（花名册无岗位→优先显示待店长提报）
   if (e.noRosterPost) return '岗位未定·待店长提报';
   if (e.mismatch) return '学习不匹配岗位';
-  if (e.examPosts.length && !e.learnOk) return '未学先考';
+  if (!e.isMgr && e.examPosts.length && !e.learnOk) return '未学先考';
   return esc(e.remark) || '—';
 }
 
@@ -3669,7 +3669,7 @@ function drawRegionTracking() {
 
   if (RA_VIEW === 'store') {
     // 异常优先级最高：未学先考 / 学习不匹配岗位 / 岗位待定，一律先归入「异常人员」
-    const isAnom = e => e.mismatch || (e.examPosts.length && !e.learnOk) || e.status2 === '待确认';
+    const isAnom = e => e.mismatch || (!e.isMgr && e.examPosts.length && !e.learnOk) || e.status2 === '待确认';
     const learnStores = regionStoreGroup(list, e => !isAnom(e) && !e.learnOk && !e.examPosts.length);
     const examStores = regionStoreGroup(list, e => !isAnom(e) && e.learnOk && !e.examOk);
     const anomStores = regionStoreGroup(list, isAnom);
