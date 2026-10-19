@@ -366,7 +366,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub">在线版（手机随时打开）· 数据更新：2026-10-19 13:06:01 · 构建 v202610191323</div>
+    <div class="sub">在线版（手机随时打开）· 数据更新：2026-10-19 13:38:05 · 构建 v202610191350</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -1944,11 +1944,17 @@ function empDetailHtml(e) {
     const s = ls(g);
     return `<div class="emp-row"><span>${esc(g)}</span><span>${s.date ? '<span class="st" style="background:#f1f5f9;color:#475569;margin-right:6px">' + esc(s.date) + '</span>' : ''}<span class="st" style="background:${s.color}1a;color:${s.color}">${s.text}</span></span></div>`;
   }).join('') : '<div class="emp-row"><span>无固定应学岗位</span></div>';
-  const examRows = grades.length ? grades.map(g => {
-    const t = rawExam[g];
-    if (t) return `<div class="emp-row"><span>${esc(g)}</span><span><span class="st" style="background:#f1f5f9;color:#475569;margin-right:6px">${esc(t)}</span><span class="st" style="background:#dcfce7;color:#16a34a">已考</span></span></div>`;
-    return `<div class="emp-row"><span>${esc(g)}</span><span><span class="st" style="background:#f1f5f9;color:#94a3b8">未考</span></span></div>`;
-  }).join('') : '<div class="emp-row"><span>无固定应考岗位</span></div>';
+  // 管理岗按 A 口径只考核「管理岗」，不展示三岗「未考」
+  const examRows = e.isMgr
+    ? (e.examPosts.filter(g => !GRADES.includes(g)).map(g => {
+        const t = rawExam[g];
+        return `<div class="emp-row"><span>${esc(g)}</span><span>${t ? '<span class="st" style="background:#f1f5f9;color:#475569;margin-right:6px">' + esc(t) + '</span>' : ''}<span class="st" style="background:#dcfce7;color:#16a34a">已考</span></span></div>`;
+      }).join('') || '<div class="emp-row"><span>管理岗</span><span><span class="st" style="background:#fee2e2;color:#dc2626">未考</span></span></div>')
+    : (grades.length ? grades.map(g => {
+        const t = rawExam[g];
+        if (t) return `<div class="emp-row"><span>${esc(g)}</span><span><span class="st" style="background:#f1f5f9;color:#475569;margin-right:6px">${esc(t)}</span><span class="st" style="background:#dcfce7;color:#16a34a">已考</span></span></div>`;
+        return `<div class="emp-row"><span>${esc(g)}</span><span><span class="st" style="background:#f1f5f9;color:#94a3b8">未考</span></span></div>`;
+      }).join('') : '<div class="emp-row"><span>无固定应考岗位</span></div>');
   const examBtn = (e.learnOk && !e.examOk && EXAM_FORM_URL)
     ? `<div style="margin-top:10px"><a class="btn" href="${examFormUrl(e)}" target="_blank" rel="noopener">📝 去考核</a></div>` : '';
   return `
@@ -3204,7 +3210,7 @@ function mpAllBodyHtml(rs) {
 function mpGroups(all) {
   const base = all.filter(mpTodoable);                       // 在职本期 need>0
   // 异常集合：未学先考（有考核记录但学习未完成）+ 岗位待确认（含 need=0）
-  const examAnom = base.filter(e => e.examPosts.length && !e.learnOk);
+  const examAnom = base.filter(e => !e.isMgr && e.examPosts.length && !e.learnOk);
   const unconf   = all.filter(e => e.status2 === '待确认');
   const anomUids = new Set([...examAnom, ...unconf].map(e => e.uid));
   return [
@@ -3245,7 +3251,7 @@ function mpGrpState(g, e) {
 /* 异常原因文本 */
 function mpAnomReason(e) {
   if (e.status2 === '待确认') return `岗位待确认：暂无法确定学习任务，请先确认岗位`;
-  if (e.examPosts.length && !e.learnOk)
+  if (!e.isMgr && e.examPosts.length && !e.learnOk)
     return `未学先考：已考核 ${e.examPosts.join('、')}，但学习未完成（已学 ${e.learned.length}/${e.need}）`;
   return esc(e.remark) || '—';
 }
