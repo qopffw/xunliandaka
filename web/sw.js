@@ -1,5 +1,5 @@
 /* Service Worker：跨域不拦截 + 网络优先 + 限时回退缓存 */
-const CACHE='v202610191517';
+const CACHE='v202610191527';
 const PRECACHE=['./index.html','./data.json','./manifest.webmanifest','./icon.svg','./html2canvas.min.js'];
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(PRECACHE).catch(()=>{})).then(()=>self.skipWaiting()));
