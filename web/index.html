@@ -1,0 +1,3948 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="9apH2TNlgEu7iIxXa871Zd">
+<head data-page-node-id="9HswKHR2H4buAjTzPEwbhU">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta charset="utf-8" data-page-node-id="vq1TzJmamGne4xf6PVif6N">
+<meta name="viewport" content="width=device-width,initial-scale=1" data-page-node-id="TuCEGQG7q9GQbEE3xI86LE">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>【前厅】新员工训练看板</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:#f5f7fa;color:#1e293b}
+  header{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  header h1{margin:0;font-size:17px}
+  header .sub{font-size:11px;opacity:.85;margin-top:3px}   /* 构建锚点：副标题 */
+  .header-refresh{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12.5px;white-space:nowrap;backdrop-filter:blur(2px)}
+  .header-refresh:hover{background:rgba(255,255,255,.28)}
+  .header-refresh:disabled{opacity:.6;cursor:not-allowed}
+  nav{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 10px;display:flex;gap:2px;overflow-x:auto}
+  .tab-btn{background:none;border:none;padding:10px 12px;font-size:13px;color:#64748b;cursor:pointer;
+           border-bottom:2px solid transparent;white-space:nowrap}
+  .tab-btn.active{color:#2563eb;border-bottom-color:#2563eb;font-weight:600}
+  main{padding:12px;max-width:none;margin:0 auto}
+  .card{background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .card h3{margin:0 0 9px;font-size:14px;color:#334155}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .kpi{background:#fff;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .kpi .val{font-size:26px;font-weight:700;color:#2563eb}
+  .kpi .lbl{font-size:12px;color:#64748b;margin-top:4px}
+  .tab{display:none}.tab.active{display:block}
+  .fmt-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .fld{font-size:13px;color:#475569}
+  select,input[type=text]{padding:6px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px}
+  .btn{padding:8px 14px;border:none;border-radius:6px;background:#2563eb;color:#fff;cursor:pointer;font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #eef2f7}
+  th{background:#f8fafc;color:#475569;font-weight:600;font-size:12px}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;color:#fff}
+  .note{font-size:12px;color:#94a3b8}
+  footer{text-align:center;padding:16px;color:#94a3b8;font-size:12px}
+  .tbl-scroll{overflow:auto;max-height:70vh}
+  /* 移动端：构建器会追加 @media(max-width:640px) 适配块 */
+  @media(max-width:640px){
+    table{font-size:12px} th,td{padding:6px 7px}
+    td[data-label]{display:flex;justify-content:space-between;gap:8px}
+    td[data-label]::before{content:attr(data-label);color:#94a3b8;font-weight:500;flex:none}
+    thead{display:none}
+  }
+
+  /* ===== 业务块样式（排名条 / 清单 / 状态标签 / 表单 / 图表） ===== */
+  .mono{font-family:Consolas,monaco,monospace}
+  .empty{color:#94a3b8;font-size:13px;padding:8px 2px}
+  .st{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11.5px;white-space:nowrap;font-weight:600}
+  .st-gray{background:#f1f5f9;color:#94a3b8}
+  /* 「调整岗位」徽章：点击后展开下拉，样式参考考核列 */
+  .post-badge{color:#475569;border:1px dashed #cbd5e1;background:#f8fafc;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+  .post-badge:hover{color:#2563eb;border-color:#2563eb;background:#eff6ff}
+  .post-badge small{font-weight:400;opacity:.7}
+  /* 门店联想下拉（自绘） */
+  .sug-box{position:fixed;z-index:9999;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.14);max-height:280px;overflow:auto;padding:4px 0}
+  .sug-item{padding:8px 14px;font-size:13px;cursor:pointer;color:#334155;white-space:nowrap}
+  .sug-item:hover,.sug-item:active{background:#eff6ff;color:#2563eb}
+  .sug-more{padding:6px 14px;font-size:11px;color:#94a3b8}
+  /* 移动端紧凑卡片（方案A：摘要 + 点击展开） */
+  .mcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:12px}
+  @media(max-width:640px){.mcards{display:flex;flex-direction:column;gap:8px}}
+  .mcard{border:1px solid #e2e8f0;border-radius:8px;background:#fff;overflow:hidden}
+  .mcard.open{box-shadow:0 2px 8px rgba(15,23,42,.08)}
+  .mhead{padding:10px 34px 10px 12px;cursor:pointer;position:relative}
+  .mhead::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:13px;transition:transform .15s}
+  .mcard.open .mhead::after{transform:translateY(-50%) rotate(180deg)}
+  .mcard .mdetail{border-top:1px dashed #e2e8f0;display:none;overflow-x:auto}
+  .mcard.open .mdetail{display:block}
+  .mcard.open{overflow:visible}
+  .ml1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .mname{font-weight:700;font-size:14px;color:#0f172a}
+  .mrole{font-size:11px;color:#64748b;background:#f1f5f9;border-radius:4px;padding:1px 6px}
+  .ml2{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px}
+  .mcard .mdetail table{margin:0;font-size:12px}
+  .mcard .mdetail table:not(.ra-tbl) tr{display:block;border:none;margin:0;background:#fff;border-radius:0}
+  .mcard .mdetail table:not(.ra-tbl) td[data-label]{padding:7px 12px}
+  /* 待办跟进人员卡：两行平铺（身份行 + 明细行），免展开 */
+  .mp-grp-card .ml1{padding:10px 12px 2px;gap:6px}
+  .mp-grp-card .ml1 .st{white-space:nowrap}   /* 日期/状态标签不折行，保证与姓名同行 */
+  .mp-card-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px 14px;padding:6px 12px 4px;font-size:12px;color:#475569}
+  .mp-card-info b{color:#0f172a;font-weight:600}
+  .mp-card-act{padding:4px 12px 10px;display:flex}
+  .mp-exam-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:34px;padding:0 18px;background:#2563eb;color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none}
+  .mp-exam-btn:active{background:#1d4ed8}
+  /* 门店学习进度：分层切换条与分组卡 */
+  .mp-seg{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .mp-seg .btn{width:auto;min-height:36px}
+  .mp-seg .note{margin-left:4px}
+  .mp-grp h3 .note{font-weight:400;font-size:11.5px}
+  .post-pick{max-width:100%;font-size:13px;padding:2px 4px;border-radius:4px;border:1px solid #cbd5e1;background:#fff}
+  .ck{display:inline-block;padding:1px 6px;border-radius:5px;font-size:11px;margin-right:3px;white-space:nowrap;flex:none}
+  .ck.ok{background:#dcfce7;color:#15803d}
+  .ck.certified{font-weight:700;background:#16a34a;color:#fff}
+  .ck.no{background:#f1f5f9;color:#94a3b8}
+  .ck.warn{background:#ffedd5;color:#c2410c}
+  .ck.bad{background:#fee2e2;color:#b91c1c}
+  /* 「未考」→ 可点击跳转钉钉考核表提报（虚线边框 + 悬停变蓝，一眼可辨） */
+  a.ck.exam-go{color:#94a3b8;text-decoration:none;border:1px dashed #cbd5e1;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+  a.ck.exam-go:hover{color:#2563eb;border-color:#2563eb;background:#eff6ff}
+  /* 轻提示条（复制姓名/门店后的反馈） */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);background:#1e293b;color:#fff;font-size:13px;line-height:1.5;padding:9px 15px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999;max-width:88vw;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  /* 员工详情弹窗 */
+  .emp-modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px}
+  .emp-modal{background:#fff;border-radius:12px;width:100%;max-width:640px;max-height:86vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+  .emp-modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .emp-modal-head h3{margin:0;font-size:17px}
+  .emp-modal-close{background:none;border:none;font-size:24px;color:#64748b;cursor:pointer;padding:0 4px;line-height:1}
+  .emp-modal-body{padding:14px 16px;overflow-y:auto}
+  .emp-section{margin-bottom:14px}
+  .emp-section h4{margin:0 0 8px;font-size:14px;color:#334155;border-left:3px solid #2563eb;padding-left:8px}
+  .emp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .emp-item{font-size:12.5px;color:#475569}
+  .emp-item b{display:block;color:#0f172a;font-weight:600;font-size:13px;margin-bottom:2px}
+  .emp-list{display:flex;flex-direction:column;gap:6px}
+  .emp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#f8fafc;border-radius:6px;font-size:13px;gap:8px}
+  .emp-row span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .emp-row .st{flex:none;margin-left:auto}
+  @media(max-width:640px){
+    .emp-modal-overlay{padding:10px;align-items:flex-end}
+    .emp-modal{max-height:92vh;border-radius:12px 12px 0 0}
+    .emp-grid{grid-template-columns:1fr 1fr}
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .warn-tip{color:#d97706;cursor:help;font-weight:700}
+  .tbl-foot{color:#94a3b8;font-size:12px;padding:8px 2px 0}
+  /* 排名条 */
+  .blk-rate{padding:2px 0}
+  .rb{display:flex;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px solid #f5f7fa}
+  .rb-l{flex:0 0 190px;display:flex;gap:6px;align-items:baseline;overflow:hidden}
+  .rb-n{font-size:13px;color:#334155;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rb-s{font-size:11.5px;color:#94a3b8}
+  .rb-bar{flex:1;height:9px;background:#eef2f7;border-radius:5px;overflow:hidden;min-width:60px}
+  .rb-bar i{display:block;height:100%;border-radius:5px}
+  .rb-v{flex:0 0 58px;text-align:right;font-size:13px;font-weight:700}
+  .rb-x{flex:0 0 54px;text-align:right;font-size:12px;color:#94a3b8}
+  .rank-area{background:#f8fafc;color:#475569;font-weight:700;font-size:12.5px;
+             padding:6px 10px;border-radius:6px;margin:10px 0 2px}
+  /* 清单 */
+  .blk-list{padding:2px 0}
+  .li{border-bottom:1px solid #f5f7fa;padding:8px 2px}
+  .li-h{font-size:13.5px;color:#1e293b;font-weight:600;display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap}
+  .li-m{font-size:12.5px;color:#64748b;margin-top:3px;line-height:1.7}
+  .li-tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap;flex:none}
+  .li-a{margin-top:6px;display:flex;gap:8px}
+  /* 表单 */
+  .fb-form .fb-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .fb-form .fb-row label{flex:0 0 78px;font-size:13px;color:#475569;text-align:right}
+  .fb-form .fb-row select,.fb-form .fb-row input{flex:1;max-width:420px}
+  .btn.sm{padding:5px 12px;font-size:12.5px}
+  .btn.gray{background:#fff;color:#64748b;border:1px solid #cbd5e1}
+  .btn.gray:hover{background:#f8fafc}
+  .sub-t{font-size:12.5px;color:#64748b;padding:4px 2px 8px;font-weight:600}
+  /* 分析 */
+  .blk-analysis .an-line{font-size:13px;color:#334155;line-height:1.9;padding:2px 0}
+  /* 同步面板 */
+  .sync-box .sync-info{font-size:12.5px;color:#64748b;line-height:1.9;margin-bottom:12px}
+  /* KPI */
+  .kpi .val{font-size:24px;font-weight:700;line-height:1.2}
+  .kpi .lbl{font-size:12px;color:#64748b;margin-top:4px}
+  @media(max-width:640px){
+    .rb-l{flex:0 0 110px}.rb-x{display:none}
+    .fb-form .fb-row{flex-direction:column;align-items:stretch}
+    .fb-form .fb-row label{text-align:left;flex:none}
+  }
+
+  /* ---------------- v1.1 修复版新增样式 ---------------- */
+  .fmt-bar{display:none !important}            /* A1：隐藏框架自带筛选条，改用统一筛选条 */
+  .fbar-host{background:#fff;border-radius:10px;padding:12px 16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .fbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .fbar select,.fbar input[type=text]{padding:6px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;color:#334155;background:#fff;min-width:124px}
+  .fbar input[type=text]{min-width:180px}
+  .fbar .fbar-tip{font-size:12px;color:#2563eb;background:#eff6ff;border-radius:20px;padding:3px 10px}
+  .fbar .note{font-size:12px;color:#94a3b8}
+  .tbl-opts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:2px 2px 12px}
+  .st-gray{background:#f1f5f9 !important;color:#94a3b8 !important}
+  .rb-mute .rb-n{color:#94a3b8}
+  .rb-mute .rb-bar i{background:#e2e8f0}
+  .ra-sum{float:right;font-weight:400;color:#94a3b8;font-size:11.5px}
+  .ov-out{width:100%;height:88px;margin-top:8px;border:1px solid #e2e8f0;border-radius:6px;padding:8px;font-size:11.5px;font-family:Consolas,monaco,monospace;color:#475569;background:#f8fafc;resize:vertical;box-sizing:border-box}
+  .fb-row input[type=text]{padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;min-width:260px}
+  /* 空状态 */
+  .empty-state{text-align:center;padding:42px 20px;color:#64748b}
+  .empty-state-icon{font-size:42px;margin-bottom:10px}
+  .empty-state-title{font-size:16px;font-weight:600;color:#334155;margin-bottom:6px}
+  .empty-state-desc{font-size:13px;color:#94a3b8;max-width:360px;margin:0 auto;line-height:1.6}
+  /* 图表防重叠 */
+  .chart-box{min-height:220px;overflow:hidden}
+  /* 状态构成横向条 */
+  .status-bars{display:flex;flex-direction:column;gap:10px;padding:4px 0}
+  .sb-row{display:flex;align-items:center;gap:12px}
+  .sb-meta{flex:0 0 190px;display:flex;align-items:center;gap:8px;font-size:13px}
+  .sb-dot{width:10px;height:10px;border-radius:50%}
+  .sb-name{color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sb-pct{color:#94a3b8;font-size:11.5px;margin-left:auto}
+  .sb-bar{flex:1;height:8px;background:#eef2f7;border-radius:4px;overflow:hidden;min-width:60px}
+  .sb-bar i{display:block;height:100%;border-radius:4px}
+  .sb-val{flex:0 0 36px;text-align:right;font-size:13px;font-weight:600;color:#1e293b}
+  /* 区域/门店新人进度图（总进度条 + 学习/考核内嵌占比） */
+  .pg-wrap{display:flex;flex-direction:column;gap:11px;padding:4px 0}
+  .pg-row{display:flex;align-items:center;gap:12px}
+  .pg-name{flex:0 0 150px;font-size:13px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pg-name small{color:#94a3b8;font-size:11.5px;margin-left:6px}
+  .pg-track-wrap{flex:1;min-width:90px;height:16px;display:flex;align-items:center}
+  .pg-track{position:relative;height:14px;background:#eef2f7;border-radius:7px;min-width:6px}
+  .pg-track i{position:absolute;left:0;top:0;height:100%;border-radius:7px;display:block}
+  .pg-track i.pg-e{background:#2563eb;z-index:2}
+  .pg-track i.pg-l{background:#22c55e;z-index:1}
+  .pg-nums{flex:0 0 108px;text-align:right;font-size:12.5px;color:#475569;white-space:nowrap}
+  .pg-nums b{color:#1e293b;font-weight:600}
+  .pg-lg{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:#64748b}
+  .pg-lg span{display:inline-flex;align-items:center;gap:6px}
+  .pg-lg i{width:12px;height:8px;border-radius:4px;display:inline-block}
+  @media(max-width:640px){
+    .pg-name{flex:0 0 92px;font-size:12px}
+    .pg-name small{display:none}
+    .pg-nums{flex:0 0 84px;font-size:11.5px}
+    .sb-meta{flex:0 0 130px}
+  }
+  /* 图表容器强制裁剪，防止 SVG 溢出重叠 */
+  .card > div{overflow:hidden}
+  .card > .tbl-scroll{overflow:auto}
+  .card > .blk-list{overflow:visible}
+  /* 区域追踪查询：门店明细紧凑表格（PC） */
+  .ra-tbl{width:100%;border-collapse:collapse;font-size:12px}
+  .ra-tbl th,.ra-tbl td{padding:9px 6px;text-align:center;white-space:nowrap;border-bottom:1px solid #f1f5f9}
+  .ra-tbl th{background:#f8fafc;color:#475569;font-weight:600;font-size:11px}
+  .ra-tbl td:first-child,.ra-tbl th:first-child{text-align:left;padding-left:12px}
+  .ra-tbl td:last-child,.ra-tbl th:last-child{padding-right:12px}
+  .ra-tbl tbody tr:nth-child(even){background:#f8fafc}
+  /* 移动端表格卡片化优化 */
+  @media(max-width:640px){
+    header{padding:10px 12px}
+    header h1{font-size:16px}
+    header .sub{font-size:11px;line-height:1.4}
+    nav{padding:0 4px;gap:1px}
+    .tab-btn{padding:10px 10px;font-size:12px;white-space:nowrap}
+    main{padding:10px 10px calc(16px + env(safe-area-inset-bottom))}
+    .card{padding:10px;margin-bottom:10px;border-radius:8px}
+    .card h3{font-size:14px;margin-bottom:10px}
+    .empty-state{padding:24px 12px}
+    .empty-state-icon{font-size:36px}
+    .empty-state-title{font-size:15px}
+    .empty-state-desc{font-size:12px}
+    .fbar,.tbl-opts{flex-direction:column;align-items:stretch;gap:8px}
+    .fbar select,.fbar input[type=text],.tbl-opts select{min-width:0;width:100%;font-size:16px}
+    .fbar>.fld,.tbl-opts>.fld{width:100%;font-size:12px;color:#64748b;margin-bottom:-4px}
+    .fbar .fbar-tip,.tbl-opts .note{font-size:11px;margin-top:2px}
+    .ra-sum{float:none;display:block}
+    .tbl-scroll{max-height:none;overflow-x:auto}
+    table{font-size:12px}
+    th,td{padding:6px 8px}
+    td[data-label]{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #f1f5f9}
+    td[data-label]::before{content:attr(data-label);color:#94a3b8;font-weight:500;flex:none;font-size:11.5px}
+    thead{display:none}
+    tr{display:block;margin-bottom:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#fff}
+    tbody tr:nth-child(even){background:#fff}
+    /* 豁免类 keep-table：一览表（在职全员等）保持 PC 式真实表格，横向滚动查看，不做卡片化 */
+    .keep-table thead{display:table-header-group}
+    .keep-table tr{display:table-row;margin:0;border:none;border-radius:0;background:transparent}
+    .keep-table tbody tr:nth-child(even){background:#f8fafc}
+    .keep-table td[data-label]{display:table-cell;justify-content:normal;padding:6px 8px;border-bottom:1px solid #f1f5f9}
+    .keep-table td[data-label]::before{content:none}
+    .keep-table th{white-space:nowrap}
+    .keep-table th,.keep-table td{white-space:nowrap;text-align:left}   /* 姓名/岗位等列不折行，超宽靠横向滚动 */
+    /* 区域追踪查询紧凑表格：保持真实表格，不卡片化、不折行，手机端紧凑居中 */
+    .ra-tbl{font-size:11px}
+    .ra-tbl th,.ra-tbl td{padding:8px 4px}
+    .ra-tbl thead{display:table-header-group}
+    .ra-tbl tr{display:table-row;margin:0;border:none;border-radius:0;background:transparent}
+    .ra-tbl tbody tr:nth-child(even){background:#f8fafc}
+    .ra-tbl td[data-label]{display:table-cell;justify-content:normal;padding:8px 4px;border-bottom:1px solid #f1f5f9}
+    .ra-tbl td[data-label]::before{content:none}
+    .tbl-opts .btn{width:auto;align-self:flex-start}
+    .kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+    .kpi{padding:10px 6px}
+    .kpi .val{font-size:20px}
+    .btn{padding:10px 14px;font-size:14px;min-height:44px;width:100%}
+    .btn.sm{width:auto;padding:5px 10px;font-size:12px;min-height:32px}
+    .li{padding:10px 4px}
+    .li-h{font-size:13px}
+    .li-m{font-size:12px}
+    .sub-t{font-size:12px}
+    .post-rev{margin-left:6px;font-size:11px;padding:2px 6px}
+  .adj-sub{font-size:11px;color:#94a3b8;margin-top:2px}
+  .post-cancel{margin-left:6px;font-size:11px;padding:2px 6px}
+  }
+/* ===== 带训追踪：区域分组可视化 ===== */
+.f6-export-wrap{background:#fff;padding:10px;border-radius:8px;max-width:720px;margin:0 auto}
+.f6-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.f6-hd h3{margin:0 0 2px;font-size:14px}
+.f6-stats{display:flex;gap:6px;margin-bottom:8px;justify-content:space-between}
+.f6-stat{flex:1;min-width:0;background:#f8fafc;border-radius:5px;padding:5px 2px;text-align:center}
+.f6-stat .n{font-size:17px;font-weight:700;color:#334155;line-height:1}
+.f6-stat .l{font-size:10px;color:#64748b;margin-top:1px}
+.f6-stat.on .n{color:#16a34a}
+.f6-stat.off .n{color:#94a3b8}
+.f6-stat.warn .n{color:#ea580c}
+.f6-stat.bad .n{color:#dc2626}
+.f6-table{table-layout:fixed;width:100%;max-width:700px;border-collapse:collapse;font-size:12px}
+.f6-table thead th{background:#f1f5f9;color:#475569;font-weight:600;font-size:10px;padding:5px 4px;text-align:left}
+.f6-table tbody tr{border-bottom:1px solid #eef2f7}
+.f6-table tbody tr:last-child{border-bottom:none}
+.f6-table td{padding:4px 4px;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.f6-area-cell{width:46px;text-align:center;vertical-align:middle;background:rgba(255,255,255,.55);padding:4px 2px}
+.f6-area-badge{width:26px;height:26px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;margin:0 auto 1px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.f6-area-count{font-size:9px;color:#64748b;white-space:nowrap}
+.f6-status-cell{cursor:pointer;user-select:none}
+.f6-status-cell:hover{opacity:.85}
+.f6-status-cell .ck.override{border-style:dashed;position:relative;padding-right:13px}
+.f6-status-cell .ov-hint{position:absolute;right:2px;top:-3px;font-size:8px;background:#7c3aed;color:#fff;border-radius:50%;width:11px;height:11px;display:flex;align-items:center;justify-content:center;line-height:1}
+.f6-region-0 td{background:#f0f9ff;border-left:4px solid #38bdf8}
+.f6-region-0 .f6-area-badge{color:#0284c7}
+.f6-region-1 td{background:#f0fdf4;border-left:4px solid #4ade80}
+.f6-region-1 .f6-area-badge{color:#16a34a}
+.f6-region-2 td{background:#fefce8;border-left:4px solid #facc15}
+.f6-region-2 .f6-area-badge{color:#a16207}
+.f6-region-3 td{background:#fff7ed;border-left:4px solid #fb923c}
+.f6-region-3 .f6-area-badge{color:#c2410c}
+.f6-region-4 td{background:#faf5ff;border-left:4px solid #c084fc}
+.f6-region-4 .f6-area-badge{color:#9333ea}
+.f6-region-5 td{background:#f8fafc;border-left:4px solid #94a3b8}
+.f6-region-5 .f6-area-badge{color:#475569}
+.f6-region-6 td{background:#ecfeff;border-left:4px solid #22d3ee}
+.f6-region-6 .f6-area-badge{color:#0891b2}
+.f6-region-7 td{background:#fff1f2;border-left:4px solid #fb7185}
+.f6-region-7 .f6-area-badge{color:#e11d48}
+@media(max-width:640px){
+  .f6-export-wrap{padding:8px}
+  .f6-hd{align-items:center}
+  .f6-hd h3{font-size:13px;margin-bottom:0}
+  .f6-stats{gap:4px;flex-wrap:wrap}
+  .f6-stat{flex:1 1 30%;min-width:60px;padding:4px 1px}
+  .f6-stat .n{font-size:15px}
+  .f6-stat .l{font-size:9px}
+  .f6-table,.f6-table tbody,.f6-table tr{display:block}
+  .f6-table thead{display:none}
+  .f6-table tr{margin-bottom:6px;border-radius:6px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .f6-table td{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-bottom:1px solid rgba(0,0,0,.04);white-space:normal}
+  .f6-table td::before{content:attr(data-label);font-size:10px;color:#64748b;margin-right:8px;flex-shrink:0}
+  .f6-area-cell{width:auto;display:block;text-align:center;border-left:none!important;border-radius:6px 6px 0 0;padding:5px 8px;background:rgba(255,255,255,.65)}
+  .f6-area-badge{width:22px;height:22px;font-size:11px}
+  .f6-area-count{font-size:8px}
+  .f6-table .f6-status-cell{justify-content:space-between}
+}
+
+/* ==== 移动端适配（在线托管版补充） ==== */
+/* 核心移动端样式已内联在 dashboard.html 的 @media(max-width:640px) 中；
+   此处仅补充部署环境常见 tweaks，避免与内联样式冲突。 */
+@media(max-width:640px){
+  select,input[type=text]{font-size:16px;-webkit-text-size-adjust:100%}
+  .btn{min-height:44px}
+}
+</style>
+<script src="html2canvas.min.js"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2563eb">
+</head>
+<body data-page-node-id="O0cY8PBXKoA8WUnaaBgIMv">
+<header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
+  <div>
+    <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
+    <div class="sub">在线版（手机随时打开）· 数据更新：2026-10-19 13:06:01 · 构建 v202610191323</div>
+  </div>
+  <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
+</header>
+
+<nav data-page-node-id="Sn2sha77aplG7J9jIJPrIx">
+  <!--__NAV_TABS__-->
+  <button class="tab-btn" data-tab="0">🏪 门店查询</button>
+  <button class="tab-btn" data-tab="1">📅 月度入职追踪</button>
+  <button class="tab-btn" data-tab="2">🗂 训练情况</button>
+  <button class="tab-btn" data-tab="3">🗂 门店闭环追踪</button>
+  <button class="tab-btn active" data-tab="6">📋 门店追踪查询</button>
+  <button class="tab-btn" data-tab="5">🧑‍🏫 带教追踪</button>
+  <button class="tab-btn" data-tab="7">🌐 区域追踪查询</button>
+  <!--/__NAV_TABS__-->
+</nav>
+
+<main data-page-node-id="rtxKpFcJK0hXqhIXGVIFD7">
+  <!--__PAGE_SECTIONS__-->
+  <section class="tab" id="tab-0">
+    <div class="card blk-head" style="display:flex;align-items:center;gap:8px;padding:12px 16px"><h2 style="font-size:17px;margin:0">门店查询</h2><span class="badge sm" style="background:#0ea5e9;margin-left:8px">🏪 门店搜索</span></div>
+    <div class="card">
+      <h3>门店查询</h3>
+      <p class="note" style="margin:-8px 0 12px">输入门店名关键词 → 呈现该门店全部员工训练情况；向下可给本门店员工做异常反馈</p>
+      <div class="fbar-host" id="fbar_f1"></div>
+      <div id="blk_f1_1"><div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">请先输入门店名</div><div class="empty-state-desc">在上方搜索框输入门店关键词，即可查看该门店全部员工的训练情况</div></div></div>
+    </div>
+    <div class="card">
+      <h3>岗位异常反馈</h3>
+      <div id="blk_f1_2" class="blk-form"><span class="note">待填充 · 表单</span></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-1">
+    <div class="card blk-head" style="display:flex;align-items:center;gap:8px;padding:12px 16px"><h2 style="font-size:17px;margin:0">月度入职追踪</h2><span class="badge sm" style="background:#2563eb;margin-left:8px">📅 时间模块</span></div>
+    <div class="fbar-host" id="fbar_f2"></div>
+    <div class="tbl-opts" id="f2_scope_bar"></div>
+    <div class="card">
+      <h3>① 区域新人情况（所选月份 · 各区域 入职 / 学习完成 / 考核完成）</h3>
+      <div id="blk_f2_5" style="height:320px"><span class="note">待填充 · 图表</span></div>
+    </div>
+    <div class="card">
+      <h3>② 员工状态构成（所选月份 · 已闭环 / 待考核 / 超时未完成 / 待确认）</h3>
+      <div id="blk_f2_6" style="height:320px"><span class="note">待填充 · 图表</span></div>
+    </div>
+    <div class="card">
+      <h3>③ 门店新人情况（所选月份 · 按区域划分：入职总进度 / 学习人数 / 考核人数）</h3>
+      <div id="blk_f2_7"><span class="note">待填充 · 进度图</span></div>
+    </div>
+    <div class="card">
+      <h3>训练情况一览（合格看板 · 受上方筛选：区域 / 月份 / 学习 / 考核 / 状态 / 备注；默认本期新人，可展开全部）</h3>
+      <div class="tbl-scroll" id="blk_f2_4"><span class="note">待填充 · 表格</span></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-2">
+    <div class="card blk-head" style="display:flex;align-items:center;gap:8px;padding:12px 16px"><h2 style="font-size:17px;margin:0">训练情况</h2><span class="badge sm" style="background:#7c3aed;margin-left:8px">🗂 业务模块</span></div>
+    <div class="fbar-host" id="fbar_f3"></div>
+    <div class="fmt-bar">
+        <label class="fld">周期</label><select id="blk_f3_0PeriodSel"></select>
+        <label class="fld">区域 → 门店</label><select id="blk_f3_0GroupSel"></select>
+        <span class="note" id="blk_f3_0Note">周期筛选（切换不同月份 / 全部）</span>
+      </div>
+    <div class="fmt-bar">
+        <label class="fld">周期</label><select id="blk_f3_1PeriodSel"></select>
+        <label class="fld">区域 → 门店</label><select id="blk_f3_1GroupSel"></select>
+        <span class="note" id="blk_f3_1Note">区域筛选（切换不同区域 / 全部）</span>
+      </div>
+    <div class="card">
+      <h3>各区域闭环率</h3>
+      <div id="blk_f3_2" class="blk-rate"><span class="note">待填充 · 排名条</span></div>
+    </div>
+    <div class="card">
+      <h3>岗位维度：服务 / 迎宾 / 传菜 学习闭环率</h3>
+      <div id="blk_f3_3" style="height:320px"><span class="note">待填充 · 图表</span></div>
+    </div>
+    <div class="card">
+      <h3>员工状态构成（已闭环 / 待考核 / 超时未完成 / 待确认）</h3>
+      <div id="blk_f3_4" style="height:320px"><span class="note">待填充 · 图表</span></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-3">
+    <div class="card blk-head" style="display:flex;align-items:center;gap:8px;padding:12px 16px"><h2 style="font-size:17px;margin:0">门店闭环追踪</h2><span class="badge sm" style="background:#7c3aed;margin-left:8px">🗂 业务模块</span></div>
+    <div class="fbar-host" id="fbar_f4"></div>
+    <div class="fmt-bar">
+        <label class="fld">周期</label><select id="blk_f4_0PeriodSel"></select>
+        <label class="fld">区域 → 门店</label><select id="blk_f4_0GroupSel"></select>
+        <span class="note" id="blk_f4_0Note">区域筛选（切换不同区域）</span>
+      </div>
+    <div class="card">
+      <h3>门店排行榜（闭环率从低到高，先盯差的，按区域分组、区域组内排序）</h3>
+      <div id="blk_f4_1" class="blk-rate"><span class="note">待填充 · 排名条</span></div>
+    </div>
+    <div class="card">
+      <h3>岗位异常清单（花名册职位 vs 学考岗位；学考一致但与花名册不一致 → 提示修改岗位，并计算闭环率）</h3>
+      <div id="blk_f4_2" class="blk-list"><span class="note">待填充 · 清单</span></div>
+    </div>
+    <div class="card">
+      <h3>闭环异常清单（学习岗位 vs 考核岗位；学考不一致 → 不计算闭环率，提示异常）</h3>
+      <div id="blk_f4_3" class="blk-list"><span class="note">待填充 · 清单</span></div>
+    </div>
+    <div class="card">
+      <h3>未闭环清单（各门店三个岗位 入职人数 vs 未闭环人数）</h3>
+      <div id="blk_f4_4" class="blk-list"><span class="note">待填充 · 清单</span></div>
+    </div>
+  </section>
+
+  <section class="tab active" id="tab-6">
+    <div class="card blk-head" style="display:flex;align-items:center;gap:8px;padding:12px 16px"><h2 style="font-size:17px;margin:0">整体监控</h2><span class="badge sm" style="background:#0f766e;margin-left:8px">🎛 控制模块</span></div>
+    <div class="fbar-host" id="fbar_f5"></div>
+    <div class="kpi-grid" id="blk_f5_0"><span class="note">待填充 · 前厅训练闭环总览（人数 / 闭环率 / 超期数）</span></div>
+    <div class="card">
+      <h3>岗位异常反馈确认标记（审核确认门店提交的岗位异常）</h3>
+      <div id="blk_f5_3" class="blk-form"><span class="note">待填充 · 表单</span></div>
+    </div>
+    <div class="card">
+      <h3>数据诊断与改进建议</h3>
+      <div id="blk_f5_4" class="blk-analysis"><span class="note">待填充 · 分析</span></div>
+    </div>
+    <div class="card">
+      <h3>同步更新按钮（一键拉取最新花名册 / 学习数据 / 考核卡）</h3>
+      <div id="blk_f5_5" class="blk-form"><span class="note">待填充 · 表单</span></div>
+    </div>
+    <div class="card">
+      <h3>未匹配考核记录（钉钉考核卡 ↔ 花名册对不上）</h3>
+      <p class="note" style="margin:-8px 0 12px">这些考核卡已抓回，但「被考核人」的账号 / 姓名在花名册里找不到，无法归属到具体员工，看板暂不展示。请核对花名册是否漏录，或门店提交时是否选错账号。</p>
+      <div id="blk_f5_unmatched"><span class="note">待填充 · 列表</span></div>
+    </div>
+    <div class="card" id="blk_store_cfg_card">
+      <h3>门店版展示设置（勾选哪些 Tab 对门店开放）</h3>
+      <div id="blk_store_cfg"><span class="note">加载中…</span></div>
+      <div class="row" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn" id="save_store_cfg">保存配置</button>
+        <button class="btn gray" id="preview_store">预览门店版</button>
+        <span id="store_cfg_tip" class="note"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-5">
+    <div class="card blk-head" style="display:flex;align-items:center;gap:8px;padding:12px 16px"><h2 style="font-size:17px;margin:0">门店带训追踪</h2><span class="badge sm" style="background:#7c3aed;margin-left:8px">🧑‍🏫 带训追踪</span></div>
+    <div class="card">
+      <div class="f6-hd">
+        <div>
+          <h3>带训人一览（区域 → 门店 → 带训人 → 考核/学习/认证 → 状态）</h3>
+          <p class="note" style="margin:4px 0 0">数据取自钉钉「考核总看板 → 带训追踪」；区域按表中「所属区域」(负责人姓氏) 分组；状态每次「刷新数据」时按<b>最新花名册</b>判定：带训人空 → 未提报；花名册本店命中 → 在职；花名册有但不在本店 → 异常(调店)；花名册查无 → 离职。</p>
+        </div>
+        <button class="btn sm" id="btn_export_f6" onclick="exportF6Image()" style="white-space:nowrap">📷 导出图片</button>
+      </div>
+      <div id="blk_f6_1"><span class="note">待填充 · 表格</span></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-6">
+    <div class="card blk-head" style="display:flex;align-items:center;gap:8px;padding:12px 16px"><h2 style="font-size:17px;margin:0">门店追踪查询</h2><span class="badge sm" style="background:#ea580c;margin-left:8px">📋 店长待办</span></div>
+    <div class="card">
+      <h3>第一步：选择本门店</h3>
+      <p class="note" style="margin:-8px 0 12px">默认进入「<b>待办跟进</b>」：只看需要你立即跟进的人（待学习 / 学习超期 / 待考核）；需要看全员明细时再切「<b>在职全员</b>」。</p>
+      <div class="fbar-host" id="fbar_f7"></div>
+    </div>
+    <div id="blk_f7_body"></div>
+  </section>
+
+  <section class="tab" id="tab-7">
+    <div class="card blk-head" style="display:flex;align-items:center;gap:8px;padding:12px 16px"><h2 style="font-size:17px;margin:0">区域追踪查询</h2><span class="badge sm" style="background:#0f766e;margin-left:8px">🌐 区域负责人</span></div>
+    <div class="card">
+      <h3>选择区域</h3>
+      <p class="note" style="margin:-8px 0 12px">先选区域，再切换「门店进度」或「区域概览」；点击门店卡片可展开具体人员明细。</p>
+      <div class="fbar-host" id="fbar_f8"></div>
+    </div>
+    <div id="blk_f8_body"></div>
+  </section>
+
+  <!--/__PAGE_SECTIONS__-->
+</main>
+
+<footer id="footer" data-page-node-id="ks0Aq1UHvAOmO44yMJ9Dtp"></footer>
+
+<script>
+const CFG = {
+ "project": {
+  "title": "【前厅】新员工训练看板",
+  "subject": "员工",
+  "subjectKey": "员工名称",
+  "groupName": "区域 → 门店"
+ },
+ "data": {
+  "fields": {
+   "name": "员工名称",
+   "period": "打卡分类",
+   "task": "训练主题",
+   "date": "训练日期",
+   "quality": "审核质量",
+   "group": "所属区域",
+   "submit": "提交时间",
+   "note": "备注"
+  },
+  "recordKey": "training_records"
+ },
+ "period": {
+  "labelRegex": "(\d+)\s*月[^0-9]*?(\d+)\s*(?:次|周)?",
+  "sample": "无周次标签，按「入职月份批次」（如 2026-09）",
+  "monthStart": {}
+ },
+ "rules": {
+  "pass": [
+   "合格（学习）；有对应岗位考核记录（考核）"
+  ],
+  "fail": [
+   "操作不标准/不统一",
+   "内容或格式问题"
+  ],
+  "threshold": 2,
+  "cyclePeriods": 2
+ },
+ "modules": [
+  {
+   "id": "search",
+   "name": "搜索模块",
+   "icon": "🔍",
+   "functions": [
+    {
+     "id": "f1",
+     "name": "门店查询",
+     "blocks": [
+      {
+       "id": "selector",
+       "info": "员工选择",
+       "auto": true
+      },
+      {
+       "id": "table",
+       "info": "训练情况一览（在职员工 / 管理组：姓名 - 钉钉岗位 - 学习 - 考核 - 状态 - 备注；排序：先管理组后员工、先新后老；9 月 1 日前入职统一标注\"老员工暂未统计\"）",
+       "auto": false
+      },
+      {
+       "id": "tag-form",
+       "info": "岗位异常反馈（下拉选人员 → 下拉选正确岗位 → 提交确认 → 人员标记待审核）",
+       "auto": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "time",
+   "name": "时间模块",
+   "icon": "📅",
+   "functions": [
+    {
+     "id": "f2",
+     "name": "月度入职追踪",
+     "blocks": [
+      {
+       "id": "filter-bar",
+       "info": "周期筛选（月 / 季度 / 年度）",
+       "auto": false
+      },
+      {
+       "id": "bar-group",
+       "info": "区域新人情况（所选月份各区域 入职人数 / 学习完成人数 / 考核完成人数）",
+       "auto": false
+      },
+      {
+       "id": "pie",
+       "info": "员工状态构成（已闭环 / 待考核 / 超时未完成 / 待确认）",
+       "auto": false
+      },
+      {
+       "id": "progress",
+       "info": "门店新人情况（按区域：入职总进度 / 学习人数 / 考核人数）",
+       "auto": false
+      },
+      {
+       "id": "bar-group",
+       "info": "月度入职 VS 闭环人数",
+       "auto": false
+      },
+      {
+       "id": "line-trend",
+       "info": "月度闭环率趋势（累计）",
+       "auto": false
+      },
+      {
+       "id": "miss-list",
+       "info": "本月超期未闭环人员清单",
+       "auto": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "business",
+   "name": "业务模块",
+   "icon": "🗂",
+   "functions": [
+    {
+     "id": "f3",
+     "name": "训练情况",
+     "blocks": [
+      {
+       "id": "filter-bar",
+       "info": "周期筛选（切换不同月份 / 全部）",
+       "auto": false
+      },
+      {
+       "id": "filter-bar",
+       "info": "区域筛选（切换不同区域 / 全部）",
+       "auto": false
+      },
+      {
+       "id": "rate-bar",
+       "info": "各区域闭环率",
+       "auto": false
+      },
+      {
+       "id": "bar-group",
+       "info": "岗位维度：服务 / 迎宾 / 传菜 学习闭环率",
+       "auto": false
+      },
+      {
+       "id": "pie",
+       "info": "员工状态构成（已闭环 / 待考核 / 超时未完成 / 待确认）",
+       "auto": false
+      }
+     ]
+    },
+    {
+     "id": "f4",
+     "name": "门店闭环追踪",
+     "blocks": [
+      {
+       "id": "filter-bar",
+       "info": "区域筛选（切换不同区域）",
+       "auto": false
+      },
+      {
+       "id": "rate-bar",
+       "info": "门店排行榜（闭环率从低到高，先盯差的，按区域分组、区域组内排序）",
+       "auto": false
+      },
+      {
+       "id": "issue-list",
+       "info": "岗位异常清单（花名册职位 vs 学考岗位；学考一致但与花名册不一致 → 提示修改岗位，并计算闭环率）",
+       "auto": false
+      },
+      {
+       "id": "issue-list",
+       "info": "闭环异常清单（学习岗位 vs 考核岗位；学考不一致 → 不计算闭环率，提示异常）",
+       "auto": false
+      },
+      {
+       "id": "miss-list",
+       "info": "未闭环清单（各门店三个岗位 入职人数 vs 未闭环人数）",
+       "auto": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "control",
+   "name": "控制模块",
+   "icon": "🎛",
+   "functions": [
+    {
+     "id": "f5",
+     "name": "整体监控",
+     "blocks": [
+      {
+       "id": "kpi",
+       "info": "前厅训练闭环总览（人数 / 闭环率 / 超期数）",
+       "auto": false
+      },
+      {
+       "id": "line-trend",
+       "info": "月度闭环趋势",
+       "auto": false
+      },
+      {
+       "id": "miss-list",
+       "info": "超期未完成名单（可直接发给店长催办）",
+       "auto": false
+      },
+      {
+       "id": "tag-form",
+       "info": "岗位异常反馈确认标记（审核确认门店提交的岗位异常）",
+       "auto": false
+      },
+      {
+       "id": "analysis",
+       "info": "数据诊断与改进建议",
+       "auto": false
+      },
+      {
+       "id": "tag-form",
+       "info": "同步更新按钮（一键拉取最新花名册 / 学习数据 / 考核卡）",
+       "auto": false
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "pages": [
+  {
+   "id": "f1",
+   "name": "门店查询",
+   "module": "search",
+   "moduleName": "搜索模块",
+   "icon": "🔍",
+   "blocks": [
+    {
+     "id": "selector",
+     "info": "员工选择",
+     "auto": true
+    },
+    {
+     "id": "table",
+     "info": "训练情况一览（在职员工 / 管理组：姓名 - 钉钉岗位 - 学习 - 考核 - 状态 - 备注；排序：先管理组后员工、先新后老；9 月 1 日前入职统一标注\"老员工暂未统计\"）",
+     "auto": false
+    },
+    {
+     "id": "tag-form",
+     "info": "岗位异常反馈（下拉选人员 → 下拉选正确岗位 → 提交确认 → 人员标记待审核）",
+     "auto": false
+    }
+   ],
+   "default": false
+  },
+  {
+   "id": "f2",
+   "name": "月度入职追踪",
+   "module": "time",
+   "moduleName": "时间模块",
+   "icon": "📅",
+   "blocks": [
+    {
+     "id": "filter-bar",
+     "info": "周期筛选（月 / 季度 / 年度）",
+     "auto": false
+    },
+    {
+     "id": "bar-group",
+     "info": "区域新人情况（所选月份各区域 入职人数 / 学习完成人数 / 考核完成人数）",
+     "auto": false
+    },
+    {
+     "id": "pie",
+     "info": "员工状态构成（已闭环 / 待考核 / 超时未完成 / 待确认）",
+     "auto": false
+    },
+    {
+     "id": "progress",
+     "info": "门店新人情况（按区域：入职总进度 / 学习人数 / 考核人数）",
+     "auto": false
+    },
+    {
+     "id": "bar-group",
+     "info": "月度入职 VS 闭环人数",
+     "auto": false
+    },
+    {
+     "id": "line-trend",
+     "info": "月度闭环率趋势（累计）",
+     "auto": false
+    },
+    {
+     "id": "miss-list",
+     "info": "本月超期未闭环人员清单",
+     "auto": false
+    }
+   ],
+   "default": false
+  },
+  {
+   "id": "f3",
+   "name": "训练情况",
+   "module": "business",
+   "moduleName": "业务模块",
+   "icon": "🗂",
+   "blocks": [
+    {
+     "id": "filter-bar",
+     "info": "周期筛选（切换不同月份 / 全部）",
+     "auto": false
+    },
+    {
+     "id": "filter-bar",
+     "info": "区域筛选（切换不同区域 / 全部）",
+     "auto": false
+    },
+    {
+     "id": "rate-bar",
+     "info": "各区域闭环率",
+     "auto": false
+    },
+    {
+     "id": "bar-group",
+     "info": "岗位维度：服务 / 迎宾 / 传菜 学习闭环率",
+     "auto": false
+    },
+    {
+     "id": "pie",
+     "info": "员工状态构成（已闭环 / 待考核 / 超时未完成 / 待确认）",
+     "auto": false
+    }
+   ],
+   "default": false
+  },
+  {
+   "id": "f4",
+   "name": "门店闭环追踪",
+   "module": "business",
+   "moduleName": "业务模块",
+   "icon": "🗂",
+   "blocks": [
+    {
+     "id": "filter-bar",
+     "info": "区域筛选（切换不同区域）",
+     "auto": false
+    },
+    {
+     "id": "rate-bar",
+     "info": "门店排行榜（闭环率从低到高，先盯差的，按区域分组、区域组内排序）",
+     "auto": false
+    },
+    {
+     "id": "issue-list",
+     "info": "岗位异常清单（花名册职位 vs 学考岗位；学考一致但与花名册不一致 → 提示修改岗位，并计算闭环率）",
+     "auto": false
+    },
+    {
+     "id": "issue-list",
+     "info": "闭环异常清单（学习岗位 vs 考核岗位；学考不一致 → 不计算闭环率，提示异常）",
+     "auto": false
+    },
+    {
+     "id": "miss-list",
+     "info": "未闭环清单（各门店三个岗位 入职人数 vs 未闭环人数）",
+     "auto": false
+    }
+   ],
+   "default": false
+  },
+  {
+   "id": "f5",
+   "name": "整体监控",
+   "module": "control",
+   "moduleName": "控制模块",
+   "icon": "🎛",
+   "blocks": [
+    {
+     "id": "kpi",
+     "info": "前厅训练闭环总览（人数 / 闭环率 / 超期数）",
+     "auto": false
+    },
+    {
+     "id": "line-trend",
+     "info": "月度闭环趋势",
+     "auto": false
+    },
+    {
+     "id": "miss-list",
+     "info": "超期未完成名单（可直接发给店长催办）",
+     "auto": false
+    },
+    {
+     "id": "tag-form",
+     "info": "岗位异常反馈确认标记（审核确认门店提交的岗位异常）",
+     "auto": false
+    },
+    {
+     "id": "analysis",
+     "info": "数据诊断与改进建议",
+     "auto": false
+    },
+    {
+     "id": "tag-form",
+     "info": "同步更新按钮（一键拉取最新花名册 / 学习数据 / 考核卡）",
+     "auto": false
+    }
+   ],
+   "default": true
+  },
+  {
+   "id": "f6",
+   "name": "带教负责人追踪",
+   "module": "business",
+   "moduleName": "业务模块",
+   "icon": "🧑‍🏫",
+   "blocks": [
+    {
+     "id": "table",
+     "info": "门店带教负责人追踪（区域/门店/带训负责人/是否在职/考核记录）",
+     "auto": false
+    }
+   ],
+   "default": false
+  },
+  {
+   "id": "f7",
+   "name": "门店追踪查询",
+   "module": "todo",
+   "moduleName": "店长待办模块",
+   "icon": "📋",
+   "blocks": [
+    {
+     "id": "todo-groups",
+     "info": "待办跟进（待学习 / 学习超期 / 待考核 三组，按紧急程度排序）",
+     "auto": false
+    },
+    {
+     "id": "table",
+     "info": "在职全员（按姓名 / 岗位 / 状态筛选）",
+     "auto": false
+    }
+   ],
+   "default": false
+  },
+  {
+   "id": "f8",
+   "name": "区域追踪查询",
+   "module": "control",
+   "moduleName": "控制模块",
+   "icon": "🌐",
+   "blocks": [
+    {
+     "id": "filter-bar",
+     "info": "区域筛选（切换不同区域）"
+    },
+    {
+     "id": "todo-groups",
+     "info": "门店进度（待学习 / 待考核 / 异常人员，按门店展开）"
+    },
+    {
+     "id": "kpi",
+     "info": "区域概览（入职新人 / 闭环 / 未闭环 / 闭环率，点击下钻门店与人员）"
+    }
+   ],
+   "default": false
+  }
+],
+ "defaultTab": 4,
+ "meta": {
+  "frameworkVersion": "1.0",
+  "generatedAt": "2026-09-11 10:55:21"
+ }
+};
+
+/* ---- 本工具的口径覆盖（原生成值为通用默认，这里按业务写死） ---- */
+CFG.rules.pass = ['合格'];
+CFG.rules.fail = [];
+CFG.data.recordKey = 'employees';
+
+
+/* ==================================================================================
+ * 【前厅】新员工训练看板 · 业务层 v1.1（BUG 修复版）
+ * ----------------------------------------------------------------------------------
+ * 本轮修复：
+ *   A1 统一筛选源：全站一份 F，任何一页改动 → 各页筛选条显示同一个生效值 + 一键重置
+ *   A2 月度类图表只受「区域」影响，不受「月份」筛选影响（图不再被自己的筛选掐死）
+ *   A3 岗位异常审核 → 独立映射 → 重跑状态机 → 剔除异常清单 → 持久化（本地落盘 + 导出）
+ *   A4 异常清单口径收敛到「本期」（历史存量不计入；项目自 2026-09-01 起）
+ *   B1 门店排行榜统计全部门店（存量可见，无本期新人的显示「老员工未统计」）
+ *   B2 月份下拉只列 2026-09 起有数据的月份
+ *   B3 历史存量显示真实状态 + 「历史存量」标签（不计入闭环率）
+ *   B4 训练一览默认只显示本期新人，可一键展开全部
+ *   B5 搜索颗粒度到门店（不按员工搜）
+ *   C1 门店名去掉编号前缀（数据层已归一化）
+ *   C3 无门店 / 区域未匹配 → 「待核对门店」分组并列出人名
+ * ================================================================================== */
+
+/* ==================== 常量：业务口径（改口径改这里） ==================== */
+const GRADES       = ['服务岗', '迎宾岗', '传菜岗'];
+const LEARN_DAYS   = 7;                        // 入职 +7 天完成学习
+const EXAM_DAYS    = 14;                       // 入职 +14 天完成考核
+const STAT_START   = '2026-09-01';             // 正式统计起点
+const MGR_POS      = ['大店长', '店长', '见习店长', '经理', '主管'];
+const STAFF_POS    = ['服务员', '传菜员', '揽客'];
+const PT_POS       = ['兼职', '实习生'];
+const POST_OF_POS  = { '服务员': '服务岗', '传菜员': '传菜岗', '揽客': '迎宾岗' };
+const MGR_NEED     = 3;                        // 管理组：三岗全学全考
+const STAFF_NEED   = 1;                        // 员工：≥1 个岗位
+// 调整后岗位类别 → 角色/需求（审核通过后按此重算，不覆盖花名册职位原值）
+const ADJ_ROLE = {
+  '服务岗': { role: '前厅员工', need: STAFF_NEED },
+  '迎宾岗': { role: '前厅员工', need: STAFF_NEED },
+  '传菜岗': { role: '前厅员工', need: STAFF_NEED },
+  '非前厅': { role: '其他', need: 0, exclude: true },
+  '已离职': { role: '其他', need: 0, left: true },
+  '其他':   { role: '其他', need: 0 },
+};
+const FEEDBACK_KEY = 'qt_post_feedback_v2';    // 门店反馈（待审核队列）
+const OVERRIDE_KEY = 'qt_post_override_v2';    // 审核结果映射（A3 持久化）
+const UNMATCHED    = '待核对门店';              // C3 统一归口
+const AREA_ORDER   = ['王', '牛', '闫', '郭', '周'];
+const EXAM_FORM_URL = 'https://alidocs.dingtalk.com/notable/share/form/v013BMqYybW3JbLvqwZ_dv19yqvsgs3oebp3pcjys_1qX0QQ0?source=link';  // 钉钉考核表（「未考」点击跳转提报）
+// 钉钉表单「问题名称」→ 预填映射：须与表单上显示的问题名完全一致（表单问题改名会导致预填失效）
+// 官方能力：表单链接后加 ?prefill_问题名称=值 预填、&hide_问题名称=1 隐藏该问题
+const EXAM_PREFILL  = { name: '被考核人', store: '门店', storeUseRaw: true };   // storeUseRaw：门店用「编号+店名」（与钉钉表单选项一致）
+
+// 岗位调整共享后端：门店提交 → 总部可见 → 钉钉通知。
+// feedback_api.py 已部署到 WorkBuddy 托管，此即其服务域名。
+const FEEDBACK_API = 'https://post-feedback-api.app.workbuddy.host';
+
+// 反馈可选项：展示名 → 判定岗位 / 修正后的花名册职位
+const FB_OPTIONS = [
+  { label: '服务岗（服务员）',        post: '服务岗', position: '服务员' },
+  { label: '迎宾岗（揽客）',          post: '迎宾岗', position: '揽客' },
+  { label: '传菜岗（传菜员）',        post: '传菜岗', position: '传菜员' },
+  { label: '非前厅员工（厨房/其他）', post: '非前厅', position: '兼职' },
+  { label: '已经离职',                post: '已离职', position: '' },
+  { label: '其他（填写岗位）',        post: '其他',   position: '' }
+];
+// 兼容历史提交：旧文案「迎宾岗 / 领位岗（揽客）」与新课「迎宾岗（揽客）」归一化后视为同一项
+const normFbLabel = s => String(s == null ? '' : s).replace(/\s|\/|领位岗/g, '');
+const fbOption = label => FB_OPTIONS.find(o => normFbLabel(o.label) === normFbLabel(label)) || null;
+// 下拉/反馈记录展示时去除括号内说明文字（已离职无括号）
+function fbDisplay(label) {
+  if (!label) return label;
+  return label.replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '').trim();
+}
+
+const STATUS_COLOR = {
+  '训练闭环': '#16a34a', '学习超期但已考核': '#65a30d',
+  '待考核': '#d97706', '待考核（已超期）': '#dc2626',
+  '学习超期': '#dc2626', '考核超期': '#dc2626',
+  '学习中(未超期)': '#0891b2', '待门店确认': '#7c3aed',
+  '非前厅(已排除)': '#94a3b8', '已离职': '#94a3b8',
+  '老员工暂未统计': '#94a3b8', '入职日期缺失': '#94a3b8'
+};
+
+/* ---- 用户规定口径：三维度标记 + 状态/备注判定 ----
+ * 三维：学习(已学习/学习中/未学习) · 考核(已考核/未考核) · 超时(已超时/未超时)
+ * 派生：状态(正常/异常) · 备注(闭环/超期完成/推进中/超时未完成/顺序异常)
+ * 特殊态：待确认(待门店确认/入职日期缺失) · 其他(非前厅/已离职)
+ */
+const LEARN_STATUS_OPTS = ['已学习', '未学习', '学习中'];
+const EXAM_STATUS_OPTS  = ['已考核', '未考核'];
+const STATUS_GROUP_OPTS = ['正常', '异常', '待确认', '其他'];
+function learnStatusOf(e) {
+  if (e.learned.length) return '已学习';
+  if (e.learnStarted && e.learnStarted.length) return '学习中';
+  return '未学习';
+}
+function examStatusOf(e) {
+  return e.examPosts.length ? '已考核' : '未考核';
+}
+function statusGroupOf(e) { return e.status2; }
+function timeoutDimOf(e) { return (e.learnLate || e.examLate) ? '已超时' : '未超时'; }
+
+const TIMEOUT_DIM_OPTS = ['已超时', '未超时'];
+const REMARK_OPTS = ['闭环', '超期完成', '推进中', '超时未完成', '顺序异常'];
+const STATUS2_COLOR = { '正常': '#16a34a', '异常': '#dc2626', '待确认': '#7c3aed', '其他': '#94a3b8' };
+const REMARK_COLOR = {
+  '闭环': '#16a34a', '超期完成': '#65a30d', '推进中': '#0891b2',
+  '超时未完成': '#dc2626', '顺序异常': '#ea580c',
+  '非前厅': '#94a3b8', '已离职': '#94a3b8', '待门店确认': '#7c3aed', '入职日期缺失': '#94a3b8'
+};
+const status2Color = s => STATUS2_COLOR[s] || '#64748b';
+const remarkColor  = r => REMARK_COLOR[r] || '#64748b';
+function statusBadge(e) {
+  const c = status2Color(e.status2);
+  let s = `<span class="st" style="background:${c}1a;color:${c}">${esc(e.status2)}</span>`;
+  // 历史存量信息统一放到备注列，状态列只保留业务状态
+  if (e.confirmed) s += ' <span class="st" style="background:#dcfce7;color:#16a34a">已确认</span>';
+  return s;
+}
+function remarkTag(e) {
+  // 历史存量统一在备注列展示（覆盖原 remark）
+  let r = e.remark;
+  if (isHist(e)) r = '历史存量';
+  const c = remarkColor(r);
+  return `<span class="st" style="background:${c}1a;color:${c}">${esc(r)}</span>`;
+}
+function dimTags(e) {
+  const L = { '已学习': '#16a34a', '学习中': '#0891b2', '未学习': '#94a3b8' }[learnStatusOf(e)];
+  const E = { '已考核': '#16a34a', '未考核': '#94a3b8' }[examStatusOf(e)];
+  const T = { '已超时': '#dc2626', '未超时': '#64748b' }[timeoutDimOf(e)];
+  return `<span class="st" style="background:${L}1a;color:${L}">学:${learnStatusOf(e)}</span>`
+       + `<span class="st" style="background:${E}1a;color:${E}">考:${examStatusOf(e)}</span>`
+       + `<span class="st" style="background:${T}1a;color:${T}">时:${timeoutDimOf(e)}</span>`;
+}
+
+/* ==================== 全局状态 ==================== */
+const raw = { employees: [], stores: [], meta: {}, overrides: {} };
+const App = { list: [], feedback: [], ready: false };
+const F = {
+  area: '全部',
+  month: '全部',
+  storeKw: '',
+  learnStatus: '全部',   // 学习状态：全部 / 已学习 / 未学习 / 学习中
+  examStatus: '全部',    // 考核状态：全部 / 已考核 / 未考核
+  status: '全部',        // 状态粗分组：全部 / 正常 / 异常 / 待确认 / 其他
+  remark: '全部',        // 备注：全部 / 闭环 / 超期完成 / 推进中 / 超时未完成 / 顺序异常
+  f1Learn: '全部',       // Tab0 门店查询专用：学习状态筛选
+  f1Exam: '全部',        // Tab0 门店查询专用：考核状态筛选
+  f1Status: '全部',      // Tab0 门店查询专用：完成状态（闭环）筛选
+  editPostUid: ''        // Tab0/F2 表格内：正在编辑调整岗位的员工 uid
+};   // ★ 全站唯一筛选源（A1）
+let GRAIN = '月';                 // 月度页统计粒度
+let SHOW_ALL_F1 = false;          // 训练一览：是否展开全部人员（B4）
+let F1_SORT = 'hire';             // 训练一览：'hire' 按入职 / 'area' 按区域 / 'role' 按角色
+let OV = {};                      // uid -> {post, position, note, at}（A3）
+let TODAY = new Date();
+TODAY.setHours(0, 0, 0, 0);
+
+const pad2 = n => String(n).padStart(2, '0');
+const pct1 = v => (v * 100).toFixed(1) + '%';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g,
+  c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const uniq = a => [...new Set(a)];
+const safeDiv = (a, b) => b ? a / b : 0;
+
+function toDate(v) {
+  if (!v) return null;
+  const m = String(v).match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (!m) return null;
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  return isNaN(d) ? null : d;
+}
+function addDays(d, n) { const x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+function dayDiff(a, b) { return Math.round((b - a) / 86400000); }
+const ymd = d => d ? `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}` : '';
+/* 工号清洗：花名册缺工号时 pandas 会写成 "nan"，直接渲染会显示 nan，这里统一成占位符 */
+const cleanNo = v => {
+  const s = String(v == null ? '' : v).trim();
+  return (!s || /^(nan|none|null|undefined|-)$/i.test(s)) ? '—' : s;
+};
+
+/* ==================== 模型层：员工闭环状态机 ====================
+ * 每个员工一行，产出互斥状态；所有渲染与统计一律从这里派生
+ * ============================================================== */
+function buildModel(employees) {
+  return employees.map(e => {
+    const ov = OV[e.uid] || null;                 // 审核通过的岗位调整
+    const pos = (e.position || '').trim();     // 花名册职位：保留原值，仅用于模型推导与展示参考（不覆盖）
+
+    const isMgr = MGR_POS.includes(pos);
+    const isStaff = STAFF_POS.includes(pos);
+    const isPt = PT_POS.includes(pos);
+    const rosterPost = POST_OF_POS[pos] || '';
+    // 注：excluded/left 改由下方角色分支（ADJ_ROLE）统一赋值
+
+    // --- 学 / 考 岗位 ---
+    const learned = GRADES.filter(g => e.learn && e.learn[g] && e.learn[g].ok);
+    const learnedAt = {};
+    learned.forEach(g => { learnedAt[g] = e.learn[g].time || ''; });
+    // A口径（用户拍板）：「管理岗」考核计入且算考核完毕 —— 管理组勾管理岗即考核达标
+    const examG     = GRADES.filter(g => e.exam && e.exam[g]);                     // 三岗考核（参与学考匹配/顺序判定）
+    const examExtra = Object.keys(e.exam || {}).filter(g => !GRADES.includes(g));  // 管理岗等扩展岗位
+    const hasMgrExam = examExtra.includes('管理岗');
+    const examPosts = examG.concat(examExtra);                     // 展示/已考核判定用全量
+    const matched = learned.filter(g => examPosts.includes(g));   // 学的岗 = 考的岗（管理岗无学习科目，天然不参与）
+
+    // --- 角色与需求数（审核调整后按调整岗位重算；未调整按花名册职位推导） ---
+    let role, need, excluded = false, left = false, adjusted = false;
+    if (ov && ov.post && ADJ_ROLE[ov.post]) {
+      adjusted = true;
+      const a = ADJ_ROLE[ov.post];
+      role = a.role; need = a.need; excluded = !!a.exclude; left = !!a.left;
+    } else {
+      if (isMgr) { role = '前厅管理组'; need = MGR_NEED; }
+      else if (isStaff) { role = '前厅员工'; need = STAFF_NEED; }
+      else if (isPt) {
+        if (learned.length || examPosts.length) { role = '前厅员工(兼)'; need = STAFF_NEED; }
+        else { role = '待确认'; need = 0; }
+      } else { role = '其他'; need = 0; }
+    }
+
+    // --- 岗位判定：花名册职位第一优先级，不再据学习内容推断岗位（★删除通岗概念） ---
+    // 优先级：门店审核调整 > 花名册映射（管理/员工/PT）> 无岗位待店长提报
+    let post = '', flag = '', noRosterPost = false, mismatch = false;
+    if (adjusted) {
+      post = GRADES.includes(ov.post) ? ov.post : '';   // 审核调整后按新岗位判断；非前厅/离职等不显示判定岗位
+    } else if (isMgr && !excluded && !left) {
+      post = '管理岗';
+    } else if (rosterPost) {
+      // 花名册职位可映射为前厅岗位：以花名册岗位为准
+      post = rosterPost;   // 服务岗 / 迎宾岗 / 传菜岗
+      const covered = learned.includes(post) || examPosts.includes(post);
+      const learnedOther = GRADES.filter(g => (e.learn && e.learn[g] && e.learn[g].ok) || examPosts.includes(g));
+      // 实际学了/考了其他岗、但没覆盖花名册岗位 → 标记「学习内容与岗位不匹配」
+      if (!covered && learnedOther.length && !learnedOther.includes(post)) {
+        mismatch = true;
+        flag = `花名册为「${pos}」(${post})，但学习/考核内容不匹配该岗位（${learnedOther.join('、')}），请店长确认岗位`;
+      }
+    } else if (isPt) {
+      const g = GRADES.find(g => (e.learn && e.learn[g] && e.learn[g].ok) || examPosts.includes(g));
+      post = g || '待定';
+      if (!g) { noRosterPost = true; flag = `兼职/实习，花名册未填具体岗位，请店长确认`; }
+    } else if (pos && ADJ_ROLE[pos]) {
+      post = '';   // 非前厅 / 已离职 / 其他 等已定义类别，不显示前厅判定岗位
+    } else {
+      // 花名册职位为空或无法识别 → 无岗位，需店长提报正确岗位
+      noRosterPost = true;
+    }
+    if (noRosterPost && !post) flag = flag || `花名册未填岗位，请店长提报正确岗位`;
+
+    // --- 时限 ---
+    const hire = toDate(e.hire);
+    const d7 = hire ? addDays(hire, LEARN_DAYS) : null;
+    const d14 = hire ? addDays(hire, EXAM_DAYS) : null;
+    const days = hire ? dayDiff(hire, TODAY) : null;
+
+    // --- 学习达标（7 天内完成规定数量岗位） ---
+    let learnOk = false;
+    if (need && learned.length >= need) {
+      const ts = learned.map(g => learnedAt[g]).filter(Boolean).sort();
+      if (ts.length && d7) { learnOk = toDate(ts[ts.length - 1]) <= d7; }
+      else learnOk = true;                       // 无合格时间：按达标处理（宽松）
+    }
+    // --- 考核达标（14 天内，且学考岗位一致；管理岗考核直接达标） ---
+    let examOk = false;
+    if (need && hasMgrExam) {
+      examOk = true;                       // A口径：勾选「管理岗」考核 = 考核完毕
+    } else if (need && examG.length) {
+      const use = learned.length ? matched : examG;
+      if (use.length >= Math.min(need, examG.length) || (need === 1 && use.length)) {
+        const dsx = use.map(g => e.exam[g]).filter(Boolean).sort();
+        if (dsx.length && d14) { examOk = toDate(dsx[dsx.length - 1]) <= d14; }
+        else examOk = true;
+      }
+    }
+    // --- 超时判定（用户 SLA：学习 7 天 / 考核 14 天，自入职起算）---
+    // 过了截止日仍未达标 → 超时；无论是否已经开始，保证「没做也超时」
+    const learnLate = need > 0 && d7 && TODAY > d7 && !learnOk;
+    const examLate  = need > 0 && d14 && TODAY > d14 && !examOk;
+
+    // --- 状态（互斥，判定顺序即业务优先级） ---
+    // 注：不再把历史存量抹成「老员工暂未统计」——真实状态可见，用 cohort 控制是否计入统计（B3）
+    let status;
+    if (excluded) status = '非前厅(已排除)';
+    else if (left) status = '已离职';
+    else if (role === '待确认' || noRosterPost) status = '待门店确认';
+    else if (!hire) status = '入职日期缺失';
+    else if (learnOk && examOk) status = '训练闭环';
+    else if (learnOk && !matched.length) status = '待考核' + (d14 && TODAY > d14 ? '（已超期）' : '');
+    else if (learnOk && examLate) status = '考核超期';
+    else if (learnLate && examOk) status = '学习超期但已考核';
+    else if (learnLate) status = '学习超期';
+    else if (!learned.length && days !== null && days <= LEARN_DAYS) status = '学习中(未超期)';
+    else status = '学习超期';
+
+    // --- 三维度标记 + 状态(正常/异常) + 备注 ---
+    const learnStarted = GRADES.filter(g => e.learn && e.learn[g]);   // 有学习记录（不论是否合格）
+    const closed = need > 0 && learned.length >= need
+      && (hasMgrExam || (examG.length >= need
+        && matched.length >= Math.min(need, examG.length)));
+    // 顺序异常：已考核三岗，但应学未完成 / 或考了未学的岗（管理岗考核不属于顺序异常）
+    const seqErr = examG.length > 0 && !closed
+      && (learned.length < need || matched.length < examG.length);
+
+    let status2, remark;
+    if (excluded) { status2 = '其他'; remark = '非前厅'; }
+    else if (left) { status2 = '其他'; remark = '已离职'; }
+    else if (mismatch) { status2 = '异常'; remark = '学习不匹配岗位'; }
+    else if (noRosterPost) { status2 = '待确认'; remark = '岗位未定'; }
+    else if (role === '待确认') { status2 = '待确认'; remark = '待门店确认'; }
+    else if (!hire) { status2 = '待确认'; remark = '入职日期缺失'; }
+    else if (closed) { status2 = '正常'; remark = (learnLate || examLate) ? '超期完成' : '闭环'; }
+    else if (seqErr) { status2 = '异常'; remark = '顺序异常'; }
+    else if (examOk && (learnLate || examLate)) { status2 = '异常'; remark = '学习超期·已考核'; }
+    else if (learnLate || examLate) { status2 = '异常'; remark = '超时未完成'; }
+    else { status2 = '正常'; remark = '推进中'; }
+
+    const cohort = (!hire ? '入职缺失'
+      : (hire >= toDate(STAT_START) ? '本期(9/1起)' : '历史存量'));
+
+    return {
+      uid: e.uid, name: e.name, no: cleanNo(e.no),
+      store: e.store || '', storeRaw: e.store_raw || e.store || '', area: e.area || UNMATCHED,
+      position: pos, empType: e.emp_type, hire: e.hire, hireDate: hire,
+      days, d7, d14, role, need,
+      learned, learnedAt, examPosts, matched, post, flag,
+      learnOk, learnLate, examOk, examLate, status, cohort,
+      learnStarted, status2, remark,
+      mismatch, noRosterPost,
+      isMgr, isStaff, isPt, excluded, left, confirmed: !!ov, adjusted
+    };
+  });
+}
+
+/* ==================== 统计辅助 ==================== */
+const isCurrent = e => e.cohort === '本期(9/1起)';       // 计入闭环率的口径
+const isHist    = e => e.cohort === '历史存量';
+// 只按区域筛选（月度类图表专用，A2：不被月份筛选掐死）
+function filteredArea() {
+  return App.list.filter(e => F.area === '全部' || e.area === F.area);
+}
+// 全量筛选（区域 + 门店搜索 + 月份 + 学习状态 + 考核状态 + 综合状态）
+function filtered() {
+  return App.list.filter(e =>
+    (F.area === '全部' || e.area === F.area) &&
+    (!F.storeKw || (e.store || '').includes(F.storeKw) || (e.area || '').includes(F.storeKw)) &&
+    (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month) &&
+    (F.learnStatus === '全部' || learnStatusOf(e) === F.learnStatus) &&
+    (F.examStatus === '全部' || examStatusOf(e) === F.examStatus) &&
+    (F.status === '全部' || statusGroupOf(e) === F.status) &&
+    (F.remark === '全部' || e.remark === F.remark)
+  );
+}
+function stat(list) {
+  const cur = list.filter(isCurrent).filter(e => !e.excluded && !e.left);
+  const closed = cur.filter(e => e.status === '训练闭环').length;
+  return {
+    total: list.length, cur: cur.length, closed,
+    rate: safeDiv(closed, cur.length),
+    wait: cur.filter(e => e.status.startsWith('待考核')).length,
+    lateTimeout: cur.filter(e => e.remark === '超时未完成').length,
+    lateLearn: cur.filter(e => e.remark === '超时未完成' && (e.status === '学习超期' || e.status === '学习超期但已考核')).length,
+    lateExam: cur.filter(e => e.remark === '超时未完成' && e.status === '考核超期').length,
+    studying: cur.filter(e => e.status === '学习中(未超期)').length,
+    confirm: cur.filter(e => e.status === '待门店确认').length,
+    hist: list.filter(isHist).length
+  };
+}
+// 按月份聚合（本期）
+function byMonth(list) {
+  const m = new Map();
+  list.filter(isCurrent).forEach(e => {
+    const k = (e.hire || '').slice(0, 7);
+    if (!k) return;
+    const o = m.get(k) || { month: k, n: 0, closed: 0 };
+    o.n++; if (e.status === '训练闭环') o.closed++;
+    m.set(k, o);
+  });
+  return [...m.values()].sort((a, b) => a.month.localeCompare(b.month));
+}
+// 按门店聚合（B1：**全部门店**，不只本期；本期闭环率 + 存量人数）
+function storeRank(list) {
+  const m = new Map();
+  (list || App.list).forEach(e => {
+    const area = e.area || UNMATCHED;
+    const store = e.store || '（花名册未填门店）';
+    const k = area + '||' + store;
+    const o = m.get(k) || { area, store, n: 0, closed: 0, late: 0, hist: 0, names: [] };
+    if (isCurrent(e)) {
+      o.n++;
+      if (e.status === '训练闭环') o.closed++;
+      if (e.status.includes('超期')) o.late++;
+    } else if (isHist(e)) o.hist++;
+    o.names.push(e.name);
+    m.set(k, o);
+  });
+  return [...m.values()].map(o => ({ ...o, rate: safeDiv(o.closed, o.n) }));
+}
+
+/* --- 下拉选项 --- */
+// B2：只列统计起点之后、且真实有数据的月份
+const monthOptions = () => uniq(App.list.map(e => (e.hire || '').slice(0, 7)))
+  .filter(m => m && m >= STAT_START.slice(0, 7)).sort();
+// 月度入职追踪专用：放开统计起点限制，可追溯全部历史月份（最近在前）
+const monthOptionsAll = () => uniq(App.list.map(e => (e.hire || '').slice(0, 7)))
+  .filter(m => m && /^\d{4}-\d{2}$/.test(m)).sort().reverse();
+// 区域选项：排除「待核对门店 / 未匹配」（它们单独成组，见 C3）
+const statusGroupOptions = () => STATUS_GROUP_OPTS.filter(g => App.list.some(e => statusGroupOf(e) === g));
+const remarkOptions = () => REMARK_OPTS.filter(r => App.list.some(e => e.remark === r));
+const learnStatusOptions = () => LEARN_STATUS_OPTS.filter(s => App.list.some(e => learnStatusOf(e) === s));
+const examStatusOptions = () => EXAM_STATUS_OPTS.filter(s => App.list.some(e => examStatusOf(e) === s));
+const areaOptions = () => uniq(App.list.map(e => e.area))
+  .filter(a => a && a !== UNMATCHED && a !== '未匹配').sort((a, b) => {
+    const ia = AREA_ORDER.indexOf(a), ib = AREA_ORDER.indexOf(b);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1; if (ib !== -1) return 1;
+    return a.localeCompare(b, 'zh');
+  });
+const storeOptions = () => uniq(App.list.map(e => e.store)).filter(Boolean).sort((a, b) => a.localeCompare(b, 'zh'));
+
+/* ==================== 图表（纯 SVG，零依赖） ==================== */
+function chartBarGroup(el, cats, series, opts) {
+  opts = opts || {};
+  if (!el) return;
+  if (!cats.length) { el.innerHTML = `<div class="empty">${opts.empty || '暂无数据'}</div>`; return; }
+  const W = 720, H = 300, PL = 44, PR = 12, PT = 16, PB = 40;
+  const iw = W - PL - PR, ih = H - PT - PB;
+  const max = Math.max(1, ...series.flatMap(s => s.data));
+  const gw = iw / Math.max(1, cats.length);
+  const bw = Math.min(26, gw / (series.length + 1));
+  let g = '';
+  for (let i = 0; i <= 4; i++) {
+    const y = PT + ih - ih * i / 4;
+    g += `<line x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}" stroke="#eef2f7"/>`;
+    g += `<text x="${PL - 6}" y="${y + 4}" font-size="11" fill="#94a3b8" text-anchor="end">${Math.round(max * i / 4)}</text>`;
+  }
+  cats.forEach((c, i) => {
+    const cx = PL + gw * i + gw / 2;
+    series.forEach((s, j) => {
+      const v = s.data[i] || 0;
+      const h = ih * v / max;
+      const x = cx - (series.length * bw) / 2 + j * bw;
+      g += `<rect x="${x}" y="${PT + ih - h}" width="${bw - 4}" height="${Math.max(0, h)}" rx="3" fill="${s.color}"><title>${esc(c)} · ${esc(s.name)}：${v}</title></rect>`;
+      if (v) g += `<text x="${x + (bw - 4) / 2}" y="${PT + ih - h - 4}" font-size="10" fill="#64748b" text-anchor="middle">${v}</text>`;
+    });
+    g += `<text x="${cx}" y="${H - PB + 18}" font-size="11" fill="#64748b" text-anchor="middle">${esc(c)}</text>`;
+  });
+  const lg = series.map((s, j) =>
+    `<rect x="${PL + j * 110}" y="${H - 14}" width="10" height="10" rx="2" fill="${s.color}"/><text x="${PL + j * 110 + 15}" y="${H - 5}" font-size="11" fill="#64748b">${esc(s.name)}</text>`).join('');
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block">${g}${lg}</svg>`;
+}
+function chartLine(el, cats, series) {
+  if (!el) return;
+  const W = 720, H = 300, PL = 44, PR = 12, PT = 16, PB = 40;
+  const iw = W - PL - PR, ih = H - PT - PB;
+  if (!cats.length) { el.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+  const max = Math.max(1, ...series.flatMap(s => s.data));
+  const px = i => PL + (cats.length > 1 ? iw * i / (cats.length - 1) : iw / 2);
+  const py = v => PT + ih - ih * v / max;
+  let g = '';
+  for (let i = 0; i <= 4; i++) {
+    const y = PT + ih - ih * i / 4;
+    g += `<line x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}" stroke="#eef2f7"/>`;
+    g += `<text x="${PL - 6}" y="${y + 4}" font-size="11" fill="#94a3b8" text-anchor="end">${Math.round(max * i / 4)}</text>`;
+  }
+  cats.forEach((c, i) => {
+    g += `<text x="${px(i)}" y="${H - PB + 18}" font-size="11" fill="#64748b" text-anchor="middle">${esc(c)}</text>`;
+  });
+  series.forEach(s => {
+    const pts = s.data.map((v, i) => `${px(i)},${py(v || 0)}`).join(' ');
+    g += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    s.data.forEach((v, i) => {
+      g += `<circle cx="${px(i)}" cy="${py(v || 0)}" r="4" fill="#fff" stroke="${s.color}" stroke-width="2"><title>${esc(cats[i])} · ${esc(s.name)}：${s.fmt ? s.fmt(v) : v}</title></circle>`;
+    });
+  });
+  const lg = series.map((s, j) =>
+    `<rect x="${PL + j * 130}" y="${H - 14}" width="10" height="10" rx="2" fill="${s.color}"/><text x="${PL + j * 130 + 15}" y="${H - 5}" font-size="11" fill="#64748b">${esc(s.name)}</text>`).join('');
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block">${g}${lg}</svg>`;
+}
+function chartDonut(el, items, opts) {
+  opts = opts || {};
+  if (!el) return;
+  items = (items || []).filter(i => i && i.v > 0);
+  if (!items.length) { el.innerHTML = '<div class="empty">' + (opts.empty || '暂无数据') + '</div>'; return; }
+  const total = items.reduce((a, b) => a + b.v, 0) || 1;
+  const W = 720, cx = 160, cy = 112, R = 84;
+  const r = typeof opts.hole === 'number' ? opts.hole : 50;   // hole=0 → 实心饼图
+  const rowH = 34, padTop = 28;
+  const H = Math.max(240, padTop + items.length * rowH + 24);
+  let a0 = -Math.PI / 2, g = '';
+  const p = (ang, rad) => `${cx + rad * Math.cos(ang)},${cy + rad * Math.sin(ang)}`;
+  if (items.length === 1) {
+    // 单一状态占 100%：圆弧退化，直接画整圆/整环
+    g += r > 0
+      ? `<circle cx="${cx}" cy="${cy}" r="${(R + r) / 2}" fill="none" stroke="${items[0].c}" stroke-width="${R - r}"><title>${esc(items[0].k)}：${items[0].v}</title></circle>`
+      : `<circle cx="${cx}" cy="${cy}" r="${R}" fill="${items[0].c}"><title>${esc(items[0].k)}：${items[0].v}</title></circle>`;
+  } else {
+    items.forEach(it => {
+      const a1 = a0 + Math.PI * 2 * it.v / total;
+      const large = (a1 - a0) > Math.PI ? 1 : 0;
+      if (r > 0) {
+        g += `<path d="M ${p(a0, R)} A ${R} ${R} 0 ${large} 1 ${p(a1, R)} L ${p(a1, r)} A ${r} ${r} 0 ${large} 0 ${p(a0, r)} Z" fill="${it.c}"><title>${esc(it.k)}：${it.v}</title></path>`;
+      } else {
+        g += `<path d="M ${cx},${cy} L ${p(a0, R)} A ${R} ${R} 0 ${large} 1 ${p(a1, R)} Z" fill="${it.c}" stroke="#fff" stroke-width="1.5"><title>${esc(it.k)}：${it.v}</title></path>`;
+      }
+      a0 = a1;
+    });
+  }
+  if (r > 0) {
+    g += `<text x="${cx}" y="${cy - 4}" font-size="24" font-weight="700" fill="#1e293b" text-anchor="middle">${total}</text>`;
+    g += `<text x="${cx}" y="${cy + 16}" font-size="11" fill="#94a3b8" text-anchor="middle">合计</text>`;
+  } else {
+    g += `<text x="${cx}" y="${cy + R + 22}" font-size="12" fill="#94a3b8" text-anchor="middle">合计 ${total} 人</text>`;
+  }
+  items.forEach((it, i) => {
+    const y = padTop + i * rowH;
+    g += `<rect x="330" y="${y}" width="12" height="12" rx="3" fill="${it.c}"/>`;
+    g += `<text x="350" y="${y + 11}" font-size="13" fill="#475569" font-weight="500">${esc(it.k)}</text>`;
+    g += `<text x="610" y="${y + 11}" font-size="13" fill="#1e293b" font-weight="600" text-anchor="end">${it.v}</text>`;
+    g += `<text x="690" y="${y + 11}" font-size="12" fill="#94a3b8" text-anchor="end">${(it.v / total * 100).toFixed(1)}%</text>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block">${g}</svg>`;
+}
+// 排名条：[{label, sub, rate, n, closed, right}]
+function rankBars(el, items, opts) {
+  opts = opts || {};
+  if (!el) return;
+  if (!items.length) { el.innerHTML = `<div class="empty">${opts.empty || '暂无数据'}</div>`; return; }
+  el.innerHTML = items.map(it => {
+    const c = it.rate >= (opts.good || 0.8) ? '#16a34a' : it.rate >= 0.5 ? '#d97706' : '#dc2626';
+    return `<div class="rb">
+      <div class="rb-l"><span class="rb-n">${esc(it.label)}</span>${it.sub ? `<span class="rb-s">${esc(it.sub)}</span>` : ''}</div>
+      <div class="rb-bar"><i style="width:${Math.min(100, it.rate * 100).toFixed(1)}%;background:${c}"></i></div>
+      <div class="rb-v" style="color:${c}">${pct1(it.rate)}</div>
+      <div class="rb-x">${it.right || `${it.closed}/${it.n}`}</div>
+    </div>`;
+  }).join('');
+}
+// 状态构成横向条（替代饼图，避免图例重叠/乱码，适配移动端）
+function statusBars(el, items, total, opts) {
+  opts = opts || {};
+  if (!el) return;
+  if (!items.length) { el.innerHTML = `<div class="empty">${opts.empty || '暂无数据'}</div>`; return; }
+  el.innerHTML = `<div class="status-bars">${items.map(it => {
+    const pct = it.v / total * 100;
+    return `<div class="sb-row">
+      <div class="sb-meta"><span class="sb-dot" style="background:${it.c}"></span><span class="sb-name">${esc(it.k)}</span><span class="sb-pct">${pct.toFixed(1)}%</span></div>
+      <div class="sb-bar"><i style="width:${Math.min(100, pct).toFixed(1)}%;background:${it.c}"></i></div>
+      <div class="sb-val">${it.v}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+// 进度图：[{label,n(总进度),learn,exam}] —— 条长=入职人数，内嵌学习(绿)/考核(蓝)占比
+function chartProgress(el, items, opts) {
+  opts = opts || {};
+  if (!el) return;
+  const rows = (items || []).filter(it => it && it.n > 0);
+  if (!rows.length) { el.innerHTML = `<div class="empty">${opts.empty || '暂无数据'}</div>`; return; }
+  const maxN = Math.max(...rows.map(it => it.n));
+  const body = rows.map(it => {
+    const lp = Math.min(100, it.learn / it.n * 100);
+    const ep = Math.min(100, it.exam / it.n * 100);
+    const w = Math.max(4, it.n / maxN * 100);
+    return `<div class="pg-row">
+      <div class="pg-name" title="${esc(it.label)}">${esc(it.label)}<small>入职 ${it.n}</small></div>
+      <div class="pg-track-wrap">
+        <div class="pg-track" style="width:${w.toFixed(1)}%" title="${esc(it.label)}：入职 ${it.n} · 学习 ${it.learn} · 考核 ${it.exam}">
+          <i class="pg-l" style="width:${lp.toFixed(1)}%"></i>
+          <i class="pg-e" style="width:${ep.toFixed(1)}%"></i>
+        </div>
+      </div>
+      <div class="pg-nums">学 <b>${it.learn}</b> · 考 <b>${it.exam}</b></div>
+    </div>`;
+  }).join('');
+  const lg = `<div class="pg-lg">
+    <span><i style="background:#eef2f7;border:1px solid #e2e8f0"></i>入职人数（总进度）</span>
+    <span><i style="background:#22c55e"></i>学习完成人数</span>
+    <span><i style="background:#2563eb"></i>考核完成人数</span>
+    <span style="color:#94a3b8">条长 = 该区域入职人数；蓝/绿占比 = 考核/学习完成度</span>
+  </div>`;
+  el.innerHTML = `<div class="pg-wrap">${body}</div>${lg}`;
+}
+// 清单
+function listBlock(el, items, opts) {
+  opts = opts || {};
+  if (!el) return;
+  if (!items.length) { el.innerHTML = `<div class="empty">${opts.empty || '✅ 暂无'}</div>`; return; }
+  el.innerHTML = (opts.pre || '') + items.map(it =>
+    `<div class="li"><div class="li-h">${it.title}</div>${it.meta ? `<div class="li-m">${it.meta}</div>` : ''}</div>`).join('');
+}
+function kpiCards(el, cards) {
+  if (!el) return;
+  el.innerHTML = cards.map(c =>
+    `<div class="kpi"><div class="val" style="color:${c.c || '#2563eb'}">${c.v}</div><div class="lbl">${esc(c.k)}</div></div>`).join('');
+}
+
+/* ==================== A1 · 统一筛选条 ====================
+ * 全站共用一份 F；任何一页改动 → 重绘当前页，其余页在切过去时用同一份值重建
+ * ======================================================== */
+function filterTip(opts) {
+  opts = opts || {};
+  const p = [];
+  if (F.area !== '全部') p.push('区域=' + F.area);
+  if (F.storeKw) p.push('门店含「' + F.storeKw + '」');
+  if (opts.month && F.month !== '全部') p.push('月份=' + F.month);
+  if (opts.learn && F.learnStatus !== '全部') p.push('学习=' + F.learnStatus);
+  if (opts.exam && F.examStatus !== '全部') p.push('考核=' + F.examStatus);
+  if (opts.status && F.status !== '全部') p.push('状态=' + F.status);
+  if (opts.remark && F.remark !== '全部') p.push('备注=' + F.remark);
+  return p.length ? '⚙ 筛选生效中：' + p.join(' · ') : '未筛选 · 显示全部数据';
+}
+
+function mountFilter(pageId, opts) {
+  opts = opts || {};
+  const host = document.getElementById('fbar_' + pageId);
+  if (!host) return;
+  const withMonth = !!opts.month, withStore = !!opts.store;
+  const withLearn = !!opts.learn, withExam = !!opts.exam, withStatus = !!opts.status, withRemark = !!opts.remark;
+  const sig = JSON.stringify([
+    areaOptions(),
+    withMonth ? (opts.monthAll ? monthOptionsAll() : monthOptions()) : null,
+    withStore,
+    withLearn ? learnStatusOptions() : null,
+    withExam ? examStatusOptions() : null,
+    withStatus ? statusGroupOptions() : null,
+    withRemark ? remarkOptions() : null,
+    !!opts.extra
+  ]);
+
+  // 已挂载且选项没变 → 只同步「生效值」（保证输入框不失焦、跨页显示一致）
+  if (host.dataset.sig === sig && host.dataset.mounted === '1') {
+    const a = host.querySelector('[data-flt="area"]');
+    if (a && a.value !== F.area) a.value = F.area;
+    const m = host.querySelector('[data-flt="month"]');
+    if (m && m.value !== F.month) m.value = F.month;
+    const s = host.querySelector('[data-flt="store"]');
+    if (s && s.value !== F.storeKw) s.value = F.storeKw;
+    const ls = host.querySelector('[data-flt="learn"]');
+    if (ls && ls.value !== F.learnStatus) ls.value = F.learnStatus;
+    const es = host.querySelector('[data-flt="exam"]');
+    if (es && es.value !== F.examStatus) es.value = F.examStatus;
+    const st = host.querySelector('[data-flt="status"]');
+    if (st && st.value !== F.status) st.value = F.status;
+    const rm = host.querySelector('[data-flt="remark"]');
+    if (rm && rm.value !== F.remark) rm.value = F.remark;
+    const tip = host.querySelector('.fbar-tip');
+    if (tip) tip.textContent = filterTip(opts);
+    return;
+  }
+  host.dataset.sig = sig;
+  host.dataset.mounted = '1';
+
+  let h = '<div class="fbar">';
+  h += '<label class="fld">区域</label><select data-flt="area"><option value="全部">全部区域</option>'
+    + areaOptions().map(a => `<option${F.area === a ? ' selected' : ''}>${esc(a)}</option>`).join('') + '</select>';
+  if (withStore) {
+    h += '<label class="fld">门店</label>'
+      + `<input type="text" data-flt="store" autocomplete="off" placeholder="输入门店名筛选" value="${esc(F.storeKw)}">`;
+  }
+  if (withMonth) {
+    const ms = opts.monthAll ? monthOptionsAll() : monthOptions();
+    h += '<label class="fld">月份</label><select data-flt="month"><option value="全部">全部月份</option>'
+      + ms.map(m => `<option${F.month === m ? ' selected' : ''}>${esc(m)}</option>`).join('') + '</select>';
+  }
+  if (withLearn) {
+    h += `<label class="fld">${esc(opts.learnLabel || '学习状态')}</label><select data-flt="learn"><option value="全部">全部${esc(opts.learnLabel || '学习状态')}</option>`
+      + learnStatusOptions().map(s => `<option${F.learnStatus === s ? ' selected' : ''}>${esc(s)}</option>`).join('') + '</select>';
+  }
+  if (withExam) {
+    h += `<label class="fld">${esc(opts.examLabel || '考核状态')}</label><select data-flt="exam"><option value="全部">全部${esc(opts.examLabel || '考核状态')}</option>`
+      + examStatusOptions().map(s => `<option${F.examStatus === s ? ' selected' : ''}>${esc(s)}</option>`).join('') + '</select>';
+  }
+  if (withStatus) {
+    h += `<label class="fld">${esc(opts.statusLabel || '状态')}</label><select data-flt="status"><option value="全部">全部${esc(opts.statusLabel || '状态')}</option>`
+      + statusGroupOptions().map(s => `<option${F.status === s ? ' selected' : ''}>${esc(s)}</option>`).join('') + '</select>';
+  }
+  if (withRemark) {
+    h += '<label class="fld">备注</label><select data-flt="remark"><option value="全部">全部备注</option>'
+      + remarkOptions().map(s => `<option${F.remark === s ? ' selected' : ''}>${esc(s)}</option>`).join('') + '</select>';
+  }
+  if (opts.extra) h += opts.extra;
+  h += '<button class="btn gray sm" data-flt="reset">↺ 重置筛选</button>';
+  h += `<span class="fbar-tip">${esc(filterTip(opts))}</span>`;
+  if (opts.note) h += `<span class="note">${esc(opts.note)}</span>`;
+  h += '</div>';
+  host.innerHTML = h;
+
+  const q = k => host.querySelector(`[data-flt="${k}"]`);
+  if (q('area')) q('area').onchange = ev => { F.area = ev.target.value; render(); };
+  if (q('month')) q('month').onchange = ev => { F.month = ev.target.value; render(); };
+  if (q('learn')) q('learn').onchange = ev => { F.learnStatus = ev.target.value; render(); };
+  if (q('exam')) q('exam').onchange = ev => { F.examStatus = ev.target.value; render(); };
+  if (q('status')) q('status').onchange = ev => { F.status = ev.target.value; render(); };
+  if (q('remark')) q('remark').onchange = ev => { F.remark = ev.target.value; render(); };
+  if (q('store')) {
+    let t = null;
+    attachStoreSuggest(q('store'), s => { F.storeKw = s; render(); });
+    q('store').oninput = ev => {
+      F.storeKw = ev.target.value.trim();
+      clearTimeout(t);
+      t = setTimeout(() => { render(); const b = host.querySelector('[data-flt="store"]'); if (b) b.focus(); }, 220);
+    };
+  }
+  if (q('reset')) q('reset').onclick = () => {
+    F.area = '全部'; F.month = '全部'; F.storeKw = ''; F.learnStatus = '全部'; F.examStatus = '全部'; F.status = '全部'; F.remark = '全部';
+    render();
+  };
+}
+
+/* ==================== 渲染：搜索模块 · 门店查询 ==================== */
+/* ==================== 渲染：搜索模块 · 门店查询 ==================== */
+/* 表格单元格渲染：模块级公共函数，门店查询(Tab0)与月度入职追踪(Tab1)共用 */
+const cellOf = e => {
+  const c = STATUS_COLOR[e.status] || '#64748b';
+  let s = `<span class="st" style="background:${c}1a;color:${c}">${esc(e.status)}</span>`;
+  if (isHist(e)) s += ' <span class="st st-gray">历史存量</span>';
+  if (e.confirmed) s += ' <span class="st" style="background:#dcfce7;color:#16a34a">已确认</span>';
+  return s;
+};
+/* 学习列：与筛选口径 learnStatusOf 对齐 —— 有合格岗显示岗徽章；已开始未合格显示「学习中」；完全没动显示「未学」 */
+const learnTxtOf = e => GRADES.map(g => e.learned.includes(g) ? `<span class="ck ok">${g[0]}${g[1]}</span>` : '').join('')
+  || (e.learnStarted && e.learnStarted.length ? '<span class="ck" style="background:#cffafe;color:#0891b2">学习中</span>' : '<span class="ck no">未学</span>');
+/* 「未考」→ 生成带预填参数的钉钉考核表链接（官方：表单链接?prefill_问题名称=值） */
+function examFormUrl(e) {
+  const q = [], v = s => encodeURIComponent(String(s || ''));
+  if (EXAM_PREFILL.name && e.name) q.push('prefill_' + v(EXAM_PREFILL.name) + '=' + v(e.name));
+  const st = EXAM_PREFILL.storeUseRaw ? (e.storeRaw || e.store) : e.store;
+  if (EXAM_PREFILL.store && st) q.push('prefill_' + v(EXAM_PREFILL.store) + '=' + v(st));
+  if (!q.length) return EXAM_FORM_URL;
+  return EXAM_FORM_URL + (EXAM_FORM_URL.indexOf('?') >= 0 ? '&' : '?') + q.join('&');
+}
+const examTxtOf = e => {
+  const badges = GRADES.map(g => e.examPosts.includes(g) ? `<span class="ck ok">${g[0]}${g[1]}</span>` : '').join('')
+    + (e.examPosts || []).filter(g => !GRADES.includes(g)).map(g => `<span class="ck ok">${g[0]}${g[1]}</span>`).join('');
+  // 未考核 → 点击跳钉钉考核表（已带姓名/门店预填参数）；同时自动复制信息，预填万一不生效可直接粘贴
+  const copy = [e.name, e.store || '', e.no ? ('工号' + e.no) : ''].filter(Boolean).join(' ');
+  return badges || `<a class="ck no exam-go" href="${examFormUrl(e)}" target="_blank" rel="noopener"
+    data-exam-copy="${esc(copy)}" onclick="copyExamInfo(this)"
+    title="点击打开钉钉考核表（已自动带入姓名/门店；若表单未自动填好，信息已复制，粘贴即可）">未考 ↗</a>`;
+};
+/* 点击「未考」时的兜底：把 姓名+门店+工号 复制进剪贴板（预填不生效时可手贴） */
+function fallbackCopy(txt) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove(); return ok;
+  } catch (e) { return false; }
+}
+function copyExamInfo(el) {
+  const txt = el.getAttribute('data-exam-copy') || '';
+  if (!txt) return;
+  const done = ok => toast(ok ? ('已复制：' + txt + ' —— 表单里粘贴即可')
+                              : ('复制失败，请手动记录：' + txt));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(() => done(true)).catch(() => done(fallbackCopy(txt)));
+  } else { done(fallbackCopy(txt)); }
+}
+function toast(msg) {
+  let t = document.getElementById('qt_toast');
+  if (!t) {
+    t = document.createElement('div'); t.id = 'qt_toast'; t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer); t._timer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+const roleShortOf = e => e.role === '前厅管理组' ? '管理组' : e.role === '前厅员工(兼)' ? '前厅兼职' : e.role;
+
+function sortTrainees(rs) {
+  const rank = e => (e.role === '前厅管理组' ? 0 : e.role === '待确认' ? 2 : 1);
+  const areaRank = a => { const i = AREA_ORDER.indexOf(a); return i === -1 ? 999 : i; };
+  return rs.slice().sort((a, b) => {
+    if (F1_SORT === 'area') {
+      const ra = areaRank(a.area) - areaRank(b.area);
+      if (ra) return ra;
+      const rh = (b.hire || '').localeCompare(a.hire || '');
+      if (rh) return rh;
+      return a.name.localeCompare(b.name, 'zh');
+    }
+    if (F1_SORT === 'role') {
+      const rr = rank(a) - rank(b);
+      if (rr) return rr;
+      const rh = (b.hire || '').localeCompare(a.hire || '');
+      if (rh) return rh;
+      return a.name.localeCompare(b.name, 'zh');
+    }
+    // 默认 / hire：按入职时间从最近到最远 → 区域 → 姓名
+    const rh = (b.hire || '').localeCompare(a.hire || '');
+    if (rh) return rh;
+    const ra = areaRank(a.area) - areaRank(b.area);
+    if (ra) return ra;
+    return a.name.localeCompare(b.name, 'zh');
+  });
+}
+/* 列配置：Tab0 门店查询（搜索后隐藏工号/门店/区域）与 Tab1 月度追踪（区域置首）分开 */
+const COLS_F1 = ['姓名', '角色', '花名册职位', '调整岗位', '学习', '考核', '状态', '备注', '入职', '时限'];
+const COLS_F2 = ['区域', '姓名', '工号', '门店', '角色', '花名册职位', '调整岗位', '学习', '考核', '状态', '备注', '入职', '时限'];
+
+function termOf(e) {
+  return isCurrent(e) ? `学习${e.d7 ? ymd(e.d7).slice(5) : '—'} / 考核${e.d14 ? ymd(e.d14).slice(5) : '—'}` : '—';
+}
+/* 调整岗位单元格：参考「考核」列——先显示当前岗位徽章，点击后展开下拉提报 */
+function postCell(e) {
+  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核');
+  if (pend) return `<td data-label="调整岗位"><span class="st" style="background:#fef3c7;color:#b45309">待审核→${esc(fbDisplay(pend.to))}</span>
+    <button class="btn sm gray post-rev" data-uid="${esc(e.uid)}">× 撤销</button></td>`;
+  // 已审核调整：显示正确岗 + 原花名册职位，可撤销
+  const ov = OV[e.uid];
+  if (ov && ov.post) {
+    return `<td data-label="调整岗位"><span class="st" style="background:#dcfce7;color:#16a34a">${esc(ov.post)} ✓</span>`
+      + `<div class="adj-sub">原：花名册「${esc(e.position || '—')}」</div>`
+      + `<button class="btn sm gray post-cancel" data-uid="${esc(e.uid)}">撤销调整</button></td>`;
+  }
+  // 未调整：点击当前岗位徽章后展开下拉
+  if (!e.left && e.status2 !== '已离职') {
+    const cur = esc(e.post) || '待确认';
+    if (F.editPostUid === e.uid) {
+      return `<td data-label="调整岗位"><select class="post-pick" data-uid="${esc(e.uid)}" data-store="${esc(e.store)}" title="当前：${cur}，选择正确岗位后提交后台审核">
+        <option value="">请选择新岗位…</option>
+        ${FB_OPTIONS.map(o => `<option value="${esc(o.label)}">${esc(fbDisplay(o.label))}</option>`).join('')}
+        <option value="__cancel__">取消</option>
+      </select></td>`;
+    }
+    return `<td data-label="调整岗位"><span class="st post-badge" data-uid="${esc(e.uid)}" title="点击调整岗位">${cur} <small>✎</small></span></td>`;
+  }
+  return `<td data-label="调整岗位">${esc(e.post) || '-'}</td>`;
+}
+function traineeCell(e, c) {
+  switch (c) {
+    case '姓名': return `<td data-label="姓名">${esc(e.name)}</td>`;
+    case '工号': return `<td data-label="工号" class="mono">${esc(e.no)}</td>`;
+    case '门店': return `<td data-label="门店">${esc(e.store) || '<span class="ck no">未填</span>'}</td>`;
+    case '区域': return `<td data-label="区域">${esc(e.area)}</td>`;
+    case '角色': return `<td data-label="角色">${esc(roleShortOf(e))}</td>`;
+    case '花名册职位': return `<td data-label="花名册职位">${esc(e.position)}</td>`;
+    case '调整岗位': return postCell(e);
+    case '学习': return `<td data-label="学习">${learnTxtOf(e)}</td>`;
+    case '考核': return `<td data-label="考核">${examTxtOf(e)}</td>`;
+    case '状态': return `<td data-label="状态">${statusBadge(e)}</td>`;
+    case '备注': return `<td data-label="备注">${remarkTag(e)}</td>`;
+    case '入职': return `<td data-label="入职" class="mono">${esc(e.hire) || '-'}</td>`;
+    case '时限': return `<td data-label="时限" class="mono">${termOf(e)}</td>`;
+    default: return '';
+  }
+}
+function traineeTRows(rs, cols) {
+  if (!rs.length) return `<tr><td colspan="${cols.length}" style="text-align:center;color:#94a3b8;padding:20px">未找到匹配人员 —— 调整门店关键词或筛选条件</td></tr>`;
+  let lastArea = null;
+  return rs.map(e => {
+    const areaChanged = lastArea !== e.area;
+    lastArea = e.area;
+    const stripe = areaChanged && cols.includes('区域') ? 'background:#f8fafc;' : '';
+    return `<tr style="cursor:pointer;${stripe}" onclick="if(!event.target.closest('button,select,a,input,.post-badge')) showEmpDetail('${esc(e.uid)}')">` + cols.map(c => traineeCell(e, c)).join('') + `</tr>`;
+  }).join('');
+}
+const TRAINEE_HEAD = cols => `<table><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>`;
+
+/* ==================== 移动端紧凑卡片（方案A：摘要卡 + 点击展开详情） ==================== */
+const IS_NARROW = () => window.matchMedia && window.matchMedia('(max-width:640px)').matches;
+
+/* 摘要卡：姓名 + 角色 + 状态徽章 + 学/考迷你指标；点击展开完整字段（含调整岗位交互） */
+function mTraineeCardHtml(e, cols) {
+  const sc = STATUS2_COLOR[e.status2] || '#64748b';
+  const detCols = cols.filter(c => c !== '姓名' && c !== '角色');
+  const learn = learnStatusOf(e), exam = examStatusOf(e);
+  const lc = { '已学习': '#16a34a', '学习中': '#0891b2', '未学习': '#94a3b8' }[learn];
+  const ec = exam === '已考核' ? '#16a34a' : '#94a3b8';
+  return `<div class="mcard" style="border-left:4px solid ${sc}" onclick="if(!event.target.closest('button,select,a,input,.post-badge,.mhead')) showEmpDetail('${esc(e.uid)}')">
+    <div class="mhead">
+      <div class="ml1"><span class="mname">${esc(e.name)}</span><span class="mrole">${esc(roleShortOf(e))}</span>
+        <span class="st" style="background:${sc}1a;color:${sc}">${esc(e.status2)}</span>${isHist(e) ? '<span class="st st-gray">历史存量</span>' : ''}</div>
+      <div class="ml2">
+        <span class="st" style="background:${lc}1a;color:${lc}">学:${learn}</span>
+        <span class="st" style="background:${ec}1a;color:${ec}">考:${exam}</span>
+      </div>
+    </div>
+    <table class="mdetail" hidden><tbody><tr>${detCols.map(c => traineeCell(e, c)).join('')}</tr></tbody></table>
+  </div>`;
+}
+
+/* 移动端渲染卡片列表，桌面端保持表格；opts.forceTable=true 时移动端也保持表格（用于门店查询页） */
+function traineeBodyHtml(rs, cols, opts = {}) {
+  if (!opts.forceTable && IS_NARROW()) return `<div class="mcards">${rs.map(e => mTraineeCardHtml(e, cols)).join('')}</div>`;
+  return `<div class="tbl-scroll">${TRAINEE_HEAD(cols)}${traineeTRows(rs, cols)}</tbody></table></div>`;
+}
+
+/* 卡片点击展开/收起（点按钮、下拉、链接不触发） */
+function bindMCards() {
+  document.querySelectorAll('.mcard .mhead').forEach(h => {
+    h.onclick = ev => {
+      if (ev.target.closest('button,select,a,input,.post-badge')) return;
+      const card = h.closest('.mcard');
+      const det = card.querySelector('.mdetail');
+      if (!det) return;
+      const open = card.classList.toggle('open');
+      det.hidden = !open;
+    };
+  });
+}
+
+/* ==================== 员工详情弹窗（点击姓名/行触发） ==================== */
+function empLearnState(e, rawLearn) {
+  return (g) => {
+    const lr = (rawLearn || {})[g] || {};
+    if (lr.ok) return { text: '已学', color: '#16a34a', date: lr.time || '' };
+    if (e.learnStarted && e.learnStarted.includes(g)) return { text: '学习中', color: '#0891b2', date: lr.time || '' };
+    return { text: '未学', color: '#94a3b8', date: '' };
+  };
+}
+function empRequiredGrades(e) {
+  if (e.isMgr || (e.need || 0) >= 3) return GRADES;
+  if (GRADES.includes(e.post)) return [e.post];
+  return [];
+}
+function empDetailHtml(e) {
+  const rawEmp = (raw.employees || []).find(x => x.uid === e.uid) || {};
+  const rawLearn = rawEmp.learn || {};
+  const rawExam = rawEmp.exam || {};
+  const grades = empRequiredGrades(e);
+  const ls = empLearnState(e, rawLearn);
+  const learnRows = grades.length ? grades.map(g => {
+    const s = ls(g);
+    return `<div class="emp-row"><span>${esc(g)}</span><span>${s.date ? '<span class="st" style="background:#f1f5f9;color:#475569;margin-right:6px">' + esc(s.date) + '</span>' : ''}<span class="st" style="background:${s.color}1a;color:${s.color}">${s.text}</span></span></div>`;
+  }).join('') : '<div class="emp-row"><span>无固定应学岗位</span></div>';
+  const examRows = grades.length ? grades.map(g => {
+    const t = rawExam[g];
+    if (t) return `<div class="emp-row"><span>${esc(g)}</span><span><span class="st" style="background:#f1f5f9;color:#475569;margin-right:6px">${esc(t)}</span><span class="st" style="background:#dcfce7;color:#16a34a">已考</span></span></div>`;
+    return `<div class="emp-row"><span>${esc(g)}</span><span><span class="st" style="background:#f1f5f9;color:#94a3b8">未考</span></span></div>`;
+  }).join('') : '<div class="emp-row"><span>无固定应考岗位</span></div>';
+  const examBtn = (e.learnOk && !e.examOk && EXAM_FORM_URL)
+    ? `<div style="margin-top:10px"><a class="btn" href="${examFormUrl(e)}" target="_blank" rel="noopener">📝 去考核</a></div>` : '';
+  return `
+    <div class="emp-section"><h4>基本信息</h4>
+      <div class="emp-grid">
+        <div class="emp-item"><b>姓名</b>${esc(e.name)}</div>
+        <div class="emp-item"><b>岗位</b>${esc(e.post || '—')}</div>
+        <div class="emp-item"><b>状态</b>${statusBadge(e)}</div>
+        <div class="emp-item"><b>门店</b>${esc(e.store || '—')}</div>
+        <div class="emp-item"><b>区域</b>${esc(e.area || '—')}</div>
+        <div class="emp-item"><b>工号</b>${esc(e.no || '—')}</div>
+        <div class="emp-item"><b>入职日期</b>${esc(e.hire || '—')}</div>
+        <div class="emp-item"><b>花名册职位</b>${esc(e.position || '—')}</div>
+      </div>
+    </div>
+    <div class="emp-section"><h4>时限</h4>
+      <div class="emp-grid">
+        <div class="emp-item"><b>学习应完成</b>${e.d7 ? esc(ymd(e.d7)) : '—'}</div>
+        <div class="emp-item"><b>考核截止</b>${e.d14 ? esc(ymd(e.d14)) : '—'}</div>
+        <div class="emp-item"><b>入职天数</b>${e.days !== null ? e.days + ' 天' : '—'}</div>
+        <div class="emp-item"><b>应学课程</b>${esc(mpTaskOf(e))}</div>
+      </div>
+    </div>
+    <div class="emp-section"><h4>学习情况</h4><div class="emp-list">${learnRows}</div></div>
+    <div class="emp-section"><h4>考核情况</h4><div class="emp-list">${examRows}</div>${examBtn}</div>
+    ${e.remark ? `<div class="emp-section"><h4>备注</h4><div style="font-size:13px;color:#475569;line-height:1.7">${esc(e.remark)}${e.flag ? '<br><span style="color:#dc2626">' + esc(e.flag) + '</span>' : ''}</div></div>` : ''}
+  `;
+}
+function showEmpDetail(uid) {
+  const e = App.list.find(x => x.uid === uid);
+  if (!e) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'emp-modal-overlay';
+  overlay.innerHTML = `<div class="emp-modal" onclick="event.stopPropagation()">
+    <div class="emp-modal-head"><h3>${esc(e.name)} · ${esc(e.post || '—')}</h3><button class="emp-modal-close">&times;</button></div>
+    <div class="emp-modal-body">${empDetailHtml(e)}</div>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.onclick = ev => { if (ev.target === overlay) overlay.remove(); };
+  overlay.querySelector('.emp-modal-close').onclick = () => overlay.remove();
+}
+
+
+/* 门店搜索框（A3：门店查询只保留一个门店关键词输入框） */
+/* 自绘门店联想下拉：替代原生 datalist（微信/钉钉内置浏览器支持差）。
+   输入即弹出匹配门店列表，点击直接选中；焦点在输入框时显示全部门店可滚动选择 */
+function attachStoreSuggest(inp, onPick) {
+  if (!inp || inp.dataset.sug === '1') return;
+  inp.dataset.sug = '1';
+  let box = null;
+  const close = () => { if (box) { box.remove(); box = null; } };
+  const renderList = () => {
+    const kw = inp.value.trim();
+    const kwl = kw.toLowerCase();                       // 手机用户常按输入习惯带大写（如 Momo → momopark店），匹配必须忽略大小写
+    const all = storeOptions();
+    const opts = kw ? all.filter(s => s.toLowerCase().includes(kwl)) : all;
+    close();
+    box = document.createElement('div');
+    box.className = 'sug-box';
+    if (!opts.length) {
+      // 无匹配也弹提示框，避免"点了没反应"的错觉
+      box.innerHTML = `<div class="sug-more">未找到含「${esc(kw)}」的门店，请换个关键词</div>`;
+      document.body.appendChild(box);
+      positionBox();
+      return;
+    }
+    box.innerHTML = opts.slice(0, 15).map(s =>
+      `<div class="sug-item" data-s="${esc(s)}">${esc(s)}</div>`).join('')
+      + (opts.length > 15 ? `<div class="sug-more">…共 ${opts.length} 家匹配，继续输入可缩小范围</div>` : '');
+    document.body.appendChild(box);
+    positionBox();
+    box.querySelectorAll('.sug-item').forEach(it => {
+      const pick = ev => {
+        ev.preventDefault();               // 防止 input 先失焦把下拉关掉
+        const s = it.dataset.s;
+        inp.value = s;
+        close();
+        onPick(s);
+      };
+      it.addEventListener('mousedown', pick);
+      it.addEventListener('touchstart', pick, { passive: false });
+    });
+  };
+  const positionBox = () => {
+    if (!box) return;
+    const r = inp.getBoundingClientRect();
+    box.style.left = r.left + 'px';
+    box.style.top = (r.bottom + 4) + 'px';
+    box.style.minWidth = Math.max(r.width, 200) + 'px';
+  };
+  inp.addEventListener('input', renderList);
+  inp.addEventListener('focus', renderList);
+  inp.addEventListener('blur', () => setTimeout(close, 150));
+}
+
+function mountStoreSearch() {
+  const host = document.getElementById('fbar_f1');
+  if (!host) return;
+  if (host.dataset.mounted === '1') {
+    const s = host.querySelector('#f1_store');
+    if (s && s.value !== F.storeKw) s.value = F.storeKw;
+    return;
+  }
+  host.dataset.mounted = '1';
+  host.innerHTML = '<div class="fbar">'
+    + '<label class="fld">门店关键词</label>'
+    + `<input type="text" id="f1_store" autocomplete="off" placeholder="输入门店名，查看该门店全部员工训练情况" value="${esc(F.storeKw)}">`
+    + '</div>';
+  const inp = document.getElementById('f1_store');
+  attachStoreSuggest(inp, s => {
+    F.storeKw = s;
+    drawTableF1();
+    const fb = document.getElementById('fb_store');
+    if (fb) { fb.value = s; fb.dispatchEvent(new Event('input')); }
+  });
+  inp.oninput = ev => {
+    F.storeKw = ev.target.value.trim();
+    drawTableF1();
+    // A7：联动反馈表单门店框
+    const fb = document.getElementById('fb_store');
+    if (fb) { fb.value = F.storeKw; fb.dispatchEvent(new Event('input')); }
+  };
+}
+
+function render_f1() {
+  mountStoreSearch();
+  drawTableF1();
+  renderFeedbackForm();
+}
+
+/* A5 选 B：输入门店名 → 呈现该门店全部员工（含历史存量），默认全显示 */
+function drawTableF1() {
+  const el = document.getElementById('blk_f1_1');
+  if (!el) return;
+  const kw = F.storeKw.trim();
+  if (!kw) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">请先输入门店名</div><div class="empty-state-desc">输入门店关键词后，自动呈现该门店全部员工的训练情况</div></div>`;
+    return;
+  }
+  let rs = App.list.filter(e =>
+    ((e.store || '').includes(kw) || (e.area || '').includes(kw)) &&
+    (F.f1Learn === '全部' || learnStatusOf(e) === F.f1Learn) &&
+    (F.f1Exam === '全部' || examStatusOf(e) === F.f1Exam) &&
+    (F.f1Status === '全部' || statusGroupOf(e) === F.f1Status)
+  );
+  rs = sortTrainees(rs);   // 默认按入职时间从近到远
+  const curN = rs.filter(isCurrent).length;
+  const histN = rs.filter(isHist).length;
+
+  const learnOpts = sel => ['全部', '已学习', '未学习', '学习中'].map(s => `<option${s === sel ? ' selected' : ''}>${esc(s)}</option>`).join('');
+  const examOpts = sel => ['全部', '已考核', '未考核'].map(s => `<option${s === sel ? ' selected' : ''}>${esc(s)}</option>`).join('');
+  const statusOpts = sel => ['全部', '正常', '异常', '待确认', '其他'].map(s => `<option${s === sel ? ' selected' : ''}>${esc(s)}</option>`).join('');
+
+  const bar = `<div class="tbl-opts">
+    <label class="fld">学习状态</label><select id="f1_learn">${learnOpts(F.f1Learn)}</select>
+    <label class="fld">考核状态</label><select id="f1_exam">${examOpts(F.f1Exam)}</select>
+    <label class="fld">完成状态</label><select id="f1_status">${statusOpts(F.f1Status)}</select>
+    <span class="note">当前${kw ? '门店含「' + esc(kw) + '」' : '全部门店'} · 共 <b>${rs.length}</b> 人（本期 ${curN} · 历史存量 ${histN}）</span>
+  </div>`;
+  el.innerHTML = bar + traineeBodyHtml(rs, COLS_F1, { forceTable: true });
+  bindPostPicks();
+  bindPostBadges();
+  bindPostRevs();
+  bindPostCancel();
+  bindMCards();
+
+  document.getElementById('f1_learn').onchange = ev => { F.f1Learn = ev.target.value; drawTableF1(); };
+  document.getElementById('f1_exam').onchange = ev => { F.f1Exam = ev.target.value; drawTableF1(); };
+  document.getElementById('f1_status').onchange = ev => { F.f1Status = ev.target.value; drawTableF1(); };
+}
+
+/* --- 岗位异常反馈（门店 → 人员 → 正确岗位；审核在控制页） --- */
+function getFeedback() {
+  if (Array.isArray(App.feedback) && App.feedback.length) return App.feedback;
+  try { return JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '[]'); } catch (e) { return []; }
+}
+function setFeedback(v) {
+  try { localStorage.setItem(FEEDBACK_KEY, JSON.stringify(v)); } catch (e) { }
+}
+function getOV() {
+  try { const o = JSON.parse(localStorage.getItem(OVERRIDE_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; }
+  catch (e) { return {}; }
+}
+function setOV(v) {
+  try { localStorage.setItem(OVERRIDE_KEY, JSON.stringify(v)); } catch (e) { }
+}
+// 轻提示
+function fbToast(msg) {
+  let t = document.getElementById('__fb_toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = '__fb_toast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);'
+      + 'background:#111827;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;'
+      + 'z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.25);opacity:0;transition:opacity .2s;max-width:80%';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t.__timer); t.__timer = setTimeout(() => { t.style.opacity = '0'; }, 2400);
+}
+// 从共享后端拉取岗位调整列表（总部/门店共用），并合并「已确认」的生效岗位到 OV（跨设备生效）
+async function loadFeedbackCloud() {
+  if (!FEEDBACK_API) return false;
+  try {
+    const r = await fetch(FEEDBACK_API + '/api/feedback', { cache: 'no-store' });
+    const j = await r.json();
+    if (j.ok && Array.isArray(j.list)) {
+      App.feedback = j.list;
+      j.list.forEach(x => {
+        if (x.status === '已确认' && x.ovPost) {
+          const cur = OV[x.uid];
+          if (!cur || cur.post !== x.ovPost || cur.position !== x.ovPosition) {
+            OV[x.uid] = { post: x.ovPost, position: x.ovPosition, note: x.note || '', at: x.reviewed_at || x.at };
+            setOV(OV);
+          }
+        }
+      });
+      return true;
+    }
+  } catch (e) { /* 网络不可达：退回本机 localStorage */ }
+  return false;
+}
+// 带训追踪手动状态覆盖（防花名册更新不及时产生偏差）
+let trainerStatusOverrides = {};   // { "store|trainer": { store, trainer, status, note, reviewer, updated_at } }
+function getTrainerKey(store, trainer) { return store + '|' + (trainer || '__NONE__'); }
+function getTrainerDisplayStatus(t) {
+  const o = trainerStatusOverrides[getTrainerKey(t.store, t.trainer)];
+  return o ? { status: o.status, override: true, note: o.note, reviewer: o.reviewer, updated_at: o.updated_at } : { status: t.status, override: false };
+}
+async function loadTrainerStatusOverrides() {
+  if (!FEEDBACK_API) return false;
+  try {
+    const r = await fetch(FEEDBACK_API + '/api/trainer_status', { cache: 'no-store' });
+    const j = await r.json();
+    if (j.ok && j.data) { trainerStatusOverrides = j.data; return true; }
+  } catch (e) { /* 网络不可达：用空覆盖，按原始状态显示 */ }
+  return false;
+}
+async function saveTrainerStatusOverride(store, trainer, status, note, reviewer) {
+  if (!FEEDBACK_API) { fbToast('未配置共享后端，无法保存手动调整'); return false; }
+  try {
+    const r = await fetch(FEEDBACK_API + '/api/trainer_status', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ store, trainer, status, note: note || '', reviewer: reviewer || '总部' })
+    });
+    const j = await r.json();
+    if (j.ok) {
+      if (status) trainerStatusOverrides[getTrainerKey(store, trainer)] = j.record;
+      else delete trainerStatusOverrides[getTrainerKey(store, trainer)];
+      fbToast(status ? '已保存手动调整' : '已恢复自动判定');
+      return true;
+    } else { fbToast('保存失败：' + (j.message || '未知错误')); }
+  } catch (e) { fbToast('保存失败：网络异常'); }
+  return false;
+}
+// 本地模式：把审核结果落盘到 overrides.json（下次抓数自动带上，线上也生效）
+async function persistOV() {
+  try {
+    const r = await fetch('/api/override', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ overrides: OV })
+    });
+    return !!(await r.json()).success;
+  } catch (e) { return false; }
+}
+
+function renderFeedbackForm() {
+  const el = document.getElementById('blk_f1_2');
+  if (!el) return;
+  const sig = App.list.length + '|' + Object.keys(OV).length + '|' + App.list.filter(e => e.store).length;
+  if (el.dataset.ready === sig) { drawFeedbackTail(); return; }
+  el.dataset.ready = sig;
+  // 门店已改用表格内联下拉提交，此处只呈现已提交记录
+  el.innerHTML = '<div id="fb_tail"></div>';
+  drawFeedbackTail();
+}
+function drawFeedbackTail() {
+  const el = document.getElementById('fb_tail');
+  if (!el) return;
+  const kw = (F.storeKw || '').trim();
+  let list = getFeedback();
+  if (kw) list = list.filter(x => (x.store || '').includes(kw));
+  if (!list.length) {
+    el.innerHTML = kw
+      ? '<div class="empty">当前门店暂无已提交的岗位异常反馈</div>'
+      : '<div class="empty">请先输入门店名，提交后显示该门店的岗位异常反馈</div>';
+    return;
+  }
+  el.innerHTML = '<div class="sub-t">已提交 ' + list.length + ' 条</div>' + list.slice(0, 8).map(x =>
+    `<div class="li"><div class="li-h">${esc(x.name)} · ${esc(x.store) || '-'}
+      <span class="li-tag" style="background:${x.status === '待审核' ? '#fef3c7;color:#b45309' : '#dcfce7;color:#16a34a'}">${esc(x.status)}</span></div>
+     <div class="li-m">${esc(x.from)} → <b>${esc(fbDisplay(x.to))}</b> ${x.note ? '· ' + esc(x.note) : ''}</div></div>`).join('');
+}
+
+/* B5：表格内联「调整岗位」下拉提交；点击岗位徽章后展开，选择后进入待审核流 */
+function bindPostPicks() {
+  document.querySelectorAll('.post-pick').forEach(sel => {
+    sel.onchange = () => {
+      const uid = sel.dataset.uid, store = sel.dataset.store, label = sel.value;
+      if (label === '__cancel__') { F.editPostUid = ''; render(); return; }
+      if (!label) return;
+      F.editPostUid = '';
+      if (label.indexOf('其他') === 0) {
+        const v = prompt('请填写具体岗位：');
+        if (!v) { render(); return; }
+        submitInlinePost(uid, store, '其他：' + v.trim());
+      } else {
+        submitInlinePost(uid, store, label);
+      }
+    };
+  });
+}
+function bindPostBadges() {
+  document.querySelectorAll('.post-badge').forEach(badge => {
+    badge.onclick = () => {
+      const uid = badge.dataset.uid;
+      if (!uid) return;
+      F.editPostUid = uid;
+      render();
+      // 展开后自动聚焦下拉框，方便直接键盘/触屏选择
+      setTimeout(() => {
+        const sel = document.querySelector('.post-pick[data-uid="' + uid + '"]');
+        if (sel) sel.focus();
+      }, 0);
+    };
+  });
+}
+async function submitInlinePost(uid, store, to) {
+  const p = App.list.find(x => x.uid === uid) || {};
+  const list = getFeedback();
+  if (list.some(x => x.uid === uid && x.status === '待审核')) {
+    alert('该员工已有一条待审核反馈'); return;
+  }
+  const rec = {
+    id: Date.now(), uid, name: p.name, store, area: p.area,
+    from: p.post || p.position || '', to, note: '表格内联提交', status: '待审核',
+    at: new Date().toLocaleString('zh-CN')
+  };
+  list.unshift(rec); setFeedback(list); App.feedback = list; render();   // 乐观更新 + 离线缓存
+  if (!FEEDBACK_API) { fbToast('已提交（未配置云端，仅本机可见）'); return; }
+  try {
+    const r = await fetch(FEEDBACK_API + '/api/feedback', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid, name: p.name, store, area: p.area,
+        from: p.post || p.position || '', to, note: '表格内联提交' })
+    });
+    const j = await r.json();
+    if (j.ok) { await loadFeedbackCloud(); fbToast('已提交，总部后台可见'); }
+    else if (j.message) fbToast('提交提醒：' + j.message);
+  } catch (e) { fbToast('本地已保存，网络恢复后自动同步'); }
+}
+function bindPostRevs() {
+  document.querySelectorAll('.post-rev').forEach(btn => {
+    btn.onclick = () => {
+      const uid = btn.dataset.uid;
+      const list = getFeedback().filter(x => !(x.uid === uid && x.status === '待审核'));
+      setFeedback(list);
+      App.feedback = list;
+      render();
+    };
+  });
+}
+function bindPostCancel() {
+  document.querySelectorAll('.post-cancel').forEach(btn => {
+    btn.onclick = () => {
+      const uid = btn.dataset.uid;
+      if (!confirm('确认撤销该员工的岗位调整？将恢复按花名册职位计算。')) return;
+      delete OV[uid];
+      setOV(OV);
+      App.list = buildModel(raw.employees);
+      persistOV().then(ok => {
+        const m = document.getElementById('ov_msg');
+        if (m) m.textContent = ok ? '✓ 已撤销并写入 overrides.json' : '✓ 已撤销（本机生效）';
+      });
+      render();
+    };
+  });
+}
+
+/* ==================== 渲染：时间模块 · 月度入职追踪 ==================== */
+function render_f2() {
+  mountFilter('f2', {
+    month: true, monthAll: true,
+    learn: true, exam: true, status: true, remark: true,
+    learnLabel: '学习情况', examLabel: '考核情况', statusLabel: '闭环情况',
+    note: '三张图只受「区域 + 月份」影响；「训练情况一览」表受全部筛选（区域/月份/学习情况/考核情况/闭环情况/备注）'
+  });
+  drawF2table();
+  drawF2Charts();
+}
+
+/* ---------- 月度入职追踪 · 三张新增图表 ---------- */
+/* 状态四分类（已闭环 / 待考核 / 超时未完成 / 待确认），兜底「推进中」 */
+const STATUS_BUCKETS = [
+  { k: '已闭环', c: '#16a34a' },
+  { k: '待考核', c: '#f59e0b' },
+  { k: '超时未完成', c: '#dc2626' },
+  { k: '待确认', c: '#7c3aed' },
+  { k: '推进中', c: '#94a3b8' }
+];
+function statusBucketOf(e) {
+  if (e.status === '待门店确认') return '待确认';
+  // 新增规则：超期闭环也算闭环，图表下方会单独标注超期人数
+  if (e.status === '训练闭环') return '已闭环';
+  if (e.learnLate || e.examLate) return '超时未完成';
+  if (e.learnOk && !e.examOk) return '待考核';
+  return '推进中';
+}
+/* 口径：受「区域 + 月份」筛选；cur=本期新人(9/1起) / all=所选月份入职的全部人员 */
+let F2_SCOPE = 'cur';
+function f2BaseList() {
+  return App.list.filter(e =>
+    (F.area === '全部' || e.area === F.area) &&
+    (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month)
+  ).filter(e => (F2_SCOPE === 'all' ? true : isCurrent(e)) && !e.excluded && !e.left);
+}
+function f2AreaRank(a) { const i = AREA_ORDER.indexOf(a); return i === -1 ? 999 : i; }
+function f2StoreAgg(list) {
+  const m = new Map();
+  list.forEach(e => {
+    const a = e.area || UNMATCHED;
+    const s = e.store || '（未填门店）';
+    const k = a + '||' + s;
+    const o = m.get(k) || { area: a, store: s, n: 0, learn: 0, exam: 0, closed: 0 };
+    o.n++;
+    if (e.learnOk) o.learn++;
+    if (e.examOk) o.exam++;
+    if (e.status === '训练闭环') o.closed++;
+    m.set(k, o);
+  });
+  return [...m.values()].sort((x, y) => (x.area + x.store).localeCompare(y.area + y.store, 'zh'));
+}
+function f2AreaAgg(list) {
+  const m = new Map();
+  list.forEach(e => {
+    const a = e.area || UNMATCHED;
+    const o = m.get(a) || { area: a, n: 0, learn: 0, exam: 0 };
+    o.n++;
+    if (e.learnOk) o.learn++;
+    if (e.examOk) o.exam++;
+    m.set(a, o);
+  });
+  return [...m.values()].sort((x, y) => f2AreaRank(x.area) - f2AreaRank(y.area) || y.n - x.n);
+}
+function drawF2Charts() {
+  const list = f2BaseList();
+  const scope = (F.month === '全部' ? '全部月份' : F.month) + (F.area === '全部' ? ' · 全部区域' : ' · ' + F.area);
+  const empty = list.length ? `暂无数据（${scope}）`
+    : (F2_SCOPE === 'cur'
+      ? `该月份没有「本期新人（9/1 起入职）」记录，可切换上方口径为「所选月份全部入职」查看`
+      : `暂无数据（${scope}）`);
+
+  // 口径切换条
+  const sb = document.getElementById('f2_scope_bar');
+  if (sb) {
+    sb.innerHTML = `<span class="fld">三图统计口径</span>`
+      + `<button class="btn sm ${F2_SCOPE === 'cur' ? '' : 'gray'}" id="f2_sc_cur">本期新人（9/1 起入职）</button>`
+      + `<button class="btn sm ${F2_SCOPE === 'all' ? '' : 'gray'}" id="f2_sc_all">所选月份全部入职</button>`
+      + `<span class="note">当前统计 <b>${list.length}</b> 人 · ${esc(scope)} · ${F2_SCOPE === 'cur' ? '仅本期（与闭环率口径一致）' : '含历史存量，用于追溯往月'}</span>`;
+    const bc = document.getElementById('f2_sc_cur'), ba = document.getElementById('f2_sc_all');
+    if (bc) bc.onclick = () => { F2_SCOPE = 'cur'; drawF2Charts(); };
+    if (ba) ba.onclick = () => { F2_SCOPE = 'all'; drawF2Charts(); };
+  }
+
+  // ① 区域新人情况：柱状图 入职 / 学习完成 / 考核完成
+  const ag = f2AreaAgg(list);
+  chartBarGroup(document.getElementById('blk_f2_5'), ag.map(o => o.area), [
+    { name: '入职人数', data: ag.map(o => o.n), color: '#bfdbfe' },
+    { name: '学习完成', data: ag.map(o => o.learn), color: '#22c55e' },
+    { name: '考核完成', data: ag.map(o => o.exam), color: '#2563eb' }
+  ], { empty });
+
+  // ② 员工状态构成：饼图（超期闭环计入已闭环并标注）
+  const items = STATUS_BUCKETS.map(b => ({ ...b, v: list.filter(e => statusBucketOf(e) === b.k).length }))
+    .filter(x => x.v > 0);
+  const closedLate = list.filter(e => e.status === '训练闭环' && (e.learnLate || e.examLate)).length;
+  const donutWrap = document.getElementById('blk_f2_6');
+  if (donutWrap) {
+    donutWrap.innerHTML = '<div id="blk_f2_6_chart" style="height:100%"></div>'
+      + (closedLate ? `<div class="note" style="text-align:center;padding-top:8px">已闭环中 <b>${closedLate}</b> 人为超期完成</div>` : '');
+    chartDonut(document.getElementById('blk_f2_6_chart'), items, { hole: 0, empty });
+  }
+
+  // ③ 门店新人情况：门店明细表（入职 / 学习 / 考核 / 闭环）
+  drawF2StoreDetail(document.getElementById('blk_f2_7'), list, { empty });
+}
+
+function drawF2StoreDetail(el, list, opts) {
+  opts = opts || {};
+  if (!el) return;
+  const rows = f2StoreAgg(list);
+  if (!rows.length) { el.innerHTML = `<div class="empty">${opts.empty || '暂无数据'}</div>`; return; }
+  const total = rows.reduce((a, b) => a + b.n, 0);
+  const head = ['区域', '门店', '入职人数', '学习完成', '考核完成', '闭环人数', '闭环率'];
+  let html = `<div class="tbl-scroll"><table class="keep-table"><thead><tr>${head.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>`;
+  html += rows.map(r => {
+    const rate = pct1(safeDiv(r.closed, r.n));
+    return `<tr>
+      <td data-label="区域">${esc(r.area)}</td>
+      <td data-label="门店">${esc(r.store)}</td>
+      <td data-label="入职人数">${r.n}</td>
+      <td data-label="学习完成">${r.learn}</td>
+      <td data-label="考核完成">${r.exam}</td>
+      <td data-label="闭环人数">${r.closed}</td>
+      <td data-label="闭环率">${rate}</td>
+    </tr>`;
+  }).join('');
+  html += `<tr style="font-weight:600;background:#f8fafc">
+    <td data-label="区域">合计</td>
+    <td data-label="门店">${rows.length} 家门店</td>
+    <td data-label="入职人数">${total}</td>
+    <td data-label="学习完成">${rows.reduce((a, b) => a + b.learn, 0)}</td>
+    <td data-label="考核完成">${rows.reduce((a, b) => a + b.exam, 0)}</td>
+    <td data-label="闭环人数">${rows.reduce((a, b) => a + b.closed, 0)}</td>
+    <td data-label="闭环率">${pct1(safeDiv(rows.reduce((a, b) => a + b.closed, 0), total))}</td>
+  </tr>`;
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+/* 月度入职追踪下的「训练情况一览」：受区域/月份/学习/考核/状态/备注筛选，但**不受 Tab0 门店关键词影响** */
+function drawF2table() {
+  const el = document.getElementById('blk_f2_4');
+  if (!el) return;
+  let rs = App.list.filter(e =>
+    (F.area === '全部' || e.area === F.area) &&
+    (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month) &&
+    (F.learnStatus === '全部' || learnStatusOf(e) === F.learnStatus) &&
+    (F.examStatus === '全部' || examStatusOf(e) === F.examStatus) &&
+    (F.status === '全部' || statusGroupOf(e) === F.status) &&
+    (F.remark === '全部' || e.remark === F.remark)
+  );
+  if (!SHOW_ALL_F1) rs = rs.filter(isCurrent);   // 默认只看本期新人
+  rs = sortTrainees(rs);
+  const totalAll = App.list.filter(e =>
+    (F.area === '全部' || e.area === F.area) &&
+    (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month) &&
+    (F.learnStatus === '全部' || learnStatusOf(e) === F.learnStatus) &&
+    (F.examStatus === '全部' || examStatusOf(e) === F.examStatus) &&
+    (F.status === '全部' || statusGroupOf(e) === F.status) &&
+    (F.remark === '全部' || e.remark === F.remark)
+  ).length;
+  const curN = rs.filter(isCurrent).length;
+
+  const bar = `<div class="tbl-opts" id="f2_tbl_opts">
+    <button class="btn sm ${SHOW_ALL_F1 ? 'gray' : ''}" id="f2_toggle">${SHOW_ALL_F1 ? '↩ 只看本期新人' : `👁 查看全部 ${totalAll} 人`}</button>
+    <button class="btn sm ${F1_SORT === 'hire' ? '' : 'gray'}" id="f2_sort_hire">📅 按入职排序</button>
+    <button class="btn sm ${F1_SORT === 'area' ? '' : 'gray'}" id="f2_sort_area">🗂 按区域排序</button>
+    <button class="btn sm ${F1_SORT === 'role' ? '' : 'gray'}" id="f2_sort_role">👤 按角色排序</button>
+    <span class="note">当前显示：<b>${SHOW_ALL_F1 ? '全部人员（含历史存量）' : '仅本期新人'}</b> · 共 <b>${rs.length}</b> 人（本期 ${curN} 人）</span>
+  </div>`;
+  el.innerHTML = bar + traineeBodyHtml(rs, COLS_F2);
+  bindPostPicks();
+  bindPostBadges();
+  bindPostRevs();
+  bindPostCancel();
+  bindMCards();
+
+  const tg = document.getElementById('f2_toggle');
+  if (tg) tg.onclick = () => { SHOW_ALL_F1 = !SHOW_ALL_F1; drawF2table(); };
+  const sH = document.getElementById('f2_sort_hire');
+  if (sH) sH.onclick = () => { F1_SORT = 'hire'; drawF2table(); };
+  const sA = document.getElementById('f2_sort_area');
+  if (sA) sA.onclick = () => { F1_SORT = 'area'; drawF2table(); };
+  const sR = document.getElementById('f2_sort_role');
+  if (sR) sR.onclick = () => { F1_SORT = 'role'; drawF2table(); };
+}
+/* ==================== 渲染：业务模块 · 训练情况 ==================== */
+function render_f3() {
+  mountFilter('f3', { month: true });
+  drawF3();
+}
+function drawF3() {
+  const list = filtered();
+  // 各区域闭环率
+  const ar = uniq(list.map(e => e.area)).filter(a => a && a !== UNMATCHED && a !== '未匹配').map(a => {
+    const s = stat(list.filter(e => e.area === a));
+    return { label: a, rate: s.rate, n: s.cur, closed: s.closed };
+  }).sort((x, y) => x.rate - y.rate);
+  rankBars(document.getElementById('blk_f3_2'), ar, { good: 0.8, empty: '暂无本期数据' });
+
+  // 岗位维度学习闭环率
+  const cur = list.filter(isCurrent);
+  const postData = GRADES.map(g => {
+    const need = cur.filter(e => e.need && (e.isMgr || e.learned.includes(g) || e.post === g));
+    const ok = cur.filter(e => e.status === '训练闭环' && (e.matched.includes(g) || e.isMgr));
+    return { g, n: need.length, ok: ok.length, rate: safeDiv(ok.length, need.length) };
+  });
+  chartBarGroup(document.getElementById('blk_f3_3'), postData.map(p => p.g), [
+    { name: '涉及人数', data: postData.map(p => p.n), color: '#c7d2fe' },
+    { name: '已闭环', data: postData.map(p => p.ok), color: '#7c3aed' }
+  ]);
+
+  // 员工状态构成：改为横向条形图，避免饼图图例重叠/乱码，更适合移动端
+  const statusMeta = [
+    { k: '训练闭环', c: '#16a34a' },
+    { k: '待考核', c: '#d97706' },
+    { k: '待考核（已超期）', c: '#dc2626' },
+    { k: '学习超期', c: '#dc2626' },
+    { k: '考核超期', c: '#dc2626' },
+    { k: '学习中(未超期)', c: '#0891b2' },
+    { k: '待门店确认', c: '#7c3aed' }
+  ];
+  const totalCur = Math.max(1, cur.length);
+  const statusItems = statusMeta.map(m => ({ ...m, v: cur.filter(e => e.status === m.k).length }))
+    .filter(x => x.v > 0)
+    .sort((a, b) => b.v - a.v);
+  statusBars(document.getElementById('blk_f3_4'), statusItems, totalCur, { empty: '暂无本期员工状态数据' });
+}
+
+/* ==================== 渲染：业务模块 · 门店闭环追踪 ==================== */
+function render_f4() {
+  mountFilter('f4', { month: false, note: '门店榜含全部门店（存量可见），闭环率只按本期新人算' });
+  drawF4();
+}
+function storeRowHTML(it) {
+  if (it.n === 0) {
+    return `<div class="rb rb-mute">
+      <div class="rb-l"><span class="rb-n">${esc(it.store)}</span><span class="rb-s">老员工未统计</span></div>
+      <div class="rb-bar"><i style="width:0"></i></div>
+      <div class="rb-v" style="color:#94a3b8">—</div>
+      <div class="rb-x">存量 ${it.hist} 人</div></div>`;
+  }
+  const c = it.rate >= 0.8 ? '#16a34a' : it.rate >= 0.5 ? '#d97706' : '#dc2626';
+  return `<div class="rb">
+    <div class="rb-l"><span class="rb-n">${esc(it.store)}</span>${it.hist ? `<span class="rb-s">存量 ${it.hist}</span>` : ''}</div>
+    <div class="rb-bar"><i style="width:${Math.min(100, it.rate * 100).toFixed(1)}%;background:${c}"></i></div>
+    <div class="rb-v" style="color:${c}">${pct1(it.rate)}</div>
+    <div class="rb-x">${it.closed}/${it.n}</div></div>`;
+}
+function drawF4() {
+  const list = filteredArea();              // 存量视角：不受月份筛选
+  const rows = storeRank(list);             // B1：全部门店
+
+  // --- 1. 门店排行榜：按区域分组，组内「有本期的按闭环率从低到高」在前，无本期的在后 ---
+  const byArea = new Map();
+  rows.forEach(r => { if (!byArea.has(r.area)) byArea.set(r.area, []); byArea.get(r.area).push(r); });
+  const areaSorted = [...byArea.keys()].sort((a, b) => {
+    const ia = AREA_ORDER.indexOf(a), ib = AREA_ORDER.indexOf(b);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    return a.localeCompare(b, 'zh');
+  });
+  let html = '', pending = [];
+  areaSorted.forEach(a => {
+    const items = byArea.get(a).slice().sort((x, y) => {
+      const xa = x.n > 0 ? 0 : 1, ya = y.n > 0 ? 0 : 1;
+      return (xa - ya) || (x.rate - y.rate) || x.store.localeCompare(y.store, 'zh');
+    });
+    if (a === UNMATCHED || a === '未匹配') { pending = pending.concat(items); return; }
+    const curN = items.reduce((s, i) => s + i.n, 0), curC = items.reduce((s, i) => s + i.closed, 0);
+    html += `<div class="rank-area">${esc(a)} 区域 <span class="ra-sum">本期 ${curN} 人 · 闭环 ${curC} 人 · 闭环率 ${pct1(safeDiv(curC, curN))}</span></div>`;
+    html += items.map(storeRowHTML).join('');
+  });
+  if (pending.length) {
+    const pn = pending.reduce((s, i) => s + i.names.length, 0);
+    html += `<div class="rank-area" style="background:#fef3c7;color:#b45309">⚠ 待核对门店（${pn} 人）<span class="ra-sum">花名册未填门店 或 门店名与区域对照表对不上</span></div>`;
+    html += pending.map(it => `<div class="li"><div class="li-h">${esc(it.store)}
+        <span class="li-tag" style="background:#fef3c7;color:#b45309">需核对</span></div>
+      <div class="li-m">人员：<b>${it.names.map(esc).join('、')}</b><br>请补全花名册的 3 级部门（门店），或确认该门店归属区域</div></div>`).join('');
+  }
+  document.getElementById('blk_f4_1').innerHTML = html || '<div class="empty">暂无门店数据</div>';
+
+  // --- 2. 岗位异常清单（A4：只本期） ---
+  const abn = list.filter(isCurrent).filter(e => e.flag)
+    .slice().sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+  listBlock(document.getElementById('blk_f4_2'), abn.map(e => ({
+    title: `${esc(e.name)} · ${esc(e.store) || '-'} <span class="li-tag" style="background:#fef3c7;color:#b45309">待核岗位</span>`,
+    meta: `花名册：<b>${esc(e.position)}</b> ｜ 判定：<b>${esc(e.post)}</b> ｜ 学习：${e.learned.join('、') || '—'} ｜ 考核：${e.examPosts.join('、') || '—'}<br>${esc(e.flag)}<br>→ 去「门店查询」页提交岗位更正，审核后即从本清单移除`
+  })), { empty: '✅ 本期（9/1 起入职）没有岗位异常。9/1 前的历史存量按口径不计入本清单。' });
+
+  // --- 3. 闭环异常清单（学考不一致 / 学完未考；只本期） ---
+  const mism = list.filter(isCurrent).filter(e => e.learned.length && e.examPosts.length && !e.matched.length);
+  const learnNotExam = list.filter(isCurrent).filter(e => e.learned.length && !e.examPosts.length);
+  listBlock(document.getElementById('blk_f4_3'), [
+    ...mism.map(e => ({
+      title: `${esc(e.name)} · ${esc(e.store) || '-'} <span class="li-tag" style="background:#fee2e2;color:#dc2626">学考不一致</span>`,
+      meta: `学了 <b>${e.learned.join('、')}</b>，但考核的是 <b>${e.examPosts.join('、')}</b> → 不计入闭环率`
+    })),
+    ...learnNotExam.map(e => ({
+      title: `${esc(e.name)} · ${esc(e.store) || '-'} <span class="li-tag" style="background:#fef3c7;color:#b45309">学完未考</span>`,
+      meta: `已学 <b>${e.learned.join('、')}</b>，考核卡中无对应岗位记录 → 该批人最该催`
+    }))
+  ], { empty: '✅ 本期（9/1 起入职）没有闭环异常（学考一致且无遗漏）。' });
+
+  // --- 4. 未闭环清单（各门店：本期入职 vs 未闭环） ---
+  listBlock(document.getElementById('blk_f4_4'), storeRank(list)
+    .filter(r => r.n > r.closed)
+    .sort((a, b) => (b.n - b.closed) - (a.n - a.closed) || a.rate - b.rate)
+    .map(r => ({
+      title: `${esc(r.store)} <span class="li-tag" style="background:#fee2e2;color:#dc2626">未闭环 ${r.n - r.closed} 人</span>`,
+      meta: `${esc(r.area)} ｜ 本期入职 <b>${r.n}</b> 人 · 已闭环 ${r.closed} 人 · 未闭环 <b>${r.n - r.closed}</b> 人`
+    })), { empty: '✅ 本期所有门店都已闭环' });
+}
+
+/* ==================== 渲染：控制模块 · 整体监控 ==================== */
+function render_f5() {
+  mountFilter('f5', { month: true });
+  const list = filtered();
+  const s = stat(list);
+  kpiCards(document.getElementById('blk_f5_0'), [
+    { k: '前厅总人数', v: s.total, c: '#64748b' },
+    { k: '本期新人(9/1起)', v: s.cur, c: '#2563eb' },
+    { k: '训练闭环', v: s.closed, c: '#16a34a' },
+    { k: '闭环率', v: pct1(s.rate), c: s.rate >= 0.8 ? '#16a34a' : s.rate >= 0.5 ? '#d97706' : '#dc2626' },
+    { k: '待考核', v: s.wait, c: '#d97706' },
+    { k: '超时未完成', v: s.lateTimeout, c: '#dc2626' },
+    { k: '学习中', v: s.studying, c: '#0891b2' },
+    { k: '待门店确认', v: s.confirm, c: '#7c3aed' },
+    { k: '历史存量', v: s.hist, c: '#94a3b8' }
+  ]);
+
+  renderFeedbackReview();
+  renderAnalysis();
+  renderSyncPanel();
+  renderUnmatchedExams();
+}
+
+/* ==================== 门店版展示配置面板（后台版·整体监控页内嵌） ==================== */
+const TAB_DEFS = [
+  { i: '0', n: '🏪 门店查询' },
+  { i: '1', n: '📅 月度入职追踪' },
+  { i: '2', n: '🗂 训练情况' },
+  { i: '3', n: '🗂 门店闭环追踪' },
+  { i: '4', n: '🎛 整体监控' },
+  { i: '5', n: '🧑‍🏫 带教追踪' },
+  { i: '6', n: '📋 门店追踪查询' },
+  { i: '7', n: '🌐 区域追踪查询' },
+];
+function renderStoreCfgPanel() {
+  const box = document.getElementById('blk_store_cfg');
+  if (!box) return;
+  if (PUBLIC_MODE) { box.innerHTML = '<span class="note">该设置为后台版专属，门店版按下方配置展示。</span>'; return; }
+  const sel = (raw.storeTabs && raw.storeTabs.length) ? raw.storeTabs : ['0'];
+  box.innerHTML = TAB_DEFS.map(t =>
+    `<label class="chk" style="display:inline-flex;align-items:center;gap:6px;margin:4px 14px 4px 0">
+       <input type="checkbox" value="${t.i}" ${sel.includes(t.i) ? 'checked' : ''}> ${t.n}
+     </label>`).join('');
+  const tip = document.getElementById('store_cfg_tip');
+  const save = document.getElementById('save_store_cfg');
+  const prev = document.getElementById('preview_store');
+  if (save && !save.dataset.bound) {
+    save.dataset.bound = '1';
+    save.onclick = async () => {
+      const tabs = [...box.querySelectorAll('input:checked')].map(c => c.value);
+      if (!tabs.length) { tip.textContent = '⚠ 至少勾选一个 Tab'; return; }
+      try {
+        const r = await fetch('/api/store-config', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ storeTabs: tabs, storeDefault: tabs[0] })
+        });
+        const j = await r.json();
+        tip.textContent = j.success ? ('✓ 已保存 ' + j.config.updated_at + '，部署后门店版生效')
+                                     : ('✗ 失败：' + (j.message || '未知'));
+      } catch (e) { tip.textContent = '✗ 请求失败：' + e; }
+    };
+  }
+  if (prev && !prev.dataset.bound) {
+    prev.dataset.bound = '1';
+    prev.onclick = () => {
+      const tabs = [...box.querySelectorAll('input:checked')].map(c => c.value);
+      document.querySelectorAll('.tab-btn').forEach(b => b.style.display = tabs.includes(b.dataset.tab) ? '' : 'none');
+      document.querySelectorAll('.tab').forEach((s, n) => s.style.display = tabs.includes(String(n)) ? '' : 'none');
+      if (!tabs.includes(String(State.tab))) switchTab(parseInt(tabs[0], 10));
+      tip.textContent = '已预览门店版视图（刷新本页恢复后台全功能）';
+    };
+  }
+}
+
+/* ==================== 渲染：业务模块 · 带训追踪 ==================== */
+function render_f6() {
+  const el = document.getElementById('blk_f6_1');
+  if (!el) return;
+  const list = raw.trainers || [];
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🧑‍🏫</div>
+      <div class="empty-state-title">带训追踪数据为空</div>
+      <div class="empty-state-desc">未从「考核总看板 → 带训追踪」拉到数据。请在钉钉维护该表后点「刷新数据」重新抓取（状态会按最新花名册自动判定：未提报 / 在职 / 异常 / 离职）。</div></div>`;
+    return;
+  }
+  const byArea = new Map();
+  list.forEach(t => { if (!byArea.has(t.area)) byArea.set(t.area, []); byArea.get(t.area).push(t); });
+  const areas = [...byArea.keys()].sort((a, b) => a.localeCompare(b, 'zh'));
+
+  // 有效状态（含手动覆盖）
+  const effStatus = t => getTrainerDisplayStatus(t).status;
+  const count = s => list.filter(t => effStatus(t) === s).length;
+  const isCert = t => (t.examPass === '合格') && (t.learnPass === '合格');
+  const stats = [
+    { n: list.length, l: '门店总数', cls: '' },
+    { n: count('在职'), l: '在职', cls: 'on' },
+    { n: list.filter(isCert).length, l: '认证合格', cls: 'ok' },
+    { n: count('异常'), l: '异常·调店', cls: 'warn' },
+    { n: count('离职'), l: '离职', cls: 'bad' },
+    { n: count('未提报'), l: '未提报', cls: 'off' },
+  ];
+
+  const statusTag = (s, override) => {
+    const map = {
+      '在职': '<span class="ck ok">在职</span>',
+      '异常': '<span class="ck warn">异常·调店</span>',
+      '离职': '<span class="ck bad">离职</span>',
+      '未提报': '<span class="ck no">未提报</span>',
+    };
+    const inner = map[s] || ('<span class="ck no">' + esc(s) + '</span>');
+    return override ? inner.replace('class="ck', 'class="ck override') : inner;
+  };
+  const examTag = t => {
+    if (t.examStatus !== '已考核') return '<span class="ck no">未考核</span>';
+    if (t.examPass === '合格') return '<span class="ck ok">已考核·合格</span>';
+    if (t.examPass === '不合格') return '<span class="ck bad">已考核·不合格</span>';
+    return '<span class="ck ok">已考核</span>';
+  };
+  // 3.6 新增：学习合格（来自【带教人】报名&考核-前厅带训学习）
+  const learnTag = t => {
+    if (!t.learnPass) return '<span class="ck no">未学习</span>';
+    if (t.learnPass === '合格') return '<span class="ck ok">已学·合格</span>';
+    return '<span class="ck bad">已学·不合格</span>';
+  };
+  // 认证合格 = 考核合格 且 学习合格（两者均合格）
+  const certifiedTag = t => isCert(t)
+    ? '<span class="ck ok certified">认证合格</span>'
+    : '<span class="ck no">待认证</span>';
+
+  let html = `<div id="f6-export-wrap" class="f6-export-wrap">
+    <div class="f6-stats">`;
+  stats.forEach(st => {
+    html += `<div class="f6-stat ${st.cls}"><div class="n">${st.n}</div><div class="l">${esc(st.l)}</div></div>`;
+  });
+  html += `</div>
+    <div class="tbl-scroll"><table class="f6-table compact"><thead><tr>
+      <th style="width:40px">区域</th><th style="width:28%">门店</th><th style="width:16%">带训人</th><th style="width:58px">考核</th><th style="width:58px">学习</th><th style="width:58px">认证</th><th style="width:54px">状态</th>
+    </tr></thead><tbody>`;
+  // 移动端通过 data-label 显示表头提示
+
+  areas.forEach((a, idx) => {
+    const rows = byArea.get(a);
+    const cidx = idx % 8;
+    rows.forEach((t, i) => {
+      const ds = getTrainerDisplayStatus(t);
+      const title = ds.override ? `手动调整：${esc(ds.status)}\n备注：${esc(ds.note || '无')}\n调整人：${esc(ds.reviewer || '-')}\n时间：${esc(ds.updated_at || '-')}` : '点击可手动调整状态';
+      html += `<tr class="f6-region f6-region-${cidx}">
+        ${i === 0 ? `<td data-label="区域" rowspan="${rows.length}" class="f6-area-cell"><div class="f6-area-badge">${esc(t.area)}</div><div class="f6-area-count">${rows.length} 家门店</div></td>` : ''}
+        <td data-label="门店">${esc(t.store)}</td>
+        <td data-label="带训人">${esc(t.trainer) || '<span class="ck no">未提报</span>'}</td>
+        <td data-label="考核">${examTag(t)}</td>
+        <td data-label="学习">${learnTag(t)}</td>
+        <td data-label="认证">${certifiedTag(t)}</td>
+        <td data-label="状态" class="f6-status-cell" title="${title}" onclick="openTrainerStatusPicker('${esc(t.store)}','${esc(t.trainer || '')}','${esc(t.status)}')">${statusTag(ds.status, ds.override)}${ds.override ? '<span class="ov-hint">手</span>' : ''}</td>
+      </tr>`;
+    });
+  });
+
+  html += `</tbody></table></div>
+    <p class="note" style="margin:4px 0 0;font-size:9px;color:#94a3b8">${new Date().toLocaleString('zh-CN')} · 钉钉「考核总看板→带训追踪」+「带教人报名&考核-前厅带训学习」 · 认证合格=考核合格 且 学习合格 · 状态可手动修正</p>
+  </div>`;
+  el.innerHTML = html;
+}
+
+async function exportF6Image() {
+  const wrap = document.getElementById('f6-export-wrap');
+  if (!wrap) { fbToast('未找到可导出的内容'); return; }
+  if (typeof html2canvas === 'undefined') {
+    fbToast('图片导出库未加载，请检查网络后重试');
+    return;
+  }
+  const btn = document.getElementById('btn_export_f6');
+  const oldText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = '生成中…'; btn.disabled = true; }
+  const oldWrapWidth = wrap.style.width;
+  const oldWrapMargin = wrap.style.margin;
+  const scroll = wrap.querySelector('.tbl-scroll');
+  const oldScrollOverflow = scroll ? scroll.style.overflow : '';
+  const oldScrollMaxH = scroll ? scroll.style.maxHeight : '';
+  wrap.style.width = '720px';
+  wrap.style.margin = '0';
+  if (scroll) { scroll.style.overflow = 'visible'; scroll.style.maxHeight = 'none'; }
+  try {
+    const canvas = await html2canvas(wrap, {
+      scale: 2,
+      width: 720,
+      windowWidth: 720,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      logging: false
+    });
+    const link = document.createElement('a');
+    link.download = '门店带训追踪_' + new Date().toLocaleString('zh-CN').replace(/[\\/:*?"<>|]/g, '-') + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    fbToast('图片已生成并下载');
+  } catch (e) {
+    fbToast('导出失败：' + (e.message || e));
+  } finally {
+    wrap.style.width = oldWrapWidth;
+    wrap.style.margin = oldWrapMargin;
+    if (scroll) { scroll.style.overflow = oldScrollOverflow; scroll.style.maxHeight = oldScrollMaxH; }
+    if (btn) { btn.textContent = oldText; btn.disabled = false; }
+  }
+}
+
+/* --- 带训追踪手动状态调整弹窗 --- */
+function openTrainerStatusPicker(store, trainer, autoStatus) {
+  const overlay = document.createElement('div');
+  overlay.id = '__trainer_status_picker';
+  overlay.className = 'modal-overlay';
+  const key = getTrainerKey(store, trainer);
+  const cur = trainerStatusOverrides[key];
+  overlay.innerHTML = `<div class="modal" style="max-width:320px;padding:14px 16px 16px">
+    <div style="font-weight:600;font-size:15px;margin-bottom:10px">调整带训人状态</div>
+    <div style="font-size:13px;color:#475569;margin-bottom:12px">${esc(store)} · ${esc(trainer || '未提报')}<br>当前自动判定：<b>${esc(autoStatus)}</b></div>
+    <label style="font-size:12px;color:#64748b">修正为</label>
+    <select id="tsp_status" style="width:100%;margin:6px 0 10px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;background:#fff">
+      <option value="">— 恢复自动判定 —</option>
+      <option value="在职" ${cur && cur.status === '在职' ? 'selected' : ''}>在职</option>
+      <option value="异常" ${cur && cur.status === '异常' ? 'selected' : ''}>异常·调店</option>
+      <option value="离职" ${cur && cur.status === '离职' ? 'selected' : ''}>离职</option>
+      <option value="未提报" ${cur && cur.status === '未提报' ? 'selected' : ''}>未提报</option>
+    </select>
+    <label style="font-size:12px;color:#64748b">备注（可选）</label>
+    <input id="tsp_note" type="text" placeholder="例如：花名册延迟，实际仍在职" value="${esc(cur && cur.note || '')}" style="width:100%;margin:6px 0 12px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;box-sizing:border-box">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn sm gray" onclick="closeTrainerStatusPicker()">取消</button>
+      <button class="btn sm" onclick="confirmTrainerStatusPick('${esc(store)}','${esc(trainer)}')">保存</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+function closeTrainerStatusPicker() {
+  const p = document.getElementById('__trainer_status_picker');
+  if (p) p.remove();
+}
+async function confirmTrainerStatusPick(store, trainer) {
+  const sel = document.getElementById('tsp_status');
+  const note = document.getElementById('tsp_note');
+  if (!sel) return;
+  const status = sel.value;
+  if (await saveTrainerStatusOverride(store, trainer, status, note && note.value || '', '总部')) {
+    closeTrainerStatusPicker();
+    render();
+  }
+}
+
+/* --- A3：审核确认 → 落映射 → 重跑状态机 → 剔除异常清单 → 持久化 --- */
+function renderFeedbackReview() {
+  const el = document.getElementById('blk_f5_3');
+  if (!el) return;
+  const list = getFeedback();
+  const pend = list.filter(x => x.status === '待审核');
+  const ovN = Object.keys(OV).length;
+  el.innerHTML = `<div class="sub-t">待审核 ${pend.length} 条 · 已确认 ${list.filter(x => x.status === '已确认').length} 条 · 已生效修正 ${ovN} 条</div>`
+    + (list.length ? list.map(x => `<div class="li"><div class="li-h">${esc(x.name)} · ${esc(x.store) || '-'}
+        <span class="li-tag" style="background:${x.status === '待审核' ? '#fef3c7;color:#b45309' : x.status === '已确认' ? '#dcfce7;color:#16a34a' : '#f1f5f9;color:#94a3b8'}">${esc(x.status)}</span></div>
+        <div class="li-m">${esc(x.from)} → <b>${esc(x.to)}</b> ${x.note ? '· ' + esc(x.note) : ''} · ${esc(x.at)}</div>
+        ${x.status === '待审核' ? `<div class="li-a"><button class="btn sm" onclick="confirmFb(${x.id})">确认修改</button>
+          <button class="btn sm gray" onclick="dropFb(${x.id})">驳回</button></div>` : ''}</div>`).join('')
+      : '<div class="empty">暂无门店提交的岗位异常反馈</div>')
+    + `<div class="sub-t" style="margin-top:10px">审核结果持久化</div>
+       <div class="li-m">审核确认后已自动保存到本机，并尝试写入 <b>overrides.json</b>；
+       如需让<b>线上链接</b>其他人也看到，把下面内容存成 <b>data/overrides.json</b> 后重新抓数即可。</div>
+       <div class="li-a"><button class="btn sm gray" onclick="exportOV()">📋 复制审核结果 JSON</button>
+         <span class="note" id="ov_msg"></span></div>
+       <textarea id="ov_out" class="ov-out" readonly placeholder="（点上面按钮生成）"></textarea>`;
+}
+async function confirmFb(id) {
+  const l = getFeedback(); const x = l.find(v => v.id === id);
+  if (!x) return;
+  const opt = fbOption(x.to);
+  let postVal, posVal;
+  if (opt) { postVal = opt.post; posVal = opt.position; }
+  else if (x.to && x.to.indexOf('其他：') === 0) { postVal = '其他'; posVal = x.to.slice(3); }
+  else return;
+  if (!postVal) return;
+  // ① 落独立映射（本机即时生效）
+  OV[x.uid] = { post: postVal, position: posVal, note: x.note || '', at: new Date().toLocaleString('zh-CN') };
+  setOV(OV);
+  // ② 重跑状态机
+  App.list = buildModel(raw.employees);
+  // ③ 同步云端（总部可见 + 钉钉通知提交人）
+  if (FEEDBACK_API) {
+    try {
+      const r = await fetch(FEEDBACK_API + '/api/feedback/confirm', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ovPost: postVal, ovPosition: posVal, reviewer: '总部' })
+      });
+      const j = await r.json();
+      if (j.ok) fbToast('已确认并通知提交人'); else if (j.message) fbToast('审核提醒：' + j.message);
+    } catch (e) { fbToast('已本机生效，云端稍后同步'); }
+  }
+  x.status = '已确认'; setFeedback(l);
+  const f1 = document.getElementById('blk_f1_2');
+  if (f1) delete f1.dataset.ready;
+  await loadFeedbackCloud();
+  render();
+}
+function dropFb(id) {
+  const l = getFeedback(); const x = l.find(v => v.id === id);
+  if (!x) return; x.status = '已驳回'; setFeedback(l); render();
+}
+function exportOV() {
+  const txt = JSON.stringify({ overrides: OV }, null, 2);
+  const ta = document.getElementById('ov_out');
+  if (ta) ta.value = txt;
+  const m = document.getElementById('ov_msg');
+  const done = () => { if (m) m.textContent = '✓ 已复制，粘贴到 data/overrides.json 即可'; };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done).catch(() => { if (m) m.textContent = '请手动复制下方文本'; });
+  } else if (m) m.textContent = '请手动复制下方文本';
+}
+
+function renderAnalysis() {
+  const el = document.getElementById('blk_f5_4');
+  if (!el) return;
+  const list = filtered(); const s = stat(list);
+  const rows = storeRank(filteredArea()).filter(r => r.n >= 1).sort((a, b) => a.rate - b.rate);
+  const worst = rows.slice(0, 3);
+  const noExam = list.filter(isCurrent).filter(e => e.learned.length && !e.examPosts.length).length;
+  const badPost = list.filter(isCurrent).filter(e => e.flag).length;
+  const out = [];
+  out.push(`<b>本期（9/1 起入职）共 ${s.cur} 人，训练闭环 ${s.closed} 人，闭环率 ${pct1(s.rate)}。</b>`);
+  if (!s.cur) out.push('本期暂无新入职人员 —— 花名册是 9/1 快照，等 10 月新花名册进来人数才会起来。');
+  if (noExam) out.push(`⚠ <b>${noExam} 人「学完未考」</b>：学习已合格但考核卡里没有对应岗位记录。这是当前最大的卡点 —— 要么门店没提交考核，要么考核卡表单字段还没补齐。`);
+  if (s.lateTimeout) out.push(`⚠ <b>${s.lateTimeout} 人超时未完成</b>（超过入职 7/14 天仍未完成学习或考核），需直接催办到人。`);
+  if (s.confirm) out.push(`· ${s.confirm} 人角色待确认（花名册写"兼职/实习"且无任何学习考核记录），需门店提报前厅/厨房归属。`);
+  if (badPost) out.push(`· ${badPost} 人花名册职位与学考岗位不一致，已在「门店闭环追踪」页标黄，建议门店在「门店查询」页提交更正。`);
+  else {
+    const histBad = list.filter(isHist).filter(e => e.flag).length;
+    if (histBad) out.push(`· 另有 <b>${histBad} 人</b>属历史存量（9/1 前入职）存在岗位不一致 —— 按口径不计入本期异常清单，可在「门店查询」页展开全部后查看。`);
+  }
+  if (worst.length) out.push(`<b>优先盯这 ${worst.length} 家门店</b>：` + worst.map(w => `${esc(w.store)}（${pct1(w.rate)}，${w.n} 人）`).join('、') + '。');
+  const ptWeak = GRADES.map(g => {
+    const cur = list.filter(isCurrent);
+    const rel = cur.filter(e => e.isMgr || e.learned.includes(g) || e.post === g);
+    const ok = cur.filter(e => e.status === '训练闭环' && (e.matched.includes(g) || e.isMgr));
+    return { g, r: safeDiv(ok.length, rel.length), rel: rel.length };
+  }).filter(x => x.rel >= 3).sort((a, b) => a.r - b.r);
+  if (ptWeak.length) out.push(`<b>岗位维度最弱：${ptWeak[0].g}（闭环率 ${pct1(ptWeak[0].r)}，涉及 ${ptWeak[0].rel} 人）</b>，建议检查该岗位的课程推送与考核安排。`);
+  const pendStore = storeRank(filteredArea()).filter(r => r.area === UNMATCHED || r.area === '未匹配');
+  const pendN = pendStore.reduce((a, b) => a + b.names.length, 0);
+  if (pendN) out.push(`· <b>${pendN} 人门店待核对</b>（花名册没填门店 / 门店名对不上区域表），已在「门店闭环追踪」页列出人名。`);
+  el.innerHTML = out.map(t => `<div class="an-line">· ${t}</div>`).join('');
+}
+
+function renderUnmatchedExams() {
+  const el = document.getElementById('blk_f5_unmatched');
+  if (!el) return;
+  const list = (raw.exam_unmatched || []).slice();
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✅</div>
+      <div class="empty-state-title">全部考核记录均已成功匹配</div>
+      <div class="empty-state-desc">钉钉考核卡的「被考核人」都能在花名册里找到对应员工，无需处理。</div></div>`;
+    return;
+  }
+  const reasonMap = { unmatched: '花名册无此人', no_subject: '无法识别被考核人' };
+  list.sort((a, b) => (b.submit_time || '').localeCompare(a.submit_time || ''));
+  let html = `<div class="sub-t" style="margin-bottom:8px">共 <b style="color:#dc2626">${list.length}</b> 条未匹配 · 最近提交在上方</div>
+    <div class="tbl-scroll"><table><thead><tr>
+      <th>提交时间</th><th>门店</th><th>考核岗位</th><th>被考核人(账号/姓名)</th><th>提交人</th><th>未匹配原因</th></tr></thead><tbody>`;
+  list.forEach(r => {
+    const who = [r.bu_name, r.bu_uid].filter(Boolean).join(' / ') || '—';
+    html += `<tr>
+      <td>${esc(r.submit_time) || '—'}</td>
+      <td>${esc(r.store) || '—'}</td>
+      <td>${esc(r.post) || '—'}</td>
+      <td>${esc(who)}</td>
+      <td>${esc(r.submitter) || '—'}</td>
+      <td><span class="ck no">${esc(reasonMap[r.reason] || r.reason)}</span></td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+const isLocalHost = () => ['localhost', '127.0.0.1'].includes(location.hostname);
+const REFRESH_CMD = `cd /d "D:\\1-工作\\BaiduSyncdisk\\workbuddy\\2026-09-10-09-10-58\\前厅新员工训练看板" && start_看板.bat`;
+
+async function doRefresh(opts = {}) {
+  const { btn, msgEl, showHelp } = opts;
+  const local = isLocalHost();
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '🔄 同步中…'; }
+  if (msgEl) msgEl.textContent = '同步中…（约 30 秒）';
+  try {
+    const r = await fetch('/api/refresh', { method: 'POST' });
+    const j = await r.json();
+    const ok = j.success !== undefined ? j.success : j.ok;
+    let txt = ok ? ('✓ ' + (j.message || '已更新')) : ('✗ ' + (j.message || '失败'));
+    if (ok && j.published) txt += ' · 线上已同步';
+    else if (ok && j.publish_message) txt += ' · 线上同步: ' + j.publish_message;
+    if (msgEl) msgEl.textContent = txt + (ok ? ' 正在重载…' : '');
+    if (btn) btn.innerHTML = txt;
+    if (ok) setTimeout(() => location.reload(), 1500);
+  } catch (e) {
+    const err = local ? '✗ 本地服务未运行，请双击 start_看板.bat' : '✗ 静态链接无法直接刷新';
+    if (msgEl) msgEl.textContent = err;
+    if (btn) btn.innerHTML = err;
+    if (showHelp) {
+      const help = document.getElementById('sync_help');
+      if (help) help.style.display = 'block';
+    }
+  }
+  if (btn && !btn.innerHTML.includes('重载')) { setTimeout(() => { btn.disabled = false; btn.innerHTML = originalText || '🔄 刷新'; }, 2500); }
+}
+
+function renderSyncPanel() {
+  const el = document.getElementById('blk_f5_5');
+  if (!el) return;
+  el.innerHTML = `<div class="sync-box">
+    <div class="sync-info">数据基准：<b>${esc(raw.meta.fetched_at || '—')}</b><br>
+      来源：${esc(raw.meta.source || '—')}<br>
+      花名册快照：${esc(raw.meta.roster || '—')} · 考核卡记录：<b>${raw.meta.exam_records || 0}</b> 条 · 已生效岗位修正：<b>${Object.keys(OV).length}</b> 条</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px">
+      <button class="btn" id="sync_btn">🔄 刷新数据（重抓钉钉 + 重建看板）</button>
+      <span class="note" id="sync_msg"></span>
+    </div>
+    <div id="sync_help" style="display:none;margin-top:10px;padding:10px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;font-size:12.5px;color:#475569;line-height:1.8">
+      <b>当前为静态链接，刷新需要在本地启动服务：</b><br>
+      1. 在电脑打开看板文件夹，双击 <b>start_看板.bat</b><br>
+      2. 浏览器会自动打开 <code>http://localhost:3000</code><br>
+      3. 在本地页面点「刷新数据」即可一键重抓钉钉并自动重载<br>
+      <button class="btn sm gray" id="sync_copy" style="margin-top:6px">📋 复制启动命令</button>
+      <span class="note" id="copy_msg"></span>
+      <div style="margin-top:6px;padding:6px;background:#fff;border-radius:4px;font-family:Consolas,monospace;font-size:11.5px;word-break:break-all">${esc(REFRESH_CMD)}</div>
+    </div>
+  </div>`;
+  const b = document.getElementById('sync_btn');
+  const copyBtn = document.getElementById('sync_copy');
+  if (b) b.onclick = () => doRefresh({ btn: b, msgEl: document.getElementById('sync_msg'), showHelp: true });
+  if (copyBtn) copyBtn.onclick = async () => {
+    const cm = document.getElementById('copy_msg');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(REFRESH_CMD);
+        cm.textContent = '✓ 已复制';
+      } else { cm.textContent = '请手动复制下方命令'; }
+    } catch (err) { cm.textContent = '请手动复制下方命令'; }
+  };
+}
+
+/* ==================== 渲染：门店学习进度（Tab6 · 店长待办导向） ====================
+ * 分层：第一层「待办跟进」只看要立即跟进的人（待学习 / 学习超期 / 待考核，各显示人数+清单）
+ *       第二层「在职全员」按需切换，看本店全部在职人员明细，支持姓名/岗位/状态筛选
+ * 状态口径（用户规定）：只有「正常」「异常」两类 —— 历史存量归为正常，待确认归为异常
+ * 排序：已超期优先（超期越久越前）→ 临近截止优先（剩余越少越前）
+ */
+const MP_COLS = ['姓名', '岗位', '学习任务', '应完成时间', '完成状态', '剩余/超期', '考核截止', '状态'];
+let MP_VIEW = 'todo';                                  // 'todo' 待办 | 'all' 在职全员
+const MP_F = { name: '', post: '全部', status: '全部' };   // 第二层筛选（独立于全局 F）
+
+const mpInJob   = e => !e.left && !e.excluded;                     // 在职（排除离职 / 非前厅）
+const mpTodoable = e => mpInJob(e) && !isHist(e) && e.need > 0;    // 历史存量不计入待办
+function mpStatus(e) {                                             // 仅 正常 / 异常
+  if (e.status2 === '待确认') return '异常';
+  if (isHist(e)) return '正常';
+  return e.status2 === '异常' ? '异常' : '正常';
+}
+const shortGrade = g => String(g || '').replace(/岗$/, '');
+function mpTaskOf(e) {
+  // 应学课程以花名册（或审核调整）岗位为准
+  if (e.post === '管理岗' || (e.need || 0) >= 3) return '全学';
+  const p = e.post || '';
+  if (GRADES.includes(p)) return shortGrade(p);   // 服务 / 迎宾 / 传菜
+  if (p === '待定') return '待定';
+  return '本岗';
+}
+const mpRemainLearn = e => e.d7 ? dayDiff(TODAY, e.d7) : null;     // >0 剩余 / <0 超期
+const mpRemainExam  = e => e.d14 ? dayDiff(TODAY, e.d14) : null;
+function mpUrgTag(e) {                                             // 学习紧急度标签
+  const d = mpRemainLearn(e);
+  if (d === null) return '<span class="st" style="background:#f1f5f9;color:#94a3b8">无期限</span>';
+  if (d < 0)  return `<span class="st" style="background:#fee2e2;color:#dc2626">学习超期 ${-d} 天</span>`;
+  if (d === 0) return '<span class="st" style="background:#ffedd5;color:#ea580c">今天到期</span>';
+  if (d <= 2) return `<span class="st" style="background:#ffedd5;color:#ea580c">剩 ${d} 天</span>`;
+  return `<span class="st" style="background:#f1f5f9;color:#64748b">剩 ${d} 天</span>`;
+}
+function mpExamDueTxt(e) {                                         // 考核截止（含超期提示）
+  if (!e.d14) return '—';
+  const d = mpRemainExam(e);
+  return ymd(e.d14) + (d < 0 ? ` <span class="st" style="background:#fee2e2;color:#dc2626">超期 ${-d} 天</span>`
+                             : ` <span class="st" style="background:#f1f5f9;color:#64748b">剩 ${d} 天</span>`);
+}
+function mpLearnState(e) {                                         // 完成状态
+  if (e.learnOk) return '<span class="st" style="background:#dcfce7;color:#16a34a">已学习</span>';
+  if (e.learnStarted && e.learnStarted.length) return '<span class="st" style="background:#cffafe;color:#0891b2">学习中</span>';
+  return '<span class="st" style="background:#f1f5f9;color:#94a3b8">未学习</span>';
+}
+/* 紧急度：已超期（越久越前）→ 临近截止（剩余越少越前） */
+function mpSort(a, b) {
+  const k = e => { const d = mpRemainLearn(e); return d === null ? 99999 : (d >= 0 ? d : d - 10000); };
+  return k(a) - k(b);
+}
+function mpStatusTag(e) {
+  const s = mpStatus(e);
+  const c = s === '正常' ? '#16a34a' : '#dc2626';
+  return `<span class="st" style="background:${c}1a;color:${c}">${s}</span>`;
+}
+
+/* 单元格（桌面表格 / 移动端展开详情共用） */
+const MP_DETAIL_COLS = ['花名册职位', '入职日期', '学习进度', '已学岗位', '考核岗位', '备注'];
+function mpCell(e, c) {
+  switch (c) {
+    case '姓名': return `<td data-label="姓名">${esc(e.name)}</td>`;
+    case '岗位': return `<td data-label="岗位">${esc(e.post || '—')}</td>`;
+    case '学习任务': return `<td data-label="学习任务">${esc(mpTaskOf(e))}</td>`;
+    case '应完成时间': return `<td data-label="应完成时间" class="mono">${e.d7 ? esc(ymd(e.d7)) : '—'}</td>`;
+    case '完成状态': return `<td data-label="完成状态">${mpLearnState(e)}</td>`;
+    case '学习状态': return `<td data-label="学习状态">${mpLearnState(e)}</td>`;
+    case '考核状态': return `<td data-label="考核状态">${e.examPosts.length ? '<span class="st" style="background:#dcfce7;color:#16a34a">已考核</span>' : '<span class="st" style="background:#f1f5f9;color:#94a3b8">未考核</span>'}</td>`;
+    case '剩余/超期': return `<td data-label="剩余/超期">${mpUrgTag(e)}</td>`;
+    case '考核截止': return `<td data-label="考核截止" class="mono">${mpExamDueTxt(e)}</td>`;
+    case '状态': return `<td data-label="状态">${mpStatusTag(e)}</td>`;
+    case '花名册职位': return `<td data-label="花名册职位">${esc(e.position || '—')}</td>`;
+    case '入职日期': return `<td data-label="入职日期" class="mono">${esc(e.hire || '—')}</td>`;
+    case '学习进度': return `<td data-label="学习进度">${e.learned.length}/${e.need}${e.need ? (e.learnOk ? ' ✓' : '') : ''}</td>`;
+    case '已学岗位': return `<td data-label="已学岗位">${e.learned.map(g => `<span class="ck ok">${g[0]}${g[1]}</span>`).join('') || '<span class="ck no">未学</span>'}</td>`;
+    case '考核岗位': return `<td data-label="考核岗位">${e.examPosts.map(g => `<span class="ck ok">${g[0]}${g[1]}</span>`).join('') || '<span class="ck no">未考</span>'}</td>`;
+    case '备注': return `<td data-label="备注">${esc(e.remark)}${isHist(e) ? ' <span class="st st-gray">历史存量</span>' : ''}</td>`;
+    default: return '';
+  }
+}
+
+/* 紧凑卡片（移动端）：摘要一行 + 关键指标 + 点击展开补充字段 */
+function mpCardHtml(e) {
+  const c = mpStatus(e) === '正常' ? '#16a34a' : '#dc2626';
+  return `<div class="mcard" style="border-left:4px solid ${c}">
+    <div class="mhead">
+      <div class="ml1"><span class="mname">${esc(e.name)}</span><span class="mrole">${esc(e.post || '—')}</span>${mpStatusTag(e)}${mpUrgTag(e)}</div>
+      <div class="ml2"><span class="st" style="background:#f1f5f9;color:#475569">应完成 ${e.d7 ? esc(ymd(e.d7)) : '—'}</span><span class="st" style="background:#f1f5f9;color:#475569">考至 ${e.d14 ? esc(ymd(e.d14)) : '—'}</span></div>
+    </div>
+    <table class="mdetail" hidden><tbody><tr>${MP_DETAIL_COLS.map(k => mpCell(e, k)).join('')}</tr></tbody></table>
+  </div>`;
+}
+function mpBodyHtml(rs) {
+  if (IS_NARROW()) return `<div class="mcards">${rs.map(mpCardHtml).join('')}</div>`;
+  return `<div class="tbl-scroll"><table><thead><tr>${MP_COLS.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>`
+    + rs.map(e => `<tr>${MP_COLS.map(c => mpCell(e, c)).join('')}</tr>`).join('')
+    + `</tbody></table></div>`;
+}
+/* 在职全员一览表：PC/移动端统一用表格，只保留 姓名 / 岗位 / 学习状态 / 考核状态 / 备注 */
+const MP_ALL_COLS = ['姓名', '岗位', '学习状态', '考核状态', '备注'];
+function mpAllBodyHtml(rs) {
+  // keep-table：移动端豁免卡片化，保持 PC 式一览表（横向滚动）
+  return `<div class="tbl-scroll"><table class="keep-table"><thead><tr>${MP_ALL_COLS.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>`
+    + rs.map(e => `<tr style="cursor:pointer" onclick="if(!event.target.closest('button,select,a,input,.post-badge')) showEmpDetail('${esc(e.uid)}')">${MP_ALL_COLS.map(c => mpCell(e, c)).join('')}</tr>`).join('')
+    + `</tbody></table></div>`;
+}
+
+/* 第一层：三栏待办（待学习 / 待考核 / 异常人员）
+   - 待学习：未完成规定学习的全部人员（含学习中 / 超期），岗位可调
+   - 待考核：已学完待考核的人员（含待考核 / 超期）
+   - 异常人员：未学先考（已考核但学习未完成）+ 岗位待确认 —— 需特殊处理，不混入前两栏 */
+function mpGroups(all) {
+  const base = all.filter(mpTodoable);                       // 在职本期 need>0
+  // 异常集合：未学先考（有考核记录但学习未完成）+ 岗位待确认（含 need=0）
+  const examAnom = base.filter(e => e.examPosts.length && !e.learnOk);
+  const unconf   = all.filter(e => e.status2 === '待确认');
+  const anomUids = new Set([...examAnom, ...unconf].map(e => e.uid));
+  return [
+    { key: 'learn', icon: '📚', title: '待学习', color: '#0891b2',
+      desc: '尚未完成规定岗位学习（含学习中 / 超期），岗位可点选调整',
+      empty: '✅ 本店暂无待学习人员（新员工入职 7 天内需完成学习）',
+      rs: base.filter(e => !e.learnOk && !anomUids.has(e.uid)).sort(mpSort) },
+    { key: 'exam', icon: '📝', title: '待考核', color: '#d97706',
+      desc: '学习已完成、等待考核（含待考核 / 超期）',
+      empty: '✅ 本店没有待考核人员',
+      rs: base.filter(e => e.learnOk && !e.examOk && !anomUids.has(e.uid)).sort(mpSort) },
+    { key: 'anom', icon: '⚠️', title: '异常人员', color: '#dc2626',
+      desc: '未学先考（已考核但学习未完成）/ 岗位待确认，需核实处理',
+      empty: '✅ 本店无异常人员',
+      rs: [...examAnom, ...unconf].sort(mpSort) }
+  ];
+}
+/* 各栏列配置（岗位用「调整岗位」→ 可点选调整） */
+const MP_GRP_COLS = {
+  learn: ['姓名', '调整岗位', '应完成时间', '应学课程', '进度状态'],
+  exam:  ['姓名', '调整岗位', '考核截止', '进度状态'],
+  anom:  ['姓名', '调整岗位', '异常原因']
+};
+/* 各栏的进度状态标记：未超期→进行中（学中/待考），超期→红标 */
+function mpGrpState(g, e) {
+  if (g.key === 'learn') {
+    const d = mpRemainLearn(e);
+    if (d !== null && d < 0) return `<span class="st" style="background:#fee2e2;color:#dc2626">超期 ${-d} 天</span>`;
+    return `<span class="st" style="background:#cffafe;color:#0891b2">学习中</span>`;
+  }
+  if (g.key === 'exam') {
+    const d = mpRemainExam(e);
+    if (d !== null && d < 0) return `<span class="st" style="background:#fee2e2;color:#dc2626">超期 ${-d} 天</span>`;
+    return `<span class="st" style="background:#fef3c7;color:#b45309">待考核</span>`;
+  }
+  return '';
+}
+/* 异常原因文本 */
+function mpAnomReason(e) {
+  if (e.status2 === '待确认') return `岗位待确认：暂无法确定学习任务，请先确认岗位`;
+  if (e.examPosts.length && !e.learnOk)
+    return `未学先考：已考核 ${e.examPosts.join('、')}，但学习未完成（已学 ${e.learned.length}/${e.need}）`;
+  return esc(e.remark) || '—';
+}
+/* 分组颜色（学习=绿 / 考核=蓝 / 异常=红） */
+function mpGrpStyle(g) {
+  if (g.key === 'learn') return { main: '#16a34a', bg: '#dcfce7' };
+  if (g.key === 'exam') return { main: '#2563eb', bg: '#dbeafe' };
+  return { main: '#dc2626', bg: '#fee2e2' };
+}
+/* 移动端卡片内联岗位：可点击徽章 / 下拉 / 待审核 / 已覆盖 */
+function mpPostInline(e) {
+  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核');
+  if (pend) {
+    return `<span class="st" style="background:#fef3c7;color:#b45309">待审核→${esc(fbDisplay(pend.to))}</span>
+      <button class="btn sm gray post-rev" data-uid="${esc(e.uid)}">× 撤销</button>`;
+  }
+  const ov = OV[e.uid];
+  if (ov && ov.post) {
+    return `<span class="st" style="background:#dcfce7;color:#16a34a">${esc(ov.post)} ✓</span>
+      <button class="btn sm gray post-cancel" data-uid="${esc(e.uid)}">撤销</button>`;
+  }
+  if (!e.left && e.status2 !== '已离职') {
+    if (F.editPostUid === e.uid) {
+      return `<select class="post-pick" data-uid="${esc(e.uid)}" data-store="${esc(e.store)}" title="选择正确岗位后提交后台审核">
+        <option value="">请选择新岗位…</option>
+        ${FB_OPTIONS.map(o => `<option value="${esc(o.label)}">${esc(fbDisplay(o.label))}</option>`).join('')}
+        <option value="__cancel__">取消</option>
+      </select>`;
+    }
+    return `<span class="st post-badge" data-uid="${esc(e.uid)}" title="点击调整岗位">${esc(e.post || '待确认')} <small>✎</small></span>`;
+  }
+  return `<span class="st">${esc(e.post) || '-'}</span>`;
+}
+/* 分组状态标签（按组色） */
+function mpGrpStateTag(g, e) {
+  const s = mpGrpStyle(g);
+  if (g.key === 'learn') {
+    const d = mpRemainLearn(e);
+    if (d !== null && d < 0) return `<span class="st" style="background:${s.bg};color:${s.main}">超期 ${-d} 天</span>`;
+    if (e.learnStarted && e.learnStarted.length) return `<span class="st" style="background:${s.bg};color:${s.main}">学习中</span>`;
+    return `<span class="st" style="background:${s.bg};color:${s.main}">未学习</span>`;
+  }
+  if (g.key === 'exam') {
+    const d = mpRemainExam(e);
+    if (d !== null && d < 0) return `<span class="st" style="background:${s.bg};color:${s.main}">超期 ${-d} 天</span>`;
+    return `<span class="st" style="background:${s.bg};color:${s.main}">待考核</span>`;
+  }
+  if (e.status2 === '待确认') return `<span class="st" style="background:${s.bg};color:${s.main}">岗位待确认</span>`;
+  return `<span class="st" style="background:${s.bg};color:${s.main}">未学先考</span>`;
+}
+/* 分组时间标签 */
+function mpGrpTimeTag(g, e) {
+  if (g.key === 'learn') {
+    const d = mpRemainLearn(e);
+    const isLate = d !== null && d < 0;
+    return `<span class="st" style="background:${isLate ? '#fee2e2' : '#f1f5f9'};color:${isLate ? '#dc2626' : '#475569'}">应完成 ${e.d7 ? esc(ymd(e.d7)) : '—'}</span>`;
+  }
+  if (g.key === 'exam') {
+    const d = mpRemainExam(e);
+    const isLate = d !== null && d < 0;
+    return `<span class="st" style="background:${isLate ? '#fee2e2' : '#f1f5f9'};color:${isLate ? '#dc2626' : '#475569'}">考至 ${e.d14 ? esc(ymd(e.d14)) : '—'}</span>`;
+  }
+  return '';
+}
+/* 分组单元格（复用现有 mpCell，扩展分组专属列） */
+function mpGrpCell(e, c, g) {
+  if (c === '调整岗位') return postCell(e);
+  if (c === '应学课程') return `<td data-label="应学课程">${esc(mpTaskOf(e))}</td>`;
+  if (c === '进度状态') return `<td data-label="进度状态">${mpGrpState(g, e)}</td>`;
+  if (c === '异常原因') return `<td data-label="异常原因">${mpAnomReason(e)}</td>`;
+  return mpCell(e, c);
+}
+/* 分组渲染（桌面表格 / 移动卡片，按栏列配置） */
+function mpGrpBodyHtml(g) {
+  const cols = MP_GRP_COLS[g.key] || MP_COLS;
+  if (IS_NARROW()) return `<div class="mcards">${g.rs.map(e => mpGrpCardHtml(e, g)).join('')}</div>`;
+  return `<div class="tbl-scroll"><table><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>`
+    + g.rs.map(e => `<tr style="cursor:pointer" onclick="if(!event.target.closest('button,select,a,input,.post-badge')) showEmpDetail('${esc(e.uid)}')">${cols.map(c => mpGrpCell(e, c, g)).join('')}</tr>`).join('')
+    + `</tbody></table></div>`;
+}
+/* 学习完成时间：取已学岗位中最晚的完成时间（精确到日） */
+function mpLearnDoneTxt(e) {
+  const ts = Object.values(e.learnedAt || {}).filter(Boolean).sort();
+  if (!ts.length) return '';
+  const d = toDate(ts[ts.length - 1]);
+  return d ? ymd(d) : String(ts[ts.length - 1]).slice(0, 10);
+}
+/* 分组卡片（移动端）：紧凑平铺
+ * 第一行：姓名 · 岗位(可点调整) · 超期/状态 · 截止日期（同行，右侧留白收纳）
+ * 待学习组第二行：应学课程 · 学习进度 · 学习完成时间
+ * 待考核组：无明细行，直接「去考核」按钮（跳钉钉考核表，预填姓名+门店） */
+function mpGrpCardHtml(e, g) {
+  const s = mpGrpStyle(g);
+  const prog = `<b>${e.learned.length}/${e.need}${e.need && e.learnOk ? ' ✓' : ''}</b>`;
+  const done = mpLearnDoneTxt(e);
+  let info = '';
+  if (g.key === 'learn') {
+    info = `<span>应学课程 <b>${esc(mpTaskOf(e))}</b></span><span>学习进度 ${prog}</span>`
+      + `<span>学习完成 <b>${done || '—'}</b></span>`;
+  } else if (g.key === 'anom') {
+    info = `<span>异常原因 <b>${esc(mpAnomReason(e))}</b></span>`;
+  }
+  const infoRow = info ? `<div class="mp-card-info">${info}</div>` : '';
+  const examBtn = g.key === 'exam'
+    ? `<div class="mp-card-act"><a class="mp-exam-btn" href="${examFormUrl(e)}" target="_blank" rel="noopener">📝 去考核</a></div>`
+    : '';
+  return `<div class="mcard mp-grp-card" style="border-left:4px solid ${s.main}" onclick="if(!event.target.closest('button,select,a,input,.post-badge')) showEmpDetail('${esc(e.uid)}')">
+    <div class="ml1">
+      <span class="mname">${esc(e.name)}</span>
+      ${mpPostInline(e)}
+      ${mpGrpStateTag(g, e)}
+      ${mpGrpTimeTag(g, e)}
+    </div>
+    ${infoRow}
+    ${examBtn}
+  </div>`;
+}
+
+function drawMp() {
+  const el = document.getElementById('blk_f7_body');
+  if (!el) return;
+  const kw = F.storeKw.trim();
+  if (!kw) {
+    el.innerHTML = `<div class="card"><div class="empty-state"><div class="empty-state-icon">🏪</div>
+      <div class="empty-state-title">请先选择本门店</div>
+      <div class="empty-state-desc">在上方输入或点选门店名，即可看到本店需要立即跟进的人员</div></div></div>`;
+    return;
+  }
+  const all = App.list.filter(e =>
+    ((e.store || '').includes(kw) || (e.area || '').includes(kw)) && mpInJob(e));
+
+  const seg = `<div class="card"><div class="mp-seg">
+      <button class="btn sm ${MP_VIEW === 'todo' ? '' : 'gray'}" id="mp_v_todo">📌 待办跟进</button>
+      <button class="btn sm ${MP_VIEW === 'all' ? '' : 'gray'}" id="mp_v_all">👥 在职全员</button>
+      <span class="note">${esc(kw)} · 在职 <b>${all.length}</b> 人${MP_VIEW === 'todo' ? '（默认只看需立即跟进的人）' : ''}</span>
+    </div></div>`;
+
+  if (MP_VIEW === 'all') {
+    const posts = ['全部', ...new Set(all.map(e => e.post).filter(Boolean))];
+    let rs = all.filter(e =>
+      (!MP_F.name || (e.name || '').includes(MP_F.name)) &&
+      (MP_F.post === '全部' || e.post === MP_F.post) &&
+      (MP_F.status === '全部' || mpStatus(e) === MP_F.status)
+    ).sort(mpSort);
+    const sel = (id, opts, cur) => `<select id="${id}">${opts.map(o => `<option${o === cur ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+    el.innerHTML = seg + `<div class="card">
+      <h3>在职全员学习明细（共 ${rs.length} 人）</h3>
+      <div class="fbar">
+        <label class="fld">姓名</label><input type="text" id="mp_name" value="${esc(MP_F.name)}" placeholder="输入姓名关键词">
+        <label class="fld">岗位</label>${sel('mp_post', posts, MP_F.post)}
+        <label class="fld">状态</label>${sel('mp_status', ['全部', '正常', '异常'], MP_F.status)}
+        <button class="btn sm gray" id="mp_reset">↺ 重置</button>
+      </div>
+      ${rs.length ? mpAllBodyHtml(rs) : '<p class="note">未找到符合条件的人员</p>'}
+    </div>`;
+    const n = document.getElementById('mp_name');
+    if (n) n.oninput = ev => { MP_F.name = ev.target.value.trim(); drawMp(); const b = document.getElementById('mp_name'); if (b) { b.focus(); b.setSelectionRange ? b.setSelectionRange(b.value.length, b.value.length) : null; } };
+    const p = document.getElementById('mp_post');
+    if (p) p.onchange = ev => { MP_F.post = ev.target.value; drawMp(); };
+    const s = document.getElementById('mp_status');
+    if (s) s.onchange = ev => { MP_F.status = ev.target.value; drawMp(); };
+    const r = document.getElementById('mp_reset');
+    if (r) r.onclick = () => { MP_F.name = ''; MP_F.post = '全部'; MP_F.status = '全部'; drawMp(); };
+  } else {
+    const gs = mpGroups(all);
+    el.innerHTML = seg + gs.map(g => `<div class="card mp-grp">
+      <h3 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${g.icon} ${g.title}
+        <span class="st" style="background:${g.color}1a;color:${g.color}">${g.rs.length} 人</span>
+        <span class="note">${g.desc}</span></h3>
+      ${g.rs.length ? mpGrpBodyHtml(g) : `<p class="note">${g.empty}</p>`}
+    </div>`).join('');
+  }
+  bindMCards();
+  bindPostBadges();
+  bindPostPicks();
+  bindPostRevs();
+  bindPostCancel();
+  const t = document.getElementById('mp_v_todo'), a = document.getElementById('mp_v_all');
+  if (t) t.onclick = () => { MP_VIEW = 'todo'; drawMp(); };
+  if (a) a.onclick = () => { MP_VIEW = 'all'; drawMp(); };
+}
+
+function mountMpSearch() {
+  const host = document.getElementById('fbar_f7');
+  if (!host) return;
+  if (host.dataset.mounted === '1') {
+    const s = host.querySelector('#f7_store');
+    if (s && s.value !== F.storeKw) s.value = F.storeKw;
+    return;
+  }
+  host.dataset.mounted = '1';
+  host.innerHTML = '<div class="fbar"><label class="fld">门店</label>'
+    + `<input type="text" id="f7_store" autocomplete="off" placeholder="输入或点选本门店" value="${esc(F.storeKw)}"></div>`;
+  const inp = document.getElementById('f7_store');
+  attachStoreSuggest(inp, s => { F.storeKw = s; drawMp(); });
+  inp.oninput = ev => { F.storeKw = ev.target.value.trim(); drawMp(); };
+}
+
+function render_f7() {
+  mountMpSearch();
+  drawMp();
+}
+
+
+/* ==================== 渲染：区域追踪查询 ==================== */
+function render_f8() {
+  mountFilter('f8', { month: true, note: '区域追踪：先选区域，再看本区域新人进度与区域概览（统计 9/1 起本期新人）' });
+  drawRegionTracking();
+}
+
+function regionBaseList() {
+  return App.list.filter(e =>
+    (F.area === '全部' || e.area === F.area) &&
+    (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month)
+  ).filter(e => isCurrent(e) && !e.excluded && !e.left);
+}
+
+function regionStoreGroup(list, pred) {
+  const m = new Map();
+  list.filter(pred).forEach(e => {
+    const a = e.area || UNMATCHED;
+    const s = e.store || '（未填门店）';
+    const k = a + '||' + s;
+    const o = m.get(k) || { area: a, store: s, items: [] };
+    o.items.push(e);
+    m.set(k, o);
+  });
+  return [...m.values()].map(o => ({ ...o, items: o.items.sort(mpSort) }))
+    .sort((x, y) => (x.area + x.store).localeCompare(y.area + y.store, 'zh'));
+}
+
+function raAnomReason(e) {
+  // 区域追踪「异常人员」备注只呈现异常原因标签（花名册无岗位→优先显示待店长提报）
+  if (e.noRosterPost) return '岗位未定·待店长提报';
+  if (e.mismatch) return '学习不匹配岗位';
+  if (e.examPosts.length && !e.learnOk) return '未学先考';
+  return esc(e.remark) || '—';
+}
+
+function postShort(e) {
+  const p = e.post || '';
+  // 花名册优先：管理岗→管理岗；无岗位→未定岗；其余直接显示花名册（或审核调整后）岗位
+  if (e.isMgr || p === '管理岗') return '管理岗';
+  if (!p) return '未定岗';
+  return p;   // 服务岗 / 迎宾岗 / 传菜岗 / 待定
+}
+function learnStateShort(e) {
+  if (e.learnOk) return '<span class="st" style="background:#dcfce7;color:#166534">已学</span>';
+  if (e.learnStarted && e.learnStarted.length) return '<span class="st" style="background:#dbeafe;color:#1e40af">学习中</span>';
+  return '<span class="st" style="background:#f1f5f9;color:#64748b">未学</span>';
+}
+function examStateShort(e) {
+  return e.examOk
+    ? '<span class="st" style="background:#dcfce7;color:#166534">已考</span>'
+    : '<span class="st" style="background:#f1f5f9;color:#64748b">未考</span>';
+}
+function examUrgTag(e) {
+  const d = mpRemainExam(e);
+  if (d === null) return '<span class="st" style="background:#f1f5f9;color:#94a3b8">无期限</span>';
+  if (d < 0) return `<span class="st" style="background:#fee2e2;color:#dc2626">超期 ${-d} 天</span>`;
+  if (d === 0) return '<span class="st" style="background:#ffedd5;color:#ea580c">今天到期</span>';
+  if (d <= 2) return `<span class="st" style="background:#ffedd5;color:#ea580c">剩 ${d} 天</span>`;
+  return `<span class="st" style="background:#f1f5f9;color:#64748b">剩 ${d} 天</span>`;
+}
+/* 区域追踪明细表格：所有列统一走紧凑表格口径（岗位显示花名册/审核岗位、学习/考核简化为状态） */
+function regionColCell(e, c, gkey) {
+  switch (c) {
+    case '姓名': return `<td data-label="姓名">${esc(e.name)}</td>`;
+    case '岗位': return `<td data-label="岗位">${esc(postShort(e))}</td>`;
+    case '学习任务': return `<td data-label="学习任务">${esc(mpTaskOf(e))}</td>`;
+    case '完成状态': return `<td data-label="完成状态">${gkey === 'exam' ? examStateShort(e) : learnStateShort(e)}</td>`;
+    case '剩余/超期': return `<td data-label="剩余/超期">${gkey === 'exam' ? examUrgTag(e) : mpUrgTag(e)}</td>`;
+    case '异常原因': return `<td data-label="异常原因">${raAnomReason(e)}</td>`;
+    case '学习': return `<td data-label="学习">${learnStateShort(e)}</td>`;
+    case '考核': return `<td data-label="考核">${examStateShort(e)}</td>`;
+    case '状态': return `<td data-label="状态">${statusBadge(e)}</td>`;
+    case '备注': return `<td data-label="备注">${gkey === 'anom' ? raAnomReason(e) : remarkTag(e)}</td>`;
+    default: return `<td data-label="${esc(c)}">${esc(e[c] != null ? e[c] : '')}</td>`;
+  }
+}
+
+function kpiCardsHtml(cards) {
+  return cards.map(c =>
+    `<div class="kpi"><div class="val" style="color:${c.c || '#2563eb'}">${c.v}</div><div class="lbl">${esc(c.k)}</div></div>`).join('');
+}
+
+function regionStoreExtra(g, s) {
+  if (g.key === 'learn') {
+    const late = s.items.filter(e => mpRemainLearn(e) !== null && mpRemainLearn(e) < 0).length;
+    return late ? `<span class="st" style="background:#fee2e2;color:#dc2626">${late} 人超期</span>` : '';
+  }
+  if (g.key === 'exam') {
+    const late = s.items.filter(e => mpRemainExam(e) !== null && mpRemainExam(e) < 0).length;
+    return late ? `<span class="st" style="background:#fee2e2;color:#dc2626">${late} 人超期</span>` : '';
+  }
+  const unconf = s.items.filter(e => e.status2 === '待确认').length;
+  return unconf ? `<span class="st" style="background:#fef3c7;color:#b45309">${unconf} 人待确认</span>` : '';
+}
+
+function regionStoreCard(s, g) {
+  return `<div class="mcard" style="border-left:4px solid ${g.color}">
+    <div class="mhead">
+      <div class="ml1">
+        <span class="mname">${esc(s.store)}</span>
+        <span class="mrole">${esc(s.area)}</span>
+        <span class="st" style="background:${g.color}1a;color:${g.color}">${s.items.length} 人</span>
+        ${regionStoreExtra(g, s)}
+      </div>
+    </div>
+    <table class="mdetail ra-tbl" hidden><thead><tr>${g.cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>
+      ${s.items.map(e => `<tr style="cursor:pointer" onclick="showEmpDetail('${esc(e.uid)}')">${g.cols.map(c => regionColCell(e, c, g.key)).join('')}</tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+
+function regionGroupCard(g) {
+  if (!g.stores.length) {
+    return `<div class="card"><h3>${g.icon} ${g.title} <span class="st" style="background:${g.color}1a;color:${g.color}">0 人</span></h3><p class="note">${g.empty}</p></div>`;
+  }
+  const body = `<div class="mcards">${g.stores.map(s => regionStoreCard(s, g)).join('')}</div>`;
+  return `<div class="card"><h3 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${g.icon} ${g.title}
+    <span class="st" style="background:${g.color}1a;color:${g.color}">${g.total} 人</span>
+    <span class="note">${g.desc}</span></h3>${body}</div>`;
+}
+
+function regionOverviewStoreCard(s) {
+  const total = s.items.length;
+  const closed = s.items.filter(e => e.status === '训练闭环').length;
+  const unclosed = total - closed;
+  const rate = pct1(safeDiv(closed, total));
+  const color = closed >= total ? '#16a34a' : '#2563eb';
+  return `<div class="mcard" style="border-left:4px solid ${color}">
+    <div class="mhead">
+      <div class="ml1">
+        <span class="mname">${esc(s.store)}</span>
+        <span class="mrole">${esc(s.area)}</span>
+        <span class="st" style="background:#dbeafe;color:#2563eb">入职 ${total}</span>
+        <span class="st" style="background:#dcfce7;color:#16a34a">闭环 ${closed}</span>
+        <span class="st" style="background:#fee2e2;color:#dc2626">未闭环 ${unclosed}</span>
+        <span class="st" style="background:#f1f5f9;color:#475569">闭环率 ${rate}</span>
+      </div>
+    </div>
+    <table class="mdetail ra-tbl" hidden><thead><tr>${['姓名','岗位','学习','考核','状态','备注'].map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>
+      ${s.items.map(e => `<tr style="cursor:pointer" onclick="showEmpDetail('${esc(e.uid)}')">${['姓名','岗位','学习','考核','状态','备注'].map(c => regionColCell(e, c, 'overview')).join('')}</tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+
+function regionOverview(list) {
+  const total = list.length;                          // 入职新人总数（含岗位待定）
+  const noPost = list.filter(e => e.noRosterPost).length;
+  const valid = total - noPost;                       // 有效口径（排除岗位未定）
+  const closed = list.filter(e => e.status === '训练闭环').length;
+  const unclosed = valid - closed;
+  const rate = safeDiv(closed, valid);
+  const lateClosed = list.filter(e => e.status === '训练闭环' && (e.learnLate || e.examLate)).length;
+  const cards = [
+    { k: '入职新人数', v: total, c: '#2563eb' },
+    { k: '闭环人数', v: closed, c: '#16a34a' },
+    { k: '未闭环人数', v: Math.max(0, unclosed), c: '#dc2626' },
+    { k: '闭环率', v: pct1(rate), c: rate >= 0.8 ? '#16a34a' : rate >= 0.5 ? '#d97706' : '#dc2626' }
+  ];
+  const stores = regionStoreGroup(list, () => true);
+  const storeCards = stores.map(regionOverviewStoreCard).join('');
+  return `<div class="card">
+    <h3>区域概览</h3>
+    <div class="kpi-grid">${kpiCardsHtml(cards)}</div>
+    ${lateClosed ? `<p class="note">闭环人数中 <b>${lateClosed}</b> 人为超期完成（按规则计入闭环率）</p>` : ''}
+    ${noPost ? `<p class="note" style="color:#dc2626">另有 <b>${noPost}</b> 人花名册未填岗位、不计入闭环率分母，需在「异常人员」中由店长提报</p>` : ''}
+  </div>
+  <div class="card">
+    <h3>门店明细（点击门店展开人员）</h3>
+    ${storeCards ? `<div class="mcards">${storeCards}</div>` : '<p class="note">暂无门店数据</p>'}
+  </div>`;
+}
+
+let RA_VIEW = 'store';                                 // 'store' 门店进度 | 'overview' 区域概览
+
+function drawRegionTracking() {
+  const el = document.getElementById('blk_f8_body');
+  if (!el) return;
+  if (F.area === '全部') {
+    el.innerHTML = `<div class="card"><div class="empty-state"><div class="empty-state-icon">🌐</div>
+      <div class="empty-state-title">请先选择一个区域</div>
+      <div class="empty-state-desc">在上方筛选条选择「区域」后，自动呈现该区域的门店进度与区域概览。</div></div></div>`;
+    return;
+  }
+  const list = regionBaseList();
+  if (!list.length) {
+    el.innerHTML = `<div class="card"><div class="empty-state"><div class="empty-state-icon">📭</div>
+      <div class="empty-state-title">暂无数据</div>
+      <div class="empty-state-desc">${esc(F.area)} 区域${F.month !== '全部' ? ' · ' + F.month : ''}没有本期新人记录。</div></div></div>`;
+    return;
+  }
+  const total = list.length;
+  const seg = `<div class="card"><div class="mp-seg">
+      <button class="btn sm ${RA_VIEW === 'store' ? '' : 'gray'}" id="ra_v_store">🏪 门店进度</button>
+      <button class="btn sm ${RA_VIEW === 'overview' ? '' : 'gray'}" id="ra_v_overview">🌐 区域概览</button>
+      <span class="note">${esc(F.area)} 区域 · 本期新人 <b>${total}</b> 人${RA_VIEW === 'store' ? '（默认只看门店汇总，点击门店展开人员）' : ''}</span>
+    </div></div>`;
+
+  if (RA_VIEW === 'store') {
+    // 异常优先级最高：未学先考 / 学习不匹配岗位 / 岗位待定，一律先归入「异常人员」
+    const isAnom = e => e.mismatch || (e.examPosts.length && !e.learnOk) || e.status2 === '待确认';
+    const learnStores = regionStoreGroup(list, e => !isAnom(e) && !e.learnOk && !e.examPosts.length);
+    const examStores = regionStoreGroup(list, e => !isAnom(e) && e.learnOk && !e.examOk);
+    const anomStores = regionStoreGroup(list, isAnom);
+    const groups = [
+      { key: 'learn', icon: '📚', title: '待学习', color: '#16a34a', desc: '尚未完成规定岗位学习（不含已考核异常）',
+        empty: '✅ 本区域暂无待学习人员', cols: ['姓名','岗位','学习任务','完成状态','剩余/超期'],
+        stores: learnStores, total: learnStores.reduce((a, b) => a + b.items.length, 0) },
+      { key: 'exam', icon: '📝', title: '待考核', color: '#d97706', desc: '学习已完成、等待考核',
+        empty: '✅ 本区域没有待考核人员', cols: ['姓名','岗位','完成状态','剩余/超期'],
+        stores: examStores, total: examStores.reduce((a, b) => a + b.items.length, 0) },
+      { key: 'anom', icon: '⚠️', title: '异常人员', color: '#dc2626', desc: '未学先考 / 学习不匹配岗位 / 岗位未定（待店长提报）',
+        empty: '✅ 本区域无异常人员', cols: ['姓名','岗位','备注'],
+        stores: anomStores, total: anomStores.reduce((a, b) => a + b.items.length, 0) }
+    ];
+    el.innerHTML = seg + groups.map(regionGroupCard).join('');
+  } else {
+    el.innerHTML = seg + regionOverview(list);
+  }
+  bindMCards();
+  const bStore = document.getElementById('ra_v_store');
+  const bOver = document.getElementById('ra_v_overview');
+  if (bStore) bStore.onclick = () => { RA_VIEW = 'store'; drawRegionTracking(); };
+  if (bOver) bOver.onclick = () => { RA_VIEW = 'overview'; drawRegionTracking(); };
+}
+
+/* ==================== 框架：Tab 切换 / 渲染调度 ==================== */
+const DEFAULT_TAB = Math.max(0, CFG.pages.findIndex(p => p.default));
+const State = { tab: DEFAULT_TAB };
+const PUBLIC_MODE = true === true;   // 部署专用：true 时按 storeTabs 裁剪可见 Tab
+const STORE_TABS = ['6', '7', '5'] || [];
+const STORE_DEFAULT = '6';
+/* 门店版：在数据加载前就把骨架屏的 active Tab 切到门店默认 Tab，避免闪后台版 */
+(function earlyPublicTab(){
+  if (!PUBLIC_MODE || !STORE_DEFAULT) return;
+  try {
+    const d = parseInt(STORE_DEFAULT, 10);
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', +b.dataset.tab === d));
+    document.querySelectorAll('.tab').forEach((s, n) => s.classList.toggle('active', n === d));
+  } catch(e) { console.error('[earlyPublicTab]', e); }
+})();
+const RENDERERS = { f1: render_f1, f2: render_f2, f3: render_f3, f4: render_f4, f5: render_f5, f6: render_f6, f7: render_f7, f8: render_f8 };
+
+function renderPage(i) {
+  const p = CFG.pages[i];
+  if (!p) return;
+  if (!App.ready) return;        // 数据未就绪：只切页签，init 完成后会自动重绘
+  const fn = RENDERERS[p.id];
+  if (fn) fn();
+}
+function render() { renderPage(State.tab); }        // 只重绘当前页（其余页切换时用同一份 F 重建）
+function switchTab(i) {
+  State.tab = i;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', +b.dataset.tab === i));
+  document.querySelectorAll('.tab').forEach((s, n) => s.classList.toggle('active', n === i));
+  renderPage(i);
+}
+/* ★v1.2 修复：Tab 按钮点击绑定（原模板只输出按钮、未绑事件 → 点不动） */
+function bindTabs() {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.onclick = () => switchTab(+b.dataset.tab);
+  });
+}
+/* 部署专用：门店版按 data.json 的 storeTabs 裁剪可见 Tab；后台版(PUBLIC_MODE=false)全功能不裁剪 */
+function applyPublicMode() {
+  if (!PUBLIC_MODE) return;
+  const cfg = (raw.storeTabs && Array.isArray(raw.storeTabs) && raw.storeTabs.length)
+    ? raw.storeTabs : ['6'];
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.style.display = cfg.includes(b.dataset.tab) ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((s, n) => {
+    s.style.display = cfg.includes(String(n)) ? '' : 'none';
+  });
+  if (!cfg.includes(String(State.tab))) State.tab = parseInt(cfg[0], 10);
+}
+/* 隐藏「从未填充选项」的模板占位下拉（连同它的 label），避免页面上摆着无法操作的空控件。
+   这些是生成器预留的 周期 / 区域→门店 / 选择对象 槽位，本看板各页已有全局「区域 + 月份」筛选条。 */
+function hideEmptySelects() {
+  document.querySelectorAll('select').forEach(s => {
+    if (s.options.length) return;
+    s.style.display = 'none';
+    const prev = s.previousElementSibling;
+    if (prev && prev.tagName === 'LABEL') prev.style.display = 'none';
+  });
+}
+bindTabs();
+hideEmptySelects();
+
+/* ==================== 初始化 ==================== */
+function ensureStoreDatalist() {
+  let dl = document.getElementById('store_list');
+  if (!dl) { dl = document.createElement('datalist'); dl.id = 'store_list'; document.body.appendChild(dl); }
+  dl.innerHTML = storeOptions().map(s => `<option value="${esc(s)}"></option>`).join('');
+}
+function init(data) {
+  raw.employees = data.employees || [];
+  raw.stores = data.stores || [];
+  raw.meta = data.meta || {};
+  raw.overrides = data.overrides || {};
+  raw.trainers = data.trainers || [];
+  raw.exam_unmatched = data.exam_unmatched || [];   // 未匹配考核记录（「未匹配考核记录」面板用）
+  raw.storeTabs = data.storeTabs || [];     // 门店版可见 Tab 配置（来自 data/store_config.json，构建时并入）
+  if (raw.meta.fetched_at) { const d = toDate(raw.meta.fetched_at); if (d) TODAY = d; }
+  // 审核映射：文件里的（权威）+ 本机的（最新），本机优先
+  OV = Object.assign({}, raw.overrides, getOV());
+  setOV(OV);
+  App.list = buildModel(raw.employees);
+  App.feedback = getFeedback();
+  if (FEEDBACK_API) {
+    loadFeedbackCloud().then(() => render());   // 启动即从共享后端拉取门店提交的岗位调整
+    loadTrainerStatusOverrides().then(() => render()); // 拉取带训追踪手动状态覆盖
+  }
+  App.ready = true;                                  // ★v1.2：数据就绪，允许各页重绘
+  if (!monthOptions().includes(F.month) && F.month !== '全部') F.month = '全部';
+  if (F.area !== '全部' && !areaOptions().includes(F.area)) F.area = '全部';
+  ensureStoreDatalist();
+  applyPublicMode();
+  renderStoreCfgPanel();          // 后台版：整体监控页内嵌「门店版展示设置」面板
+  // 注：默认 Tab 由 applyPublicMode() 统一负责（cfg 是其局部变量，此处不可引用）
+
+  const headerSyncBtn = document.getElementById('header_sync_btn');
+  if (headerSyncBtn) {
+    if (isLocalHost()) {
+      headerSyncBtn.onclick = () => doRefresh({ btn: headerSyncBtn });
+    } else {
+      headerSyncBtn.style.display = 'none';   // 线上静态链接无法直接刷新，不展示给门店端
+    }
+  }
+
+  document.getElementById('footer').textContent =
+    `数据基准 ${raw.meta.fetched_at || '—'} · 前厅 ${App.list.length} 人 · 门店 ${App.list.filter(e => e.store).length ? storeOptions().length : 0} 家 · 考核卡 ${raw.meta.exam_records || 0} 条 · 岗位修正 ${Object.keys(OV).length} 条`;
+  switchTab(State.tab);
+}
+
+/* ==================== 数据加载（部署版：快照优先 + 远程多源回退） ==================== */
+async function load() {
+  // 1) 先渲染部署自带 ./data.json（秒开、必定可用）
+  // 2) 再后台限时尝试远程数据源（fastly → gcore → cdn），仅当 fetched_at 更新才静默重渲染
+  // 3) 远程源失败/跨域/超时一律忽略，绝不报错中断已展示内容
+  let _shown = false, _shownAt = '';
+  const _err = [];
+  // ★init 必须包一层：它内部抛异常时若被静默吞掉，会伪装成「数据源不可用」，极难排查
+  const _safeInit = (j) => {
+    try { init(j); return true; }
+    catch (e) { _err.push('init 异常: ' + (e && e.message)); console.error('[load] init 抛出异常:', e); return false; }
+  };
+  const _timedFetch = async (url, ms, opts) => {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), ms);
+    try {
+      opts = opts || {};
+      let finalUrl = url;
+      if (opts.cacheBust !== false) {
+        const sep = url.indexOf('?') < 0 ? '?ts=' : '&ts=';
+        finalUrl = url + sep + Date.now();
+      }
+      const r = await fetch(finalUrl, { signal: ac.signal, cache: opts.cache || 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      if (!j || !j.employees) throw new Error('JSON 缺少 employees');
+      return j;
+    } catch (e) { _err.push(url + ': ' + e.message); return null; }
+    finally { clearTimeout(t); }
+  };
+  // 本地快照：多种策略兜底
+  try {
+    let snap = await _timedFetch('./data.json', 12000, { cacheBust: true });
+    if (!snap) snap = await _timedFetch('./data.json', 12000, { cacheBust: false, cache: 'default' });
+    if (snap) { if (_safeInit(snap)) { _shown = true; _shownAt = (snap.meta && snap.meta.fetched_at) || ''; } }
+  } catch (_e) { _err.push('本地快照异常: ' + (_e && _e.message)); /* 快照不可用，继续尝试远程源 */ }
+  // 远程多源回退
+  try {
+    const _srcs = (['https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json'] && ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json'].length) ? ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json']
+      : (('https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json' && 'https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json' !== './data.json') ? ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json'] : []);
+    for (let i = 0; i < _srcs.length; i++) {
+      const u = _srcs[i];
+      if (!u || u === './data.json') continue;
+      try {
+        const j = await _timedFetch(u, 10000);
+        if (j) {
+          const at = (j.meta && j.meta.fetched_at) || '';
+          if (!_shown || (at && at > _shownAt)) { if (_safeInit(j)) { _shown = true; _shownAt = at; } }
+          break;
+        }
+      } catch (_e) { /* 该源不可用，试下一个 */ }
+    }
+  } catch (_e) { _err.push('远程异常: ' + (_e && _e.message)); /* 远程整体不可用：忽略 */ }
+  if (!_shown) {
+    console.error('[load] 数据加载失败详情:', _err);
+    const ua = navigator.userAgent || '';
+    const isWX = /MicroMessenger/i.test(ua);
+    const isDD = /DingTalk/i.test(ua);
+    const tips = isWX ? '微信内置浏览器缓存较激进，请点击下方「刷新重试」或尝试右上角「在浏览器打开」。' :
+                isDD ? '钉钉内置浏览器偶发拦截缓存，请点击「刷新重试」或用手机浏览器打开。' :
+                '请点击「刷新重试」；如仍失败，可尝试清除浏览器缓存后再次打开。';
+    document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#dc2626">' +
+      '<div style="font-size:18px;margin-bottom:12px">数据加载失败：本地与远程数据源均不可用</div>' +
+      '<div style="color:#64748b;font-size:14px;margin-bottom:20px">' + esc(tips) + '</div>' +
+      '<button id="reload_btn" style="padding:10px 24px;font-size:15px;background:#2563eb;color:#fff;border:0;border-radius:8px;cursor:pointer">刷新重试</button>' +
+      (_err.length ? '<div style="margin-top:16px;color:#94a3b8;font-size:12px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto;word-break:break-all">诊断：' + esc(_err.join(' ｜ ')) + '</div>' : '') +
+      '</div>';
+    const b = document.getElementById('reload_btn');
+    if (b) b.onclick = () => { location.reload(true); };
+  } else {
+    _staleCheck(_shownAt);   // 防复发：数据虽加载成功，但可能过期，给用户可见提示
+  }
+}
+// 防复发：数据时效性自检 —— 最终采用的数据若超过 7 天未更新，顶部黄条提示可能不是最新
+function _staleCheck(at) {
+  if (!at) return;
+  const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(at);
+  if (!m) return;
+  const t = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime();
+  const days = (Date.now() - t) / 86400000;
+  if (days > 7) {
+    const bar = document.createElement('div');
+    bar.style.cssText = 'position:sticky;top:0;z-index:9999;background:#f59e0b;color:#3a2a00;' +
+      'font-size:13px;padding:8px 12px;text-align:center;line-height:1.4';
+    bar.textContent = '⚠ 当前数据更新于 ' + at + '（已 ' + Math.floor(days) + ' 天未更新），可能不是最新，请联系管理员刷新数据源。';
+    const body = document.body || document.documentElement;
+    body.insertBefore(bar, body.firstChild);
+  }
+}
+load();
+
+/* ===== Service Worker 更新提示：国产 webview 缓存激进，主动探测并提示刷新 ===== */
+(function(){
+  if (!('serviceWorker' in navigator)) return;
+  let updateToast = null;
+  function showUpdateTip() {
+    if (updateToast) return;
+    updateToast = document.createElement('div');
+    updateToast.style.cssText = 'position:fixed;z-index:99999;left:0;right:0;top:0;background:#2563eb;color:#fff;font-size:14px;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 12px rgba(0,0,0,.15)';
+    updateToast.innerHTML = '<span>🚀 检测到新版本，请刷新页面获取最新功能</span>' +
+      '<button id="sw_refresh_btn" style="padding:5px 12px;background:#fff;color:#2563eb;border:0;border-radius:5px;font-size:13px;font-weight:600">立即刷新</button>' +
+      '<button id="sw_dismiss_btn" style="padding:5px 10px;background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:5px;font-size:13px">忽略</button>';
+    document.body.appendChild(updateToast);
+    document.getElementById('sw_refresh_btn').onclick = function() {
+      // 尝试跳过等待并刷新；失败则普通刷新
+      try { navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage({type:'SKIP_WAITING'}); } catch(_){}
+      setTimeout(function(){ location.reload(); }, 200);
+    };
+    document.getElementById('sw_dismiss_btn').onclick = function() { updateToast.remove(); updateToast = null; };
+  }
+  // 新 SW 安装完成且等待激活
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    if (document.readyState === 'complete') showUpdateTip();
+  });
+  // 注册完成后周期性检查更新
+  function regWatch(){
+    if (!navigator.serviceWorker.controller) return; // 首次安装不提示
+    navigator.serviceWorker.getRegistration().then(function(reg){
+      if (!reg) return;
+      reg.update().catch(function(){});
+      // SW 状态变化监听
+      var sw = reg.installing || reg.waiting;
+      if (sw) sw.onstatechange = function(){
+        if (sw.state === 'installed' && navigator.serviceWorker.controller) showUpdateTip();
+      };
+    });
+  }
+  // 页面加载完成后开始监听，每 30 秒主动 update 一次
+  window.addEventListener('load', function(){
+    regWatch();
+    setInterval(regWatch, 30000);
+  });
+})();
+
+/* ===== 综合看板嵌入钩子（qt_server 同源 iframe 用；hash/postMessage 自动定位门店） ===== */
+(function(){
+  function parseHash(){ const m=(location.hash||'').match(/qt_store=([^&]+)/); return m?decodeURIComponent(m[1]):''; }
+  function qtGoto(name){
+    const n=String(name||'').trim(); if(!n) return;
+    const tryApply=()=>{
+      if(typeof drawTableF1!=='function'||typeof switchTab!=='function') return false;
+      if(typeof App==='undefined'||!App.list||typeof F==='undefined'||typeof State==='undefined') return false;
+      const emp=App.list.find(e=>{
+        const st=(e.store||'').trim();
+        return st && (st===n || st.includes(n) || n.includes(st));
+      });
+      if(!emp) return false;
+      if(State.tab!==0) switchTab(0);
+      F.storeKw=emp.store;
+      render_f1();
+      return true;
+    };
+    let tries=0; const t=setInterval(()=>{ if(tryApply()||++tries>150) clearInterval(t); },200);
+  }
+  window.addEventListener('hashchange',()=>{ const n=parseHash(); if(n) qtGoto(n); });
+  window.addEventListener('message',e=>{ const d=e.data||{}; if(d&&d.type==='qt_store'&&d.store) qtGoto(d.store); });
+  const first=parseHash(); if(first) qtGoto(first);
+})();
+</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+</body>
+</html>
