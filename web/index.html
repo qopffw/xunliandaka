@@ -366,7 +366,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub">在线版（手机随时打开）· 数据更新：2026-10-19 13:38:05 · 构建 v202610191350</div>
+    <div class="sub">在线版（手机随时打开）· 数据更新：2026-10-19 14:12:47 · 构建 v202610191417</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -2177,6 +2177,20 @@ async function loadFeedbackCloud() {
   } catch (e) { /* 网络不可达：退回本机 localStorage */ }
   return false;
 }
+// 岗位调整审核结果（A3）跨设备同步：从共享后端 /api/override 拉取，云端优先合并到 OV
+async function loadOverrideCloud() {
+  if (!FEEDBACK_API) return false;
+  try {
+    const r = await fetch(FEEDBACK_API + '/api/override', { cache: 'no-store' });
+    const j = await r.json();
+    if (j.ok && j.data && typeof j.data === 'object') {
+      OV = Object.assign({}, OV, j.data);   // 云端审核结果优先
+      setOV(OV);
+      return true;
+    }
+  } catch (e) { /* 网络不可达：退回本机 localStorage + data.json */ }
+  return false;
+}
 // 带训追踪手动状态覆盖（防花名册更新不及时产生偏差）
 let trainerStatusOverrides = {};   // { "store|trainer": { store, trainer, status, note, reviewer, updated_at } }
 function getTrainerKey(store, trainer) { return store + '|' + (trainer || '__NONE__'); }
@@ -3767,6 +3781,7 @@ function init(data) {
   if (FEEDBACK_API) {
     loadFeedbackCloud().then(() => render());   // 启动即从共享后端拉取门店提交的岗位调整
     loadTrainerStatusOverrides().then(() => render()); // 拉取带训追踪手动状态覆盖
+    loadOverrideCloud().then(() => render());   // 拉取岗位调整审核结果（A3），跨设备同步
   }
   App.ready = true;                                  // ★v1.2：数据就绪，允许各页重绘
   if (!monthOptions().includes(F.month) && F.month !== '全部') F.month = '全部';
