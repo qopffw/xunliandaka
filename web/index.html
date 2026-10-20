@@ -366,7 +366,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub">在线版（手机随时打开）· 数据更新：2026-10-19 18:46:33 · 构建 v202610191846</div>
+    <div class="sub">在线版（手机随时打开）· 数据更新：2026-10-20 12:48:43 · 构建 v202610201248</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -3044,34 +3044,75 @@ function renderUnmatchedExams() {
 }
 
 const isLocalHost = () => ['localhost', '127.0.0.1'].includes(location.hostname);
-const REFRESH_CMD = `cd /d "D:\\1-工作\\BaiduSyncdisk\\workbuddy\\2026-09-10-09-10-58\\前厅新员工训练看板" && start_看板.bat`;
+const REFRESH_CMD = `cd /d "D:\\1-工作\\BaiduSyncdisk\\workbuddy\\2026-09-10-09-10-58\\前厅新员工训练看板" && 启动看板.bat`;
 
-async function doRefresh(opts = {}) {
-  const { btn, msgEl, showHelp } = opts;
+function ensureSyncUI() {
+  if (document.getElementById('sync_log_float')) return;
+  const style = document.createElement('style');
+  style.textContent = `
+.sync-log-float{position:fixed;right:16px;bottom:16px;width:360px;max-width:94vw;background:#fff;color:#1e293b;
+  border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 10px 34px rgba(15,23,42,.20);
+  padding:12px 14px;font-size:13px;line-height:1.7;z-index:9999}
+.sync-log-float h4{margin:0 0 6px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center}
+.sync-log-float .x{cursor:pointer;color:#94a3b8;font-weight:400;font-size:15px;line-height:1}
+.sync-step{padding:3px 0;display:flex;gap:6px;align-items:flex-start}
+.sync-step.ok{color:#16a34a}.sync-step.bad{color:#dc2626}
+.sync-foot{margin-top:7px;padding-top:7px;border-top:1px dashed #e2e8f0;color:#475569;font-size:12.5px}`;
+  document.head.appendChild(style);
+  const box = document.createElement('div');
+  box.id = 'sync_log_float';
+  box.className = 'sync-log-float';
+  box.style.display = 'none';
+  box.innerHTML = '<h4>刷新同步进度 <span class="x" onclick="this.parentNode.parentNode.style.display=\'none\'">✕</span></h4><div id="sync_log_body"></div>';
+  document.body.appendChild(box);
+}
+
+async function doSyncFlow(opts = {}) {
+  const { btn } = opts || {};
   const local = isLocalHost();
   const originalText = btn ? btn.innerHTML : '';
+  if (!local) {
+    alert('当前是静态分享链接，无法直接刷新。\n请在电脑双击「启动看板.bat」打开本地看板后再点刷新。');
+    return;
+  }
+  ensureSyncUI();
+  const box = document.getElementById('sync_log_float');
+  const body = document.getElementById('sync_log_body');
+  box.style.display = 'block';
   if (btn) { btn.disabled = true; btn.innerHTML = '🔄 同步中…'; }
-  if (msgEl) msgEl.textContent = '同步中…（约 30 秒）';
-  try {
-    const r = await fetch('/api/refresh', { method: 'POST' });
-    const j = await r.json();
-    const ok = j.success !== undefined ? j.success : j.ok;
-    let txt = ok ? ('✓ ' + (j.message || '已更新')) : ('✗ ' + (j.message || '失败'));
-    if (ok && j.published) txt += ' · 线上已同步';
-    else if (ok && j.publish_message) txt += ' · 线上同步: ' + j.publish_message;
-    if (msgEl) msgEl.textContent = txt + (ok ? ' 正在重载…' : '');
-    if (btn) btn.innerHTML = txt;
-    if (ok) setTimeout(() => location.reload(), 1500);
-  } catch (e) {
-    const err = local ? '✗ 本地服务未运行，请双击 start_看板.bat' : '✗ 静态链接无法直接刷新';
-    if (msgEl) msgEl.textContent = err;
-    if (btn) btn.innerHTML = err;
-    if (showHelp) {
-      const help = document.getElementById('sync_help');
-      if (help) help.style.display = 'block';
+
+  const steps = [
+    { label: '抓取钉钉最新数据（花名册 / 学习 / 考核卡）', ep: '/api/fetch' },
+    { label: '构建部署产物（合并标注 / 审核 / 门店配置）', ep: '/api/build' },
+    { label: '推送 web/ 并通知线上链接刷新', ep: '/api/sync' },
+  ];
+  const startLine = (t) => `<div class="sync-step" id="syncstep_wait">⏳ ${esc(t)} …</div>`;
+  const doneLine = (t, ok, m) => `<div class="sync-step ${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'} ${esc(t)}${m ? ' — ' + esc(m) : ''}</div>`;
+  body.innerHTML = steps.map((s, i) => `<div class="sync-step" id="syncstep_${i}">⏳ ${esc(s.label)} …</div>`).join('') +
+    '<div class="sync-foot" id="sync_foot">请稍候…</div>';
+
+  let allOk = true, foot = '';
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+    try {
+      const r = await fetch(s.ep, { method: 'POST' });
+      const j = await r.json().catch(() => ({}));
+      const ok = j.success === true;
+      const m = (j.message || (ok ? '' : '失败')).toString();
+      const node = document.getElementById('syncstep_' + i);
+      if (node) node.outerHTML = doneLine(s.label, ok, m);
+      if (!ok) { allOk = false; foot = `第 ${i + 1} 步失败，已停止。请查看下方提示后重试。`; break; }
+    } catch (e) {
+      const node = document.getElementById('syncstep_' + i);
+      if (node) node.outerHTML = doneLine(s.label, false, '请求异常: ' + e.message);
+      allOk = false; foot = `第 ${i + 1} 步请求异常，已停止。`; break;
     }
   }
-  if (btn && !btn.innerHTML.includes('重载')) { setTimeout(() => { btn.disabled = false; btn.innerHTML = originalText || '🔄 刷新'; }, 2500); }
+  const f = document.getElementById('sync_foot');
+  if (f) f.textContent = allOk ? '✓ 全部完成，页面即将自动重载…' : '✗ ' + foot;
+  if (btn) btn.innerHTML = allOk ? '✓ 已同步' : '✗ 失败';
+  if (allOk) setTimeout(() => location.reload(), 1500);
+  else if (btn) setTimeout(() => { btn.disabled = false; btn.innerHTML = originalText || '🔄 刷新'; }, 4000);
 }
 
 function renderSyncPanel() {
@@ -3082,14 +3123,14 @@ function renderSyncPanel() {
       来源：${esc(raw.meta.source || '—')}<br>
       花名册快照：${esc(raw.meta.roster || '—')} · 考核卡记录：<b>${raw.meta.exam_records || 0}</b> 条 · 已生效岗位修正：<b>${Object.keys(OV).length}</b> 条</div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px">
-      <button class="btn" id="sync_btn">🔄 刷新数据（重抓钉钉 + 重建看板）</button>
+      <button class="btn" id="sync_btn">🔄 刷新并同步线上</button>
       <span class="note" id="sync_msg"></span>
     </div>
     <div id="sync_help" style="display:none;margin-top:10px;padding:10px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;font-size:12.5px;color:#475569;line-height:1.8">
       <b>当前为静态链接，刷新需要在本地启动服务：</b><br>
-      1. 在电脑打开看板文件夹，双击 <b>start_看板.bat</b><br>
-      2. 浏览器会自动打开 <code>http://localhost:3000</code><br>
-      3. 在本地页面点「刷新数据」即可一键重抓钉钉并自动重载<br>
+      1. 在电脑打开看板文件夹，双击 <b>启动看板.bat</b><br>
+      2. 浏览器会自动打开本地看板（http://127.0.0.1:8090 附近端口）<br>
+      3. 在本地页面点「🔄 刷新并同步线上」即可分步抓取并自动同步到线上<br>
       <button class="btn sm gray" id="sync_copy" style="margin-top:6px">📋 复制启动命令</button>
       <span class="note" id="copy_msg"></span>
       <div style="margin-top:6px;padding:6px;background:#fff;border-radius:4px;font-family:Consolas,monospace;font-size:11.5px;word-break:break-all">${esc(REFRESH_CMD)}</div>
@@ -3097,7 +3138,7 @@ function renderSyncPanel() {
   </div>`;
   const b = document.getElementById('sync_btn');
   const copyBtn = document.getElementById('sync_copy');
-  if (b) b.onclick = () => doRefresh({ btn: b, msgEl: document.getElementById('sync_msg'), showHelp: true });
+  if (b) b.onclick = () => doSyncFlow({ btn: b });
   if (copyBtn) copyBtn.onclick = async () => {
     const cm = document.getElementById('copy_msg');
     try {
@@ -3793,8 +3834,8 @@ function init(data) {
 
   const headerSyncBtn = document.getElementById('header_sync_btn');
   if (headerSyncBtn) {
-    if (isLocalHost()) {
-      headerSyncBtn.onclick = () => doRefresh({ btn: headerSyncBtn });
+      if (isLocalHost()) {
+      headerSyncBtn.onclick = () => doSyncFlow({ btn: headerSyncBtn });
     } else {
       headerSyncBtn.style.display = 'none';   // 线上静态链接无法直接刷新，不展示给门店端
     }
