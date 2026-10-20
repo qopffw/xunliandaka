@@ -1,5 +1,5 @@
 /* Service Worker：跨域不拦截 + 网络优先 + 限时回退缓存 */
-const CACHE='v202610191846';
+const CACHE='v202610201248';
 // 注意：data.json 不进 PRECACHE、不进 SW 缓存——避免空/旧数据污染页面（曾导致「打开没内容」）
 const PRECACHE=['./index.html','./manifest.webmanifest','./icon.svg','./html2canvas.min.js'];
 self.addEventListener('install',e=>{
