@@ -383,7 +383,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 16:11:10 · 构建 v202611021613</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 18:41:27 · 构建 v202611021841</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -2180,9 +2180,28 @@ function drawTableF1() {
 }
 
 /* --- 岗位异常反馈（门店 → 人员 → 正确岗位；审核在控制页） --- */
+// 本地审核结果独立持久化层：本地确认/驳回优先于云端显示，不被 loadFeedbackCloud 覆盖
+const FB_REVIEW_KEY = 'fb_reviewed_v1';
+function getFbReviewed() {
+  try { return JSON.parse(localStorage.getItem(FB_REVIEW_KEY) || '{}'); } catch (e) { return {}; }
+}
+function setFbReviewed(m) {
+  try { localStorage.setItem(FB_REVIEW_KEY, JSON.stringify(m)); } catch (e) { }
+}
+function markReviewed(id, status) {
+  const rev = getFbReviewed();
+  rev[String(id)] = status;
+  setFbReviewed(rev);
+}
 function getFeedback() {
-  if (Array.isArray(App.feedback) && App.feedback.length) return App.feedback;
-  try { return JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '[]'); } catch (e) { return []; }
+  let list;
+  if (Array.isArray(App.feedback) && App.feedback.length) list = App.feedback;
+  else { try { list = JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '[]'); } catch (e) { list = []; } }
+  // 本地审核结果优先覆盖（云端可能未及时同步，避免确认后被打回待审核）
+  const rev = getFbReviewed();
+  const ids = Object.keys(rev);
+  if (ids.length) list = list.map(x => { const s = rev[String(x.id)]; return s ? Object.assign({}, x, { status: s }) : x; });
+  return list;
 }
 function setFeedback(v) {
   try { localStorage.setItem(FEEDBACK_KEY, JSON.stringify(v)); } catch (e) { }
@@ -3043,7 +3062,7 @@ function fbUpdateSelCount() {
   if (el) el.textContent = n ? ('已选 ' + n + ' 条') : '';
 }
 function getCheckedFbIds() {
-  return Array.from(document.querySelectorAll('#blk_f5_3 .fb-check:checked')).map(c => Number(c.value));
+  return Array.from(document.querySelectorAll('#blk_f5_3 .fb-check:checked')).map(c => c.value);
 }
 // 单条：本地落盘 + 返回岗位映射（供云端同步复用）
 function applyFbLocal(x) {
@@ -3054,7 +3073,6 @@ function applyFbLocal(x) {
   else return null;
   if (!postVal) return null;
   OV[x.uid] = { post: postVal, position: posVal, note: x.note || '', at: new Date().toLocaleString('zh-CN') };
-  x.status = '已确认';
   return { postVal, posVal };
 }
 async function syncFbCloud(x, postVal, posVal) {
@@ -3069,16 +3087,16 @@ async function syncFbCloud(x, postVal, posVal) {
   } catch (e) { fbToast('已本机生效，云端稍后同步'); }
 }
 async function confirmFb(id) {
-  const l = getFeedback(); const x = l.find(v => v.id === id);
+  const l = getFeedback(); const x = l.find(v => String(v.id) === String(id));
   if (!x) return;
   const r = applyFbLocal(x);
   if (!r) { fbToast('无法解析该岗位调整'); return; }
-  setOV(OV); setFeedback(l);
+  markReviewed(id, '已确认');
+  setOV(OV);
   App.list = buildModel(raw.employees);
   const f1 = document.getElementById('blk_f1_2');
   if (f1) delete f1.dataset.ready;
   await syncFbCloud(x, r.postVal, r.posVal);
-  await loadFeedbackCloud();
   render();
 }
 async function batchConfirmFb() {
@@ -3087,24 +3105,23 @@ async function batchConfirmFb() {
   const l = getFeedback();
   const cloud = []; let n = 0;
   for (const id of ids) {
-    const x = l.find(v => v.id === id);
+    const x = l.find(v => String(v.id) === String(id));
     if (!x || x.status !== '待审核') continue;
     const r = applyFbLocal(x);
-    if (r) { n++; cloud.push(syncFbCloud(x, r.postVal, r.posVal)); }
+    if (r) { n++; markReviewed(id, '已确认'); cloud.push(syncFbCloud(x, r.postVal, r.posVal)); }
   }
   if (!n) { fbToast('勾选的记录无可确认项'); return; }
-  setOV(OV); setFeedback(l);
+  setOV(OV);
   App.list = buildModel(raw.employees);
   const f1 = document.getElementById('blk_f1_2');
   if (f1) delete f1.dataset.ready;
   if (cloud.length) await Promise.all(cloud);
   fbToast('已批量确认 ' + n + ' 条');
-  await loadFeedbackCloud();
   render();
 }
 function dropFb(id) {
-  const l = getFeedback(); const x = l.find(v => v.id === id);
-  if (!x) return; x.status = '已驳回'; setFeedback(l); render();
+  const l = getFeedback(); const x = l.find(v => String(v.id) === String(id));
+  if (!x) return; markReviewed(id, '已驳回'); render();
 }
 async function batchDropFb() {
   const ids = getCheckedFbIds();
@@ -3112,11 +3129,10 @@ async function batchDropFb() {
   const l = getFeedback();
   let n = 0;
   for (const id of ids) {
-    const x = l.find(v => v.id === id);
-    if (x && x.status === '待审核') { x.status = '已驳回'; n++; }
+    const x = l.find(v => String(v.id) === String(id));
+    if (x && x.status === '待审核') { markReviewed(id, '已驳回'); n++; }
   }
   if (!n) { fbToast('勾选的记录无可驳回项'); return; }
-  setFeedback(l);
   fbToast('已批量驳回 ' + n + ' 条');
   render();
 }
