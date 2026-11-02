@@ -366,7 +366,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub">在线版（手机随时打开）· 数据更新：2026-11-02 11:29:58 · 构建 v202611021129</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 12:11:41 · 构建 v202611021212</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -3847,6 +3847,14 @@ function init(data) {
 }
 
 /* ==================== 数据加载（部署版：快照优先 + 远程多源回退） ==================== */
+// 副标题日期随真实数据时间走：之前写死 2026-09-11，刷新后永远不更新，误以为数据没刷新
+function updateSubtitle(j) {
+  const el = document.getElementById('sub_date');
+  if (!el) return;
+  const m = (j && j.meta) || {};
+  const at = m.fetched_at || m.generated_at || '';
+  el.textContent = '【前厅】新员工训练看板 · 区域 → 门店 · ' + (at || '—');
+}
 async function load() {
   // 1) 先渲染部署自带 ./data.json（秒开、必定可用）
   // 2) 再后台限时尝试远程数据源（fastly → gcore → cdn），仅当 fetched_at 更新才静默重渲染
@@ -3855,7 +3863,7 @@ async function load() {
   const _err = [];
   // ★init 必须包一层：它内部抛异常时若被静默吞掉，会伪装成「数据源不可用」，极难排查
   const _safeInit = (j) => {
-    try { init(j); return true; }
+    try { init(j); updateSubtitle(j); return true; }
     catch (e) { _err.push('init 异常: ' + (e && e.message)); console.error('[load] init 抛出异常:', e); return false; }
   };
   const _timedFetch = async (url, ms, opts) => {
