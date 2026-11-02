@@ -56,11 +56,11 @@
     "from": "服务岗",
     "to": "迎宾岗（揽客）",
     "note": "表格内联提交",
-    "status": "已确认",
-    "ovPost": "迎宾岗",
-    "ovPosition": "揽客",
-    "reviewer": "总部",
-    "reviewed_at": "2026-11-02 19:26:45",
+    "status": "待审核",
+    "ovPost": "",
+    "ovPosition": "",
+    "reviewer": "",
+    "reviewed_at": "",
     "at": "2026-11-02 18:16:42"
   },
   {
@@ -104,11 +104,11 @@
     "from": "前厅主管",
     "to": "传菜岗（传菜员）",
     "note": "表格内联提交",
-    "status": "待审核",
-    "ovPost": "",
-    "ovPosition": "",
-    "reviewer": "",
-    "reviewed_at": "",
+    "status": "已确认",
+    "ovPost": "传菜岗",
+    "ovPosition": "传菜员",
+    "reviewer": "总部",
+    "reviewed_at": "2026-11-02 19:26:45",
     "at": "2026-11-02 16:39:28"
   },
   {
