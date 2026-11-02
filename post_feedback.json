@@ -8,11 +8,11 @@
     "from": "前厅主管",
     "to": "其他：主管",
     "note": "表格内联提交",
-    "status": "待审核",
-    "ovPost": "",
-    "ovPosition": "",
-    "reviewer": "",
-    "reviewed_at": "",
+    "status": "已确认",
+    "ovPost": "其他",
+    "ovPosition": "主管",
+    "reviewer": "总部",
+    "reviewed_at": "2026-11-02 15:08:29",
     "at": "2026-11-02 14:49:50"
   },
   {
