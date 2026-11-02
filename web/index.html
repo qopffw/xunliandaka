@@ -366,7 +366,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 13:35:47 · 构建 v202611021335</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 13:43:09 · 构建 v202611021343</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -1125,6 +1125,17 @@ function learnDoneOf(e) {
 function closedFlagOf(e) {
   return !e.excluded && !e.left && !!e.closed;
 }
+/* 是否「未学先考」：任一已学(合格)的岗，其考核完成日期早于学习完成日期。
+   这类人按规定岗位已学且已考 → 仍算闭环，但备注标注「未学先考」。 */
+function examBeforeLearnOf(e) {
+  if (!e.learned || !e.learned.length) return false;
+  for (const g of e.learned) {
+    const dE = toDate((e.exam && e.exam[g]) || null);
+    const dL = toDate((e.learnedAt && e.learnedAt[g]) || null);
+    if (dE && dL && dE < dL) return true;
+  }
+  return false;
+}
 /* 状态栏二元值：闭环 / 未闭环（超期闭环仍算闭环） */
 function statusBinOf(e) { return closedFlagOf(e) ? '闭环' : '未闭环'; }
 function examStatusOf(e) {
@@ -1134,7 +1145,7 @@ function statusGroupOf(e) { return statusBinOf(e); }
 function timeoutDimOf(e) { return (e.learnLate || e.examLate) ? '已超时' : '未超时'; }
 
 const TIMEOUT_DIM_OPTS = ['已超时', '未超时'];
-const REMARK_OPTS = ['闭环', '超期完成', '推进中', '超时未完成', '顺序异常', '未学习', '未考核', '学习中', '未确定岗位', '学习不匹配岗位', '入职日期缺失', '学习超期·已考核', '非前厅', '已离职'];
+const REMARK_OPTS = ['闭环', '超期完成', '未学先考', '推进中', '超时未完成', '顺序异常', '未学习', '未考核', '学习中', '未确定岗位', '学习不匹配岗位', '入职日期缺失', '学习超期·已考核', '非前厅', '已离职'];
 const STATUS2_COLOR = { '正常': '#16a34a', '异常': '#dc2626', '待确认': '#7c3aed', '其他': '#94a3b8' };
 const REMARK_COLOR = {
   '闭环': '#16a34a', '超期完成': '#65a30d', '推进中': '#0891b2', '学习中': '#0891b2',
@@ -1344,7 +1355,7 @@ function buildModel(employees) {
     else if (mismatch) { status2 = '异常'; remark = '学习不匹配岗位'; }
     else if (noRosterPost || role === '待确认') { status2 = '待确认'; remark = '未确定岗位'; }
     else if (!hire) { status2 = '待确认'; remark = '入职日期缺失'; }
-    else if (closed) { status2 = '正常'; remark = (learnLate || examLate) ? '超期完成' : '闭环'; }
+    else if (closed) { status2 = '正常'; remark = examBeforeLearnOf(e) ? '未学先考' : (learnLate || examLate ? '超期完成' : '闭环'); }
     else if (seqErr) { status2 = '异常'; remark = '顺序异常'; }
     else if (examOk && (learnLate || examLate)) { status2 = '异常'; remark = '学习超期·已考核'; }
     else if (learnLate || examLate) { status2 = '异常'; remark = '超时未完成'; }
@@ -1362,7 +1373,7 @@ function buildModel(employees) {
       days, d7, d14, role, need,
       learned, learnedAt, examPosts, matched, post, flag,
       learnOk, learnLate, examOk, examLate, status, cohort,
-      learnStarted, status2, remark,
+      learnStarted, status2, remark, closed,
       mismatch, noRosterPost,
       isMgr, isStaff, isPt, excluded, left, confirmed: !!ov, adjusted
     };
