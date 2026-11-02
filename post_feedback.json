@@ -8,11 +8,11 @@
     "from": "服务岗",
     "to": "服务岗（服务员）",
     "note": "表格内联提交",
-    "status": "已确认",
-    "ovPost": "服务岗",
-    "ovPosition": "服务员",
-    "reviewer": "总部",
-    "reviewed_at": "2026-11-02 11:20:45",
+    "status": "待审核",
+    "ovPost": "",
+    "ovPosition": "",
+    "reviewer": "",
+    "reviewed_at": "",
     "at": "2026-10-26 15:09:15"
   },
   {
@@ -56,11 +56,11 @@
     "from": "待定",
     "to": "非前厅员工（厨房/其他）",
     "note": "表格内联提交",
-    "status": "待审核",
-    "ovPost": "",
-    "ovPosition": "",
-    "reviewer": "",
-    "reviewed_at": "",
+    "status": "已确认",
+    "ovPost": "非前厅",
+    "ovPosition": "兼职",
+    "reviewer": "总部",
+    "reviewed_at": "2026-11-02 11:20:47",
     "at": "2026-10-25 16:16:59"
   },
   {
