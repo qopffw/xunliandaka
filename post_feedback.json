@@ -888,11 +888,11 @@
     "from": "待定",
     "to": "迎宾岗（揽客）",
     "note": "表格内联提交",
-    "status": "已确认",
-    "ovPost": "迎宾岗",
-    "ovPosition": "揽客",
-    "reviewer": "总部",
-    "reviewed_at": "2026-11-02 19:32:59",
+    "status": "待审核",
+    "ovPost": "",
+    "ovPosition": "",
+    "reviewer": "",
+    "reviewed_at": "",
     "at": "2026-11-02 15:41:13"
   },
   {
@@ -952,11 +952,11 @@
     "from": "前厅主管",
     "to": "管理岗（店长/厨师长）",
     "note": "表格内联提交",
-    "status": "待审核",
-    "ovPost": "",
-    "ovPosition": "",
-    "reviewer": "",
-    "reviewed_at": "",
+    "status": "已确认",
+    "ovPost": "管理岗",
+    "ovPosition": "管理岗",
+    "reviewer": "总部",
+    "reviewed_at": "2026-11-02 19:33:01",
     "at": "2026-11-02 15:40:45"
   },
   {
