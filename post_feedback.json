@@ -252,7 +252,7 @@
     "ovPost": "管理岗",
     "ovPosition": "管理岗",
     "reviewer": "总部",
-    "reviewed_at": "2026-11-02 19:29:29",
+    "reviewed_at": "2026-11-02 19:28:59",
     "at": "2026-11-02 16:19:19"
   },
   {
@@ -524,7 +524,7 @@
     "ovPost": "服务岗",
     "ovPosition": "服务员",
     "reviewer": "总部",
-    "reviewed_at": "2026-11-02 19:29:46",
+    "reviewed_at": "2026-11-02 19:29:55",
     "at": "2026-11-02 15:53:59"
   },
   {
@@ -556,7 +556,7 @@
     "ovPost": "传菜岗",
     "ovPosition": "传菜员",
     "reviewer": "总部",
-    "reviewed_at": "2026-11-02 19:29:20",
+    "reviewed_at": "2026-11-02 19:30:04",
     "at": "2026-11-02 15:53:32"
   },
   {
@@ -584,11 +584,11 @@
     "from": "待定",
     "to": "其他：兼职舞蹈师",
     "note": "表格内联提交",
-    "status": "待审核",
-    "ovPost": "",
-    "ovPosition": "",
-    "reviewer": "",
-    "reviewed_at": "",
+    "status": "已确认",
+    "ovPost": "其他",
+    "ovPosition": "兼职舞蹈师",
+    "reviewer": "总部",
+    "reviewed_at": "2026-11-02 19:30:15",
     "at": "2026-11-02 15:46:56"
   },
   {
@@ -616,11 +616,11 @@
     "from": "待定",
     "to": "其他：兼职舞蹈师",
     "note": "表格内联提交",
-    "status": "已确认",
-    "ovPost": "其他",
-    "ovPosition": "兼职舞蹈师",
-    "reviewer": "总部",
-    "reviewed_at": "2026-11-02 19:30:00",
+    "status": "待审核",
+    "ovPost": "",
+    "ovPosition": "",
+    "reviewer": "",
+    "reviewed_at": "",
     "at": "2026-11-02 15:45:55"
   },
   {
@@ -632,11 +632,11 @@
     "from": "待定",
     "to": "其他：舞蹈师",
     "note": "表格内联提交",
-    "status": "已确认",
-    "ovPost": "其他",
-    "ovPosition": "舞蹈师",
-    "reviewer": "总部",
-    "reviewed_at": "2026-11-02 19:30:08",
+    "status": "待审核",
+    "ovPost": "",
+    "ovPosition": "",
+    "reviewer": "",
+    "reviewed_at": "",
     "at": "2026-11-02 15:45:06"
   },
   {
