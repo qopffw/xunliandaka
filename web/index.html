@@ -358,6 +358,12 @@
 .st-detail-group table{margin:0}
 .st-detail-group td[data-label="姓名"] a{color:#2563eb;text-decoration:none}
 .st-detail-group td[data-label="姓名"] a:hover{text-decoration:underline}
+/* 岗位异常反馈 — 批量审核 */
+.li.has-chk{display:flex;align-items:flex-start;gap:8px}
+.li.has-chk .fb-check{margin-top:10px;width:16px;height:16px;flex:none;cursor:pointer}
+.li-body{flex:1;min-width:0}
+.fb-selall{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:#475569;font-weight:600;cursor:pointer}
+.fb-selcount{font-size:12.5px;color:#0891b2;font-weight:600}
 
 /* ==== 移动端适配（在线托管版补充） ==== */
 /* 核心移动端样式已内联在 dashboard.html 的 @media(max-width:640px) 中；
@@ -377,7 +383,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 15:19:55 · 构建 v202611021519</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 16:11:10 · 构建 v202611021611</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -2997,54 +3003,122 @@ function renderFeedbackReview() {
   const list = getFeedback();
   const pend = list.filter(x => x.status === '待审核');
   const ovN = Object.keys(OV).length;
-  el.innerHTML = `<div class="sub-t">待审核 ${pend.length} 条 · 已确认 ${list.filter(x => x.status === '已确认').length} 条 · 已生效修正 ${ovN} 条</div>`
-    + (list.length ? list.map(x => `<div class="li"><div class="li-h">${esc(x.name)} · ${esc(x.store) || '-'}
-        <span class="li-tag" style="background:${x.status === '待审核' ? '#fef3c7;color:#b45309' : x.status === '已确认' ? '#dcfce7;color:#16a34a' : '#f1f5f9;color:#94a3b8'}">${esc(x.status)}</span></div>
+  const items = list.length ? list.map(x => {
+    const isPend = x.status === '待审核';
+    const chk = isPend ? `<input type="checkbox" class="fb-check" value="${x.id}">` : '';
+    return `<div class="li${isPend ? ' has-chk' : ''}">${chk}<div class="li-body"><div class="li-h">${esc(x.name)} · ${esc(x.store) || '-'}
+        <span class="li-tag" style="background:${isPend ? '#fef3c7;color:#b45309' : x.status === '已确认' ? '#dcfce7;color:#16a34a' : '#f1f5f9;color:#94a3b8'}">${esc(x.status)}</span></div>
         <div class="li-m">${esc(x.from)} → <b>${esc(x.to)}</b> ${x.note ? '· ' + esc(x.note) : ''} · ${esc(x.at)}</div>
-        ${x.status === '待审核' ? `<div class="li-a"><button class="btn sm" onclick="confirmFb(${x.id})">确认修改</button>
-          <button class="btn sm gray" onclick="dropFb(${x.id})">驳回</button></div>` : ''}</div>`).join('')
-      : '<div class="empty">暂无门店提交的岗位异常反馈</div>')
+        ${isPend ? `<div class="li-a"><button class="btn sm" onclick="confirmFb(${x.id})">确认修改</button>
+          <button class="btn sm gray" onclick="dropFb(${x.id})">驳回</button></div>` : ''}</div></div>`;
+  }).join('') : '<div class="empty">暂无门店提交的岗位异常反馈</div>';
+  const batchBar = pend.length ? `<label class="fb-selall"><input type="checkbox" id="fb_selall"> 全选待审核</label>
+      <button class="btn sm" id="fb_batch_ok">批量确认选中</button>
+      <button class="btn sm gray" id="fb_batch_drop">批量驳回选中</button>
+      <span class="fb-selcount" id="fb_selcount"></span>` : '';
+  el.innerHTML = `<div class="sub-t" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      待审核 ${pend.length} 条 · 已确认 ${list.filter(x => x.status === '已确认').length} 条 · 已生效修正 ${ovN} 条
+      ${batchBar}</div>`
+    + items
     + `<div class="sub-t" style="margin-top:10px">审核结果持久化</div>
        <div class="li-m">审核确认后已自动保存到本机，并尝试写入 <b>overrides.json</b>；
        如需让<b>线上链接</b>其他人也看到，把下面内容存成 <b>data/overrides.json</b> 后重新抓数即可。</div>
        <div class="li-a"><button class="btn sm gray" onclick="exportOV()">📋 复制审核结果 JSON</button>
          <span class="note" id="ov_msg"></span></div>
        <textarea id="ov_out" class="ov-out" readonly placeholder="（点上面按钮生成）"></textarea>`;
+  const selAll = document.getElementById('fb_selall');
+  if (selAll) selAll.onchange = () => {
+    document.querySelectorAll('#blk_f5_3 .fb-check').forEach(c => c.checked = selAll.checked);
+    fbUpdateSelCount();
+  };
+  document.querySelectorAll('#blk_f5_3 .fb-check').forEach(c => c.onchange = fbUpdateSelCount);
+  const bOk = document.getElementById('fb_batch_ok');
+  if (bOk) bOk.onclick = batchConfirmFb;
+  const bDrop = document.getElementById('fb_batch_drop');
+  if (bDrop) bDrop.onclick = batchDropFb;
 }
-async function confirmFb(id) {
-  const l = getFeedback(); const x = l.find(v => v.id === id);
-  if (!x) return;
+function fbUpdateSelCount() {
+  const n = document.querySelectorAll('#blk_f5_3 .fb-check:checked').length;
+  const el = document.getElementById('fb_selcount');
+  if (el) el.textContent = n ? ('已选 ' + n + ' 条') : '';
+}
+function getCheckedFbIds() {
+  return Array.from(document.querySelectorAll('#blk_f5_3 .fb-check:checked')).map(c => Number(c.value));
+}
+// 单条：本地落盘 + 返回岗位映射（供云端同步复用）
+function applyFbLocal(x) {
   const opt = fbOption(x.to);
   let postVal, posVal;
   if (opt) { postVal = opt.post; posVal = opt.position; }
   else if (x.to && x.to.indexOf('其他：') === 0) { postVal = '其他'; posVal = x.to.slice(3); }
-  else return;
-  if (!postVal) return;
-  // ① 落独立映射（本机即时生效）
+  else return null;
+  if (!postVal) return null;
   OV[x.uid] = { post: postVal, position: posVal, note: x.note || '', at: new Date().toLocaleString('zh-CN') };
-  setOV(OV);
-  // ② 重跑状态机
+  x.status = '已确认';
+  return { postVal, posVal };
+}
+async function syncFbCloud(x, postVal, posVal) {
+  if (!FEEDBACK_API) return;
+  try {
+    const r = await fetch(FEEDBACK_API + '/api/feedback/confirm', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: x.id, ovPost: postVal, ovPosition: posVal, reviewer: '总部' })
+    });
+    const j = await r.json();
+    if (!j.ok && j.message) fbToast('审核提醒：' + j.message);
+  } catch (e) { fbToast('已本机生效，云端稍后同步'); }
+}
+async function confirmFb(id) {
+  const l = getFeedback(); const x = l.find(v => v.id === id);
+  if (!x) return;
+  const r = applyFbLocal(x);
+  if (!r) { fbToast('无法解析该岗位调整'); return; }
+  setOV(OV); setFeedback(l);
   App.list = buildModel(raw.employees);
-  // ③ 同步云端（总部可见 + 钉钉通知提交人）
-  if (FEEDBACK_API) {
-    try {
-      const r = await fetch(FEEDBACK_API + '/api/feedback/confirm', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, ovPost: postVal, ovPosition: posVal, reviewer: '总部' })
-      });
-      const j = await r.json();
-      if (j.ok) fbToast('已确认并通知提交人'); else if (j.message) fbToast('审核提醒：' + j.message);
-    } catch (e) { fbToast('已本机生效，云端稍后同步'); }
-  }
-  x.status = '已确认'; setFeedback(l);
   const f1 = document.getElementById('blk_f1_2');
   if (f1) delete f1.dataset.ready;
+  await syncFbCloud(x, r.postVal, r.posVal);
+  await loadFeedbackCloud();
+  render();
+}
+async function batchConfirmFb() {
+  const ids = getCheckedFbIds();
+  if (!ids.length) { fbToast('请先勾选待审核记录'); return; }
+  const l = getFeedback();
+  const cloud = []; let n = 0;
+  for (const id of ids) {
+    const x = l.find(v => v.id === id);
+    if (!x || x.status !== '待审核') continue;
+    const r = applyFbLocal(x);
+    if (r) { n++; cloud.push(syncFbCloud(x, r.postVal, r.posVal)); }
+  }
+  if (!n) { fbToast('勾选的记录无可确认项'); return; }
+  setOV(OV); setFeedback(l);
+  App.list = buildModel(raw.employees);
+  const f1 = document.getElementById('blk_f1_2');
+  if (f1) delete f1.dataset.ready;
+  if (cloud.length) await Promise.all(cloud);
+  fbToast('已批量确认 ' + n + ' 条');
   await loadFeedbackCloud();
   render();
 }
 function dropFb(id) {
   const l = getFeedback(); const x = l.find(v => v.id === id);
   if (!x) return; x.status = '已驳回'; setFeedback(l); render();
+}
+async function batchDropFb() {
+  const ids = getCheckedFbIds();
+  if (!ids.length) { fbToast('请先勾选待审核记录'); return; }
+  const l = getFeedback();
+  let n = 0;
+  for (const id of ids) {
+    const x = l.find(v => v.id === id);
+    if (x && x.status === '待审核') { x.status = '已驳回'; n++; }
+  }
+  if (!n) { fbToast('勾选的记录无可驳回项'); return; }
+  setFeedback(l);
+  fbToast('已批量驳回 ' + n + ' 条');
+  render();
 }
 function exportOV() {
   const txt = JSON.stringify({ overrides: OV }, null, 2);
