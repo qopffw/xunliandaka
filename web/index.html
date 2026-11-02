@@ -347,6 +347,17 @@
   .f6-area-count{font-size:8px}
   .f6-table .f6-status-cell{justify-content:space-between}
 }
+/* ② 员工状态构成：按状态分组的人员明细表（可折叠） */
+.st-detail-group{margin-top:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#fff}
+.st-detail-group > summary{cursor:pointer;list-style:none;padding:8px 12px;font-weight:600;color:#0f172a;display:flex;align-items:center;gap:8px;user-select:none}
+.st-detail-group > summary::-webkit-details-marker{display:none}
+.st-detail-group > summary .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.st-detail-group > summary .note{font-weight:400;color:#94a3b8;font-size:12px;margin-left:auto}
+.st-detail-group > summary b{color:var(--c,#0f172a)}
+.st-detail-group[open] > summary{border-bottom:1px solid #e2e8f0;background:#f8fafc}
+.st-detail-group table{margin:0}
+.st-detail-group td[data-label="姓名"] a{color:#2563eb;text-decoration:none}
+.st-detail-group td[data-label="姓名"] a:hover{text-decoration:underline}
 
 /* ==== 移动端适配（在线托管版补充） ==== */
 /* 核心移动端样式已内联在 dashboard.html 的 @media(max-width:640px) 中；
@@ -366,7 +377,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 13:43:09 · 构建 v202611021343</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 15:08:58 · 构建 v202611021509</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -410,6 +421,7 @@
     <div class="card">
       <h3>② 员工状态构成（所选月份 · 已闭环 / 待考核 / 超时未完成 / 待确认）</h3>
       <div id="blk_f2_6" style="height:320px"><span class="note">待填充 · 图表</span></div>
+      <div id="blk_f2_6_detail"><span class="note">待填充 · 状态明细表</span></div>
     </div>
     <div class="card">
       <h3>③ 门店新人情况（所选月份 · 按区域划分：入职总进度 / 学习人数 / 考核人数）</h3>
@@ -457,7 +469,7 @@
         <span class="note" id="blk_f4_0Note">区域筛选（切换不同区域）</span>
       </div>
     <div class="card">
-      <h3>门店排行榜（闭环率从低到高，先盯差的，按区域分组、区域组内排序）</h3>
+      <h3>门店排行榜</h3>
       <div id="blk_f4_1" class="blk-rate"><span class="note">待填充 · 排名条</span></div>
     </div>
     <div class="card">
@@ -706,7 +718,7 @@ const CFG = {
       },
       {
        "id": "rate-bar",
-       "info": "门店排行榜（闭环率从低到高，先盯差的，按区域分组、区域组内排序）",
+       "info": "门店排行榜",
        "auto": false
       },
       {
@@ -1057,6 +1069,7 @@ const ADJ_ROLE = {
   '服务岗': { role: '前厅员工', need: STAFF_NEED },
   '迎宾岗': { role: '前厅员工', need: STAFF_NEED },
   '传菜岗': { role: '前厅员工', need: STAFF_NEED },
+  '管理岗': { role: '前厅管理组', need: MGR_NEED },
   '非前厅': { role: '其他', need: 0, exclude: true },
   '已离职': { role: '其他', need: 0, left: true },
   '其他':   { role: '其他', need: 0 },
@@ -1079,6 +1092,7 @@ const FB_OPTIONS = [
   { label: '服务岗（服务员）',        post: '服务岗', position: '服务员' },
   { label: '迎宾岗（揽客）',          post: '迎宾岗', position: '揽客' },
   { label: '传菜岗（传菜员）',        post: '传菜岗', position: '传菜员' },
+  { label: '管理岗（店长/厨师长）',    post: '管理岗', position: '管理岗' },
   { label: '非前厅员工（厨房/其他）', post: '非前厅', position: '兼职' },
   { label: '已经离职',                post: '已离职', position: '' },
   { label: '其他（填写岗位）',        post: '其他',   position: '' }
@@ -1150,7 +1164,7 @@ const STATUS2_COLOR = { '正常': '#16a34a', '异常': '#dc2626', '待确认': '
 const REMARK_COLOR = {
   '闭环': '#16a34a', '超期完成': '#65a30d', '推进中': '#0891b2', '学习中': '#0891b2',
   '超时未完成': '#dc2626', '顺序异常': '#ea580c',
-  '未学习': '#94a3b8', '未考核': '#d97706', '未确定岗位': '#7c3aed', '学习超期·已考核': '#ea580c',
+  '未学习': '#94a3b8', '未考核': '#d97706', '未确定岗位': '#7c3aed', '学习超期·已考核': '#ea580c', '未学先考': '#ea580c',
   '非前厅': '#94a3b8', '已离职': '#94a3b8', '待门店确认': '#7c3aed', '入职日期缺失': '#94a3b8', '学习不匹配岗位': '#b45309'
 };
 const status2Color = s => STATUS2_COLOR[s] || '#64748b';
@@ -1270,7 +1284,8 @@ function buildModel(employees) {
     // 优先级：门店审核调整 > 花名册映射（管理/员工/PT）> 无岗位待店长提报
     let post = '', flag = '', noRosterPost = false, mismatch = false;
     if (adjusted) {
-      post = GRADES.includes(ov.post) ? ov.post : '';   // 审核调整后按新岗位判断；非前厅/离职等不显示判定岗位
+      // 审核调整后按新岗位判断；前厅三岗显示判定岗位，管理岗保留「管理岗」展示，非前厅/离职等不显示
+      post = GRADES.includes(ov.post) ? ov.post : (ov.post === '管理岗' ? '管理岗' : '');
     } else if (isMgr && !excluded && !left) {
       post = '管理岗';
     } else if (rosterPost) {
@@ -1345,6 +1360,9 @@ function buildModel(employees) {
     const closed = need > 0 && learned.length >= need
       && (hasMgrExam || (examG.length >= need
         && matched.length >= Math.min(need, examG.length)));
+    // 考核「实际达标」（与 closed 同源，忽略 SLA 超期；用于图表"考核完成"与主看板口径一致）
+    const examDone = need > 0 && (hasMgrExam || (examG.length >= need
+        && matched.length >= Math.min(need, examG.length)));
     // 顺序异常：已考核三岗，但应学未完成 / 或考了未学的岗（管理岗考核不属于顺序异常）
     const seqErr = examG.length > 0 && !closed
       && (learned.length < need || matched.length < examG.length);
@@ -1373,7 +1391,7 @@ function buildModel(employees) {
       days, d7, d14, role, need,
       learned, learnedAt, examPosts, matched, post, flag,
       learnOk, learnLate, examOk, examLate, status, cohort,
-      learnStarted, status2, remark, closed,
+      learnStarted, status2, remark, closed, examDone,
       mismatch, noRosterPost,
       isMgr, isStaff, isPt, excluded, left, confirmed: !!ov, adjusted
     };
@@ -1405,7 +1423,7 @@ function stat(list) {
   return {
     total: list.length, cur: cur.length, closed,
     rate: safeDiv(closed, cur.length),
-    wait: cur.filter(e => !closedFlagOf(e) && e.learnOk && !e.examOk).length,
+    wait: cur.filter(e => learnDoneOf(e) && !closedFlagOf(e)).length,
     lateTimeout: cur.filter(e => e.remark === '超时未完成').length,
     lateLearn: cur.filter(e => e.remark === '超时未完成' && e.learnLate).length,
     lateExam: cur.filter(e => e.remark === '超时未完成' && e.examLate && !e.learnLate).length,
@@ -1984,7 +2002,7 @@ function empDetailHtml(e) {
         if (t) return `<div class="emp-row"><span>${esc(g)}</span><span><span class="st" style="background:#f1f5f9;color:#475569;margin-right:6px">${esc(t)}</span><span class="st" style="background:#dcfce7;color:#16a34a">已考</span></span></div>`;
         return `<div class="emp-row"><span>${esc(g)}</span><span><span class="st" style="background:#f1f5f9;color:#94a3b8">未考</span></span></div>`;
       }).join('') : '<div class="emp-row"><span>无固定应考岗位</span></div>');
-  const examBtn = (e.learnOk && !e.examOk && EXAM_FORM_URL)
+  const examBtn = (learnDoneOf(e) && !e.examDone && EXAM_FORM_URL)
     ? `<div style="margin-top:10px"><a class="btn" href="${examFormUrl(e)}" target="_blank" rel="noopener">📝 去考核</a></div>` : '';
   return `
     <div class="emp-section"><h4>基本信息</h4>
@@ -2423,8 +2441,8 @@ function f2StoreAgg(list) {
     const k = a + '||' + s;
     const o = m.get(k) || { area: a, store: s, n: 0, learn: 0, exam: 0, closed: 0 };
     o.n++;
-    if (e.learnOk) o.learn++;
-    if (e.examOk) o.exam++;
+    if (learnDoneOf(e)) o.learn++;
+    if (e.examDone) o.exam++;
     if (closedFlagOf(e)) o.closed++;
     m.set(k, o);
   });
@@ -2436,8 +2454,8 @@ function f2AreaAgg(list) {
     const a = e.area || UNMATCHED;
     const o = m.get(a) || { area: a, n: 0, learn: 0, exam: 0 };
     o.n++;
-    if (e.learnOk) o.learn++;
-    if (e.examOk) o.exam++;
+    if (learnDoneOf(e)) o.learn++;
+    if (e.examDone) o.exam++;
     m.set(a, o);
   });
   return [...m.values()].sort((x, y) => f2AreaRank(x.area) - f2AreaRank(y.area) || y.n - x.n);
@@ -2481,8 +2499,40 @@ function drawF2Charts() {
     chartDonut(document.getElementById('blk_f2_6_chart'), items, { hole: 0, empty });
   }
 
+  // ② 员工状态构成：状态明细表（按状态分组，门店 / 姓名 / 岗位 / 情况，受区域+月份+口径筛选）
+  drawF2StatusDetail(document.getElementById('blk_f2_6_detail'), list, { empty });
+
   // ③ 门店新人情况：门店明细表（入职 / 学习 / 考核 / 闭环）
   drawF2StoreDetail(document.getElementById('blk_f2_7'), list, { empty });
+}
+
+/* ② 员工状态构成：人员明细表，按 STATUS_BUCKETS 四分类分组，每组可折叠；
+   列：区域 / 门店 / 姓名 / 岗位 / 情况（备注，承载超期完成/未学先考/未确定岗位等细节）。
+   与饼图同口径（区域 + 月份 + F2_SCOPE），满足"分别看各类型明细：哪家门店、哪些人、什么情况"。 */
+function drawF2StatusDetail(el, list, opts) {
+  opts = opts || {};
+  if (!el) return;
+  if (!list.length) { el.innerHTML = `<div class="empty">${opts.empty || '暂无数据'}</div>`; return; }
+  const head = ['区域', '门店', '姓名', '岗位', '情况'];
+  const rs = [...list].sort((a, b) =>
+    (a.area + (a.store || '') + (a.name || '')).localeCompare(b.area + (b.store || '') + (b.name || ''), 'zh'));
+  let html = '';
+  STATUS_BUCKETS.forEach(b => {
+    const grp = rs.filter(e => statusBucketOf(e) === b.k);
+    if (!grp.length) return;
+    html += `<details open class="st-detail-group">
+      <summary style="--c:${b.c}"><span class="dot" style="background:${b.c}"></span>${esc(b.k)} <b>${grp.length}</b> 人 <span class="note">点击折叠/展开</span></summary>
+      <div class="tbl-scroll"><table class="keep-table"><thead><tr>${head.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>`
+      + grp.map(e => `<tr>
+        <td data-label="区域">${esc(e.area)}</td>
+        <td data-label="门店">${esc(e.store || '（未填门店）')}</td>
+        <td data-label="姓名"><a href="javascript:void(0)" onclick="showEmpDetail('${esc(e.uid)}')">${esc(e.name)}</a></td>
+        <td data-label="岗位">${esc(e.post || '—')}</td>
+        <td data-label="情况">${esc(e.remark || '—')}</td>
+      </tr>`).join('')
+      + '</tbody></table></div></details>';
+  });
+  el.innerHTML = html;
 }
 
 function drawF2StoreDetail(el, list, opts) {
@@ -2602,7 +2652,7 @@ function drawF3() {
 
 /* ==================== 渲染：业务模块 · 门店闭环追踪 ==================== */
 function render_f4() {
-  mountFilter('f4', { month: false, note: '门店榜含全部门店（存量可见），闭环率只按本期新人算' });
+  mountFilter('f4', { month: true, note: '门店榜含全部门店（存量可见）；选月份则只看该月入职的新人，老员工仍保留' });
   drawF4();
 }
 function storeRowHTML(it) {
@@ -2621,7 +2671,12 @@ function storeRowHTML(it) {
     <div class="rb-x">${it.closed}/${it.n}</div></div>`;
 }
 function drawF4() {
-  const list = filteredArea();              // 存量视角：不受月份筛选
+  // 存量视角：F4 的月份筛选只缩窄「本期新人」的入职月；历史存量(老员工)始终保留以维持"存量可见"
+  const list = filteredArea().filter(e => {
+    if (F.month === '全部') return true;
+    if (isHist(e)) return true;
+    return (e.hire || '').slice(0, 7) === F.month;
+  });
   const rows = storeRank(list);             // B1：全部门店
 
   // --- 1. 门店排行榜：按区域分组，组内「有本期的按闭环率从低到高」在前，无本期的在后 ---
@@ -2635,6 +2690,7 @@ function drawF4() {
     return a.localeCompare(b, 'zh');
   });
   let html = '', pending = [];
+  const monthLabel = F.month === '全部' ? '本期' : (F.month + ' 入职');
   areaSorted.forEach(a => {
     const items = byArea.get(a).slice().sort((x, y) => {
       const xa = x.n > 0 ? 0 : 1, ya = y.n > 0 ? 0 : 1;
@@ -2642,7 +2698,7 @@ function drawF4() {
     });
     if (a === UNMATCHED || a === '未匹配') { pending = pending.concat(items); return; }
     const curN = items.reduce((s, i) => s + i.n, 0), curC = items.reduce((s, i) => s + i.closed, 0);
-    html += `<div class="rank-area">${esc(a)} 区域 <span class="ra-sum">本期 ${curN} 人 · 闭环 ${curC} 人 · 闭环率 ${pct1(safeDiv(curC, curN))}</span></div>`;
+    html += `<div class="rank-area">${esc(a)} 区域 <span class="ra-sum">${monthLabel} ${curN} 人 · 闭环 ${curC} 人 · 闭环率 ${pct1(safeDiv(curC, curN))}</span></div>`;
     html += items.map(storeRowHTML).join('');
   });
   if (pending.length) {
@@ -3277,35 +3333,41 @@ function mpAllBodyHtml(rs) {
     + `</tbody></table></div>`;
 }
 
-/* 第一层：三栏待办（待学习 / 待考核 / 异常人员）
-   - 待学习：未完成规定学习的全部人员（含学习中 / 超期），岗位可调
-   - 待考核：已学完待考核的人员（含待考核 / 超期）
-   - 异常人员：未学先考（已考核但学习未完成）+ 岗位待确认 —— 需特殊处理，不混入前两栏 */
+/* 第一层：四栏（待学习 / 待考核 / 已闭环 / 异常人员）
+   - 第一判断 = 是否闭环：规定岗位已学且已考 → 已闭环（含超期完成 / 未学先考，备注标注）
+   - 待学习：实际未完成规定岗位学习（含学习中 / 超期）
+   - 待考核：学习已完成、等待考核（含超期）
+   - 异常人员：仅剩「学习不匹配岗位 / 岗位待确认」等需店长处理的问题；未学先考不再算异常 */
 function mpGroups(all) {
   const base = all.filter(mpTodoable);                       // 在职本期 need>0
-  // 异常集合：未学先考（有考核记录但学习未完成）+ 岗位待确认（含 need=0）
-  const examAnom = base.filter(e => !e.isMgr && e.examPosts.length && !e.learnOk);
+  // 异常集合：仅"学习不匹配岗位"(mismatch) 与"岗位待确认"(unconf)，未学先考不再算异常
+  const mismatch = base.filter(e => e.mismatch);
   const unconf   = all.filter(e => e.status2 === '待确认');
-  const anomUids = new Set([...examAnom, ...unconf].map(e => e.uid));
+  const anomUids = new Set([...mismatch, ...unconf].map(e => e.uid));
   return [
     { key: 'learn', icon: '📚', title: '待学习', color: '#0891b2',
       desc: '尚未完成规定岗位学习（含学习中 / 超期），岗位可点选调整',
       empty: '✅ 本店暂无待学习人员（新员工入职 7 天内需完成学习）',
-      rs: base.filter(e => !e.learnOk && !anomUids.has(e.uid)).sort(mpSort) },
+      rs: base.filter(e => !learnDoneOf(e) && !anomUids.has(e.uid)).sort(mpSort) },
     { key: 'exam', icon: '📝', title: '待考核', color: '#d97706',
       desc: '学习已完成、等待考核（含待考核 / 超期）',
       empty: '✅ 本店没有待考核人员',
-      rs: base.filter(e => e.learnOk && !e.examOk && !anomUids.has(e.uid)).sort(mpSort) },
+      rs: base.filter(e => learnDoneOf(e) && !closedFlagOf(e) && !anomUids.has(e.uid)).sort(mpSort) },
+    { key: 'closed', icon: '✅', title: '已闭环', color: '#16a34a',
+      desc: '规定岗位已学且已考核（含超期完成 / 未学先考，计入闭环率）',
+      empty: '本店暂无已闭环人员', cols: ['姓名', '岗位', '状态', '备注'],
+      rs: base.filter(e => closedFlagOf(e) && !anomUids.has(e.uid)).sort(mpSort) },
     { key: 'anom', icon: '⚠️', title: '异常人员', color: '#dc2626',
-      desc: '未学先考（已考核但学习未完成）/ 岗位待确认，需核实处理',
+      desc: '学习不匹配岗位 / 岗位待确认，需核实处理',
       empty: '✅ 本店无异常人员',
-      rs: [...examAnom, ...unconf].sort(mpSort) }
+      rs: [...mismatch, ...unconf].sort(mpSort) }
   ];
 }
 /* 各栏列配置（岗位用「调整岗位」→ 可点选调整） */
 const MP_GRP_COLS = {
   learn: ['姓名', '调整岗位', '应完成时间', '应学课程', '进度状态'],
   exam:  ['姓名', '调整岗位', '考核截止', '进度状态'],
+  closed: ['姓名', '岗位', '状态', '备注'],
   anom:  ['姓名', '调整岗位', '异常原因']
 };
 /* 各栏的进度状态标记：未超期→进行中（学中/待考），超期→红标 */
@@ -3329,10 +3391,11 @@ function mpAnomReason(e) {
     return `未学先考：已考核 ${e.examPosts.join('、')}，但学习未完成（已学 ${e.learned.length}/${e.need}）`;
   return esc(e.remark) || '—';
 }
-/* 分组颜色（学习=绿 / 考核=蓝 / 异常=红） */
+/* 分组颜色（学习=蓝 / 考核=橙 / 已闭环=绿 / 异常=红） */
 function mpGrpStyle(g) {
-  if (g.key === 'learn') return { main: '#16a34a', bg: '#dcfce7' };
-  if (g.key === 'exam') return { main: '#2563eb', bg: '#dbeafe' };
+  if (g.key === 'learn') return { main: '#0891b2', bg: '#cffafe' };
+  if (g.key === 'exam') return { main: '#d97706', bg: '#fef3c7' };
+  if (g.key === 'closed') return { main: '#16a34a', bg: '#dcfce7' };
   return { main: '#dc2626', bg: '#fee2e2' };
 }
 /* 移动端卡片内联岗位：可点击徽章 / 下拉 / 待审核 / 已覆盖 */
@@ -3373,6 +3436,9 @@ function mpGrpStateTag(g, e) {
     const d = mpRemainExam(e);
     if (d !== null && d < 0) return `<span class="st" style="background:${s.bg};color:${s.main}">超期 ${-d} 天</span>`;
     return `<span class="st" style="background:${s.bg};color:${s.main}">待考核</span>`;
+  }
+  if (g.key === 'closed') {
+    return `<span class="st" style="background:${s.bg};color:${s.main}">闭环</span>`;
   }
   if (e.status2 === '待确认') return `<span class="st" style="background:${s.bg};color:${s.main}">岗位待确认</span>`;
   return `<span class="st" style="background:${s.bg};color:${s.main}">未学先考</span>`;
@@ -3729,10 +3795,10 @@ function drawRegionTracking() {
     </div></div>`;
 
   if (RA_VIEW === 'store') {
-    // 异常优先级最高：未学先考 / 学习不匹配岗位 / 岗位待定，一律先归入「异常人员」
-    const isAnom = e => e.mismatch || (!e.isMgr && e.examPosts.length && !e.learnOk) || e.status2 === '待确认';
-    const learnStores = regionStoreGroup(list, e => !isAnom(e) && !e.learnOk && !e.examPosts.length);
-    const examStores = regionStoreGroup(list, e => !isAnom(e) && e.learnOk && !e.examOk);
+    // 异常只保留真正的异常：学习不匹配岗位 / 岗位待确认；未学先考（无论是否已闭环）不再算异常
+    const isAnom = e => e.mismatch || e.status2 === '待确认';
+    const learnStores = regionStoreGroup(list, e => !isAnom(e) && !learnDoneOf(e));
+    const examStores = regionStoreGroup(list, e => !isAnom(e) && learnDoneOf(e) && !closedFlagOf(e));
     const anomStores = regionStoreGroup(list, isAnom);
     const closedStores = regionStoreGroup(list, e => !isAnom(e) && closedFlagOf(e));
     const groups = [
@@ -3742,7 +3808,7 @@ function drawRegionTracking() {
       { key: 'exam', icon: '📝', title: '待考核', color: '#d97706', desc: '学习已完成、等待考核',
         empty: '✅ 本区域没有待考核人员', cols: ['姓名','岗位','完成状态','剩余/超期'],
         stores: examStores, total: examStores.reduce((a, b) => a + b.items.length, 0) },
-      { key: 'anom', icon: '⚠️', title: '异常人员', color: '#dc2626', desc: '未学先考 / 学习不匹配岗位 / 岗位未定（待店长提报）',
+      { key: 'anom', icon: '⚠️', title: '异常人员', color: '#dc2626', desc: '学习不匹配岗位 / 岗位待定（待店长提报）',
         empty: '✅ 本区域无异常人员', cols: ['姓名','岗位','备注'],
         stores: anomStores, total: anomStores.reduce((a, b) => a + b.items.length, 0) },
       { key: 'closed', icon: '✅', title: '已闭环', color: '#16a34a', desc: '规定岗位已学且已考核（含超期完成，计入闭环率）',
