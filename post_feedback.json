@@ -1260,7 +1260,7 @@
     "ovPost": "已离职",
     "ovPosition": "",
     "reviewer": "总部",
-    "reviewed_at": "2026-11-02 19:39:01",
+    "reviewed_at": "2026-11-02 19:38:41",
     "at": "2026-11-02 15:37:37"
   },
   {
@@ -1272,11 +1272,11 @@
     "from": "待定",
     "to": "非前厅员工（厨房/其他）",
     "note": "表格内联提交",
-    "status": "已确认",
-    "ovPost": "非前厅",
-    "ovPosition": "兼职",
-    "reviewer": "总部",
-    "reviewed_at": "2026-11-02 19:39:28",
+    "status": "待审核",
+    "ovPost": "",
+    "ovPosition": "",
+    "reviewer": "",
+    "reviewed_at": "",
     "at": "2026-11-02 15:37:32"
   },
   {
@@ -1320,11 +1320,11 @@
     "from": "待定",
     "to": "其他：兼职",
     "note": "表格内联提交",
-    "status": "待审核",
-    "ovPost": "",
-    "ovPosition": "",
-    "reviewer": "",
-    "reviewed_at": "",
+    "status": "已确认",
+    "ovPost": "其他",
+    "ovPosition": "兼职",
+    "reviewer": "总部",
+    "reviewed_at": "2026-11-02 19:39:19",
     "at": "2026-11-02 15:37:09"
   },
   {
@@ -1336,11 +1336,11 @@
     "from": "待定",
     "to": "已经离职",
     "note": "表格内联提交",
-    "status": "待审核",
-    "ovPost": "",
+    "status": "已确认",
+    "ovPost": "已离职",
     "ovPosition": "",
-    "reviewer": "",
-    "reviewed_at": "",
+    "reviewer": "总部",
+    "reviewed_at": "2026-11-02 19:39:07",
     "at": "2026-11-02 15:37:02"
   },
   {
