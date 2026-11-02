@@ -56,6 +56,9 @@
   .post-badge{color:#475569;border:1px dashed #cbd5e1;background:#f8fafc;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
   .post-badge:hover{color:#2563eb;border-color:#2563eb;background:#eff6ff}
   .post-badge small{font-weight:400;opacity:.7}
+  /* 已确认岗位徽章：绿色确认态，可点击重新调整（去掉"撤销调整"按钮，防误触） */
+  .post-badge.ok{background:#dcfce7;color:#16a34a;border:1px solid #86efac}
+  .post-badge.ok:hover{color:#15803d;border-color:#22c55e;background:#bbf7d0}
   /* 门店联想下拉（自绘） */
   .sug-box{position:fixed;z-index:9999;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.14);max-height:280px;overflow:auto;padding:4px 0}
   .sug-item{padding:8px 14px;font-size:13px;cursor:pointer;color:#334155;white-space:nowrap}
@@ -383,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 18:41:27 · 构建 v202611021841</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-02 20:16:17 · 构建 v202611022016</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -1084,6 +1087,12 @@ const FEEDBACK_KEY = 'qt_post_feedback_v2';    // 门店反馈（待审核队列
 const OVERRIDE_KEY = 'qt_post_override_v2';    // 审核结果映射（A3 持久化）
 const UNMATCHED    = '待核对门店';              // C3 统一归口
 const AREA_ORDER   = ['王', '牛', '闫', '郭', '周'];
+// 门店名归一化：花名册里同店不同名（如漏写城市前缀）在此统一，避免下拉/分组出现歧义同名。
+// 仅改显示名，storeRaw 保留原始名；每次重新抓数都会自动套用，不被刷新覆盖。
+const STORE_ALIAS  = {
+  '砂之船店': '西安砂之船店'   // 区域「王」的 20 人即为西安砂之船，补上城市前缀与南京区分
+};
+function normalizeStore(s) { return (s && STORE_ALIAS[s]) || s || ''; }
 const EXAM_FORM_URL = 'https://alidocs.dingtalk.com/notable/share/form/v013BMqYybW3JbLvqwZ_dv19yqvsgs3oebp3pcjys_1qX0QQ0?source=link';  // 钉钉考核表（「未考」点击跳转提报）
 // 钉钉表单「问题名称」→ 预填映射：须与表单上显示的问题名完全一致（表单问题改名会导致预填失效）
 // 官方能力：表单链接后加 ?prefill_问题名称=值 预填、&hide_问题名称=1 隐藏该问题
@@ -1392,7 +1401,7 @@ function buildModel(employees) {
 
     return {
       uid: e.uid, name: e.name, no: cleanNo(e.no),
-      store: e.store || '', storeRaw: e.store_raw || e.store || '', area: e.area || UNMATCHED,
+      store: normalizeStore(e.store || ''), storeRaw: e.store_raw || e.store || '', area: e.area || UNMATCHED,
       position: pos, empType: e.emp_type, hire: e.hire, hireDate: hire,
       days, d7, d14, role, need,
       learned, learnedAt, examPosts, matched, post, flag,
@@ -1879,12 +1888,16 @@ function postCell(e) {
   const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核');
   if (pend) return `<td data-label="调整岗位"><span class="st" style="background:#fef3c7;color:#b45309">待审核→${esc(fbDisplay(pend.to))}</span>
     <button class="btn sm gray post-rev" data-uid="${esc(e.uid)}">× 撤销</button></td>`;
-  // 已审核调整：显示正确岗 + 原花名册职位，可撤销
+  // 已审核调整：只显示调整后的岗位（绿色确认徽章）；点击徽章可重新调整，不再显示"撤销调整"按钮
   const ov = OV[e.uid];
   if (ov && ov.post) {
-    return `<td data-label="调整岗位"><span class="st" style="background:#dcfce7;color:#16a34a">${esc(ov.post)} ✓</span>`
-      + `<div class="adj-sub">原：花名册「${esc(e.position || '—')}」</div>`
-      + `<button class="btn sm gray post-cancel" data-uid="${esc(e.uid)}">撤销调整</button></td>`;
+    if (F.editPostUid === e.uid) {
+      return `<td data-label="调整岗位"><select class="post-pick" data-uid="${esc(e.uid)}" data-store="${esc(e.store)}" title="当前：${esc(ov.post)}，选择正确岗位后提交后台审核">`
+        + `<option value="">请选择新岗位…</option>`
+        + `${FB_OPTIONS.map(o => `<option value="${esc(o.label)}">${esc(fbDisplay(o.label))}</option>`).join('')}`
+        + `<option value="__cancel__">取消</option></select></td>`;
+    }
+    return `<td data-label="调整岗位"><span class="st post-badge ok" data-uid="${esc(e.uid)}" title="已确认岗位（${esc(ov.post)}），点击可重新调整">${esc(ov.post)} ✓ <small>✎</small></span></td>`;
   }
   // 未调整：点击当前岗位徽章后展开下拉
   if (!e.left && e.status2 !== '已离职') {
@@ -3075,16 +3088,25 @@ function applyFbLocal(x) {
   OV[x.uid] = { post: postVal, position: posVal, note: x.note || '', at: new Date().toLocaleString('zh-CN') };
   return { postVal, posVal };
 }
+// 推云端确认；带 8 秒超时，避免挂起阻塞界面。返回是否成功（不在本函数弹窗）
 async function syncFbCloud(x, postVal, posVal) {
-  if (!FEEDBACK_API) return;
+  if (!FEEDBACK_API) return false;
+  const ctrl = new AbortController();
+  const to = setTimeout(() => ctrl.abort(), 8000);
   try {
     const r = await fetch(FEEDBACK_API + '/api/feedback/confirm', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: x.id, ovPost: postVal, ovPosition: posVal, reviewer: '总部' })
+      body: JSON.stringify({ id: x.id, ovPost: postVal, ovPosition: posVal, reviewer: '总部' }),
+      signal: ctrl.signal
     });
-    const j = await r.json();
-    if (!j.ok && j.message) fbToast('审核提醒：' + j.message);
-  } catch (e) { fbToast('已本机生效，云端稍后同步'); }
+    const j = await r.json().catch(() => ({}));
+    return !!j.ok;
+  } catch (e) { return false; }
+  finally { clearTimeout(to); }
+}
+// 后台推送（不阻塞本地）：立即返回，失败静默（本地已生效，云端稍后重试）
+function syncFbCloudBackground(x, postVal, posVal) {
+  syncFbCloud(x, postVal, posVal);
 }
 async function confirmFb(id) {
   const l = getFeedback(); const x = l.find(v => String(v.id) === String(id));
@@ -3096,28 +3118,31 @@ async function confirmFb(id) {
   App.list = buildModel(raw.employees);
   const f1 = document.getElementById('blk_f1_2');
   if (f1) delete f1.dataset.ready;
-  await syncFbCloud(x, r.postVal, r.posVal);
-  render();
+  render();                                       // 本地立即生效、列表即时刷新
+  fbToast('已确认（本地已生效，云端后台同步）');
+  syncFbCloudBackground(x, r.postVal, r.posVal);
 }
 async function batchConfirmFb() {
   const ids = getCheckedFbIds();
   if (!ids.length) { fbToast('请先勾选待审核记录'); return; }
   const l = getFeedback();
-  const cloud = []; let n = 0;
+  let n = 0; const cloud = [];
   for (const id of ids) {
     const x = l.find(v => String(v.id) === String(id));
     if (!x || x.status !== '待审核') continue;
     const r = applyFbLocal(x);
-    if (r) { n++; markReviewed(id, '已确认'); cloud.push(syncFbCloud(x, r.postVal, r.posVal)); }
+    if (!r) continue;
+    markReviewed(id, '已确认'); n++;
+    cloud.push({ x, postVal: r.postVal, posVal: r.posVal });
   }
   if (!n) { fbToast('勾选的记录无可确认项'); return; }
-  setOV(OV);
+  setOV(OV);                                      // 本地先落盘
   App.list = buildModel(raw.employees);
   const f1 = document.getElementById('blk_f1_2');
   if (f1) delete f1.dataset.ready;
-  if (cloud.length) await Promise.all(cloud);
-  fbToast('已批量确认 ' + n + ' 条');
-  render();
+  render();                                       // 本地立即生效：58 条瞬间变「已确认」，批量条因无待审自动消失
+  fbToast(`已批量确认 ${n} 条（本地已生效，云端后台同步）`);
+  cloud.forEach(t => syncFbCloudBackground(t.x, t.postVal, t.posVal));  // 云端后台推，不阻塞
 }
 function dropFb(id) {
   const l = getFeedback(); const x = l.find(v => String(v.id) === String(id));
@@ -3430,10 +3455,19 @@ function mpAllBodyHtml(rs) {
    - 异常人员：仅剩「学习不匹配岗位 / 岗位待确认」等需店长处理的问题；未学先考不再算异常 */
 function mpGroups(all) {
   const base = all.filter(mpTodoable);                       // 在职本期 need>0
-  // 异常集合：仅"学习不匹配岗位"(mismatch) 与"岗位待确认"(unconf)，未学先考不再算异常
+  // 异常集合：学习不匹配岗位(mismatch) / 岗位待确认(unconf) / 已离职(left)
+  // 已离职不进待学习/待考核/已闭环，仅保留在异常人员，闭环率统计也已剔除
   const mismatch = base.filter(e => e.mismatch);
-  const unconf   = all.filter(e => e.status2 === '待确认');
-  const anomUids = new Set([...mismatch, ...unconf].map(e => e.uid));
+  // 岗位待确认：仅限「尚未做过岗位调整」的人；已通过「调整岗位」确认过岗位（管理岗等）的，
+  // 视为岗位已确认，移出异常组转为正常跟踪（否则会出现"已调成管理岗✓却仍标待确认"的矛盾）
+  const unconf   = all.filter(e => e.status2 === '待确认' && !(OV[e.uid] && OV[e.uid].post));
+  const lefts    = all.filter(e => e.left);
+  const anomUids = new Set([...mismatch, ...unconf, ...lefts].map(e => e.uid));
+  // 异常人员去重（同一人可能同时命中多个异常类别）
+  const anomList = []; const anomSeen = new Set();
+  for (const e of [...mismatch, ...unconf, ...lefts]) {
+    if (!anomSeen.has(e.uid)) { anomSeen.add(e.uid); anomList.push(e); }
+  }
   return [
     { key: 'learn', icon: '📚', title: '待学习', color: '#0891b2',
       desc: '尚未完成规定岗位学习（含学习中 / 超期），岗位可点选调整',
@@ -3448,9 +3482,9 @@ function mpGroups(all) {
       empty: '本店暂无已闭环人员', cols: ['姓名', '岗位', '状态', '备注'],
       rs: base.filter(e => closedFlagOf(e) && !anomUids.has(e.uid)).sort(mpSort) },
     { key: 'anom', icon: '⚠️', title: '异常人员', color: '#dc2626',
-      desc: '学习不匹配岗位 / 岗位待确认，需核实处理',
+      desc: '学习不匹配岗位 / 岗位待确认 / 已离职，需核实处理',
       empty: '✅ 本店无异常人员',
-      rs: [...mismatch, ...unconf].sort(mpSort) }
+      rs: anomList.sort(mpSort) }
   ];
 }
 /* 各栏列配置（岗位用「调整岗位」→ 可点选调整） */
@@ -3476,6 +3510,7 @@ function mpGrpState(g, e) {
 }
 /* 异常原因文本 */
 function mpAnomReason(e) {
+  if (e.left) return `已离职：该员工已离岗，不计入待学习/待考核与闭环率`;
   if (e.status2 === '待确认') return `岗位待确认：暂无法确定学习任务，请先确认岗位`;
   if (!e.isMgr && e.examPosts.length && !e.learnOk)
     return `未学先考：已考核 ${e.examPosts.join('、')}，但学习未完成（已学 ${e.learned.length}/${e.need}）`;
@@ -3497,8 +3532,13 @@ function mpPostInline(e) {
   }
   const ov = OV[e.uid];
   if (ov && ov.post) {
-    return `<span class="st" style="background:#dcfce7;color:#16a34a">${esc(ov.post)} ✓</span>
-      <button class="btn sm gray post-cancel" data-uid="${esc(e.uid)}">撤销</button>`;
+    if (F.editPostUid === e.uid) {
+      return `<select class="post-pick" data-uid="${esc(e.uid)}" data-store="${esc(e.store)}" title="选择正确岗位后提交后台审核">
+        <option value="">请选择新岗位…</option>
+        ${FB_OPTIONS.map(o => `<option value="${esc(o.label)}">${esc(fbDisplay(o.label))}</option>`).join('')}
+        <option value="__cancel__">取消</option></select>`;
+    }
+    return `<span class="st post-badge ok" data-uid="${esc(e.uid)}" title="已确认岗位（${esc(ov.post)}），点击可重新调整">${esc(ov.post)} ✓ <small>✎</small></span>`;
   }
   if (!e.left && e.status2 !== '已离职') {
     if (F.editPostUid === e.uid) {
@@ -3530,6 +3570,7 @@ function mpGrpStateTag(g, e) {
   if (g.key === 'closed') {
     return `<span class="st" style="background:${s.bg};color:${s.main}">闭环</span>`;
   }
+  if (e.left) return `<span class="st" style="background:${s.bg};color:${s.main}">已离职</span>`;
   if (e.status2 === '待确认') return `<span class="st" style="background:${s.bg};color:${s.main}">岗位待确认</span>`;
   return `<span class="st" style="background:${s.bg};color:${s.main}">未学先考</span>`;
 }
