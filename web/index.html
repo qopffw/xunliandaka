@@ -386,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-06 16:51:17 · 构建 v202611061651</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-06 16:51:17 · 构建 v202611061656</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -3187,13 +3187,33 @@ async function persistConfirmedOV() {
     };
     OV[uid] = { post: post, position: pos, note: x.note || '', at: x.reviewed_at || x.at || '' };
   });
-  const n = Object.keys(clean).length;
-  if (!n) return 0;
+  const total = Object.keys(clean).length;
+  if (!total) return 0;
   setOV(OV);
+  // 先读云端，只补「缺失 / 不一致」的条目；云端已完整就不写。
+  // 否则每次打开页面都 POST 全量，多门店并发写同一 GitHub 文件会 sha 冲突。
+  let cloudOV = null;
+  try {
+    const g = await fetch(FEEDBACK_API + '/api/override', { cache: 'no-store' });
+    const gj = await g.json();
+    if (gj.ok && gj.data && typeof gj.data === 'object') cloudOV = gj.data;
+  } catch (e) { }
+  let payload = clean;
+  if (cloudOV) {
+    payload = {};
+    Object.keys(clean).forEach(uid => {
+      const c = cloudOV[uid];
+      if (!c || c.post !== clean[uid].post || String(c.position || '') !== clean[uid].position) {
+        payload[uid] = clean[uid];
+      }
+    });
+  }
+  const n = Object.keys(payload).length;
+  if (!n) { try { App.list = buildModel(raw.employees); render(); } catch (e) { } return 0; }
   try {
     const r = await fetch(FEEDBACK_API + '/api/override', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ overrides: clean })
+      body: JSON.stringify({ overrides: payload })
     });
     const j = await r.json().catch(() => ({}));
     if (!j.ok && !j.success) return 0;
