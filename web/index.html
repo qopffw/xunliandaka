@@ -386,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-06 16:15:18 · 构建 v202611061615</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-06 16:15:18 · 构建 v202611061621</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -3107,11 +3107,12 @@ function applyFbLocal(x) {
   OV[x.uid] = { post: postVal, position: posVal, note: x.note || '', at: new Date().toLocaleString('zh-CN') };
   return { postVal, posVal };
 }
-// 推云端确认；带 8 秒超时，避免挂起阻塞界面。返回是否成功（不在本函数弹窗）
+// 推云端确认。后端每次 confirm 都要重写 GitHub 上同一个文件，耗时可能超过 8 秒，
+// 旧版 8 秒超时 + 静默失败正是「总部显示已确认、门店看板仍待审核」的根因。
 async function syncFbCloud(x, postVal, posVal) {
   if (!FEEDBACK_API) return false;
   const ctrl = new AbortController();
-  const to = setTimeout(() => ctrl.abort(), 8000);
+  const to = setTimeout(() => ctrl.abort(), 25000);
   try {
     const r = await fetch(FEEDBACK_API + '/api/feedback/confirm', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -3123,9 +3124,48 @@ async function syncFbCloud(x, postVal, posVal) {
   } catch (e) { return false; }
   finally { clearTimeout(to); }
 }
-// 后台推送（不阻塞本地）：立即返回，失败静默（本地已生效，云端稍后重试）
+/* 串行云端队列：后端每确认一条都重写同一个 GitHub 文件，并发会触发 sha 版本冲突
+   （此前批量确认后云端大面积没变的根因）。本地先生效，云端排队一条条推；
+   跑完统一把 OV 推 /api/override 供跨设备读取；失败不再静默。 */
+const fbCloudQueue = [];
+let fbCloudRunning = false;
+async function runFbCloudQueue() {
+  if (fbCloudRunning) return;
+  fbCloudRunning = true;
+  let okN = 0, failN = 0;
+  try {
+    while (fbCloudQueue.length) {
+      const t = fbCloudQueue.shift();
+      const ok = await syncFbCloud(t.x, t.postVal, t.posVal);
+      if (ok) okN++; else failN++;
+    }
+    await persistOV().catch(() => false);   // OV 全量合并写入共享后端，其他设备立即可见
+    if (failN) fbToast(`⚠ ${failN} 条云端未同步（本机已生效），重进页面会自动补推`);
+    else if (okN) fbToast(`✓ ${okN} 条已同步到云端，其他设备可见`);
+  } finally { fbCloudRunning = false; }
+}
+// 后台推送（不阻塞本地）：入队后立即返回
 function syncFbCloudBackground(x, postVal, posVal) {
-  syncFbCloud(x, postVal, posVal);
+  fbCloudQueue.push({ x, postVal, posVal });
+  runFbCloudQueue();
+}
+/* 启动补偿：把本机 fbReviewed 里「已确认」、但云端仍是「待审核」的记录补推。
+   这不是替业务做审核判定，只是把用户已经点过的确认同步到共享后端。 */
+async function reconcileFbCloud() {
+  const rev = getFbReviewed();
+  const cloud = Array.isArray(App.feedback) ? App.feedback : [];
+  const pend = cloud.filter(x => rev[String(x.id)] === '已确认' && x.status !== '已确认');
+  if (!pend.length) return 0;
+  for (const x of pend) {
+    const r = applyFbLocal(x);
+    if (r) await syncFbCloud(x, r.postVal, r.posVal);
+  }
+  setOV(OV);
+  await loadFeedbackCloud().catch(() => false);
+  await persistOV().catch(() => false);
+  try { App.list = buildModel(raw.employees); render(); } catch (e) { }
+  fbToast(`✓ 已补同步 ${pend.length} 条本机审核结果到云端`);
+  return pend.length;
 }
 async function confirmFb(id) {
   const l = getFeedback(); const x = l.find(v => String(v.id) === String(id));
@@ -4062,7 +4102,8 @@ function init(data) {
   App.list = buildModel(raw.employees);
   App.feedback = getFeedback();
   if (FEEDBACK_API) {
-    loadFeedbackCloud().then(() => render());   // 启动即从共享后端拉取门店提交的岗位调整
+    // 启动即拉云端；随后把本机「已确认但云端仍待审核」的记录补推（修复跨设备不同步）
+    loadFeedbackCloud().then(() => { render(); reconcileFbCloud(); });
     loadTrainerStatusOverrides().then(() => render()); // 拉取带训追踪手动状态覆盖
     loadOverrideCloud().then(() => render());   // 拉取岗位调整审核结果（A3），跨设备同步
   }
@@ -4266,7 +4307,9 @@ load();
     }
     var t = parseAt(at), hrs = t ? (Date.now() - t) / 3600000 : 0;
     var h = new Date().getHours(), inDay = h >= DAY_FROM && h < DAY_TO;
-    var stale = at && (inDay ? (hrs * 60 > STALE_MIN) : (hrs > 24 * 7));
+    // 门店版（店长）不显示「自动同步可能已中断」这类后台运维告警；后台版保留给管理员
+    var storeView = (true === true);
+    var stale = at && !storeView && (inDay ? (hrs * 60 > STALE_MIN) : (hrs > 24 * 7));
     if (stale) {
       if (!staleBar) {
         staleBar = document.createElement('div');
