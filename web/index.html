@@ -386,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-03 12:45:40 · 构建 v202611031245</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-06 09:59:46 · 构建 v202611060959</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -4128,8 +4128,8 @@ async function load() {
   } catch (_e) { _err.push('本地快照异常: ' + (_e && _e.message)); /* 快照不可用，继续尝试远程源 */ }
   // 远程多源回退
   try {
-    const _srcs = (['https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json'] && ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json'].length) ? ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/qiantaikx_data.json']
-      : (('https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json' && 'https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json' !== './data.json') ? ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/qiantaikx_data.json'] : []);
+    const _srcs = (['https://raw.githubusercontent.com/qopffw/xunliandaka/main/web/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json'] && ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/web/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json'].length) ? ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/web/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json']
+      : (('https://raw.githubusercontent.com/qopffw/xunliandaka/main/web/qiantaikx_data.json' && 'https://raw.githubusercontent.com/qopffw/xunliandaka/main/web/qiantaikx_data.json' !== './data.json') ? ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/web/qiantaikx_data.json'] : []);
     for (let i = 0; i < _srcs.length; i++) {
       const u = _srcs[i];
       if (!u || u === './data.json') continue;
@@ -4163,23 +4163,177 @@ async function load() {
     _staleCheck(_shownAt);   // 防复发：数据虽加载成功，但可能过期，给用户可见提示
   }
 }
-// 防复发：数据时效性自检 —— 最终采用的数据若超过 7 天未更新，顶部黄条提示可能不是最新
+// 数据时效告警统一委托给「数据自动刷新」模块：白天 90 分钟 / 非白天 7 天，单一黄条不重复
 function _staleCheck(at) {
-  if (!at) return;
-  const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(at);
-  if (!m) return;
-  const t = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime();
-  const days = (Date.now() - t) / 86400000;
-  if (days > 7) {
-    const bar = document.createElement('div');
-    bar.style.cssText = 'position:sticky;top:0;z-index:9999;background:#f59e0b;color:#3a2a00;' +
-      'font-size:13px;padding:8px 12px;text-align:center;line-height:1.4';
-    bar.textContent = '⚠ 当前数据更新于 ' + at + '（已 ' + Math.floor(days) + ' 天未更新），可能不是最新，请联系管理员刷新数据源。';
-    const body = document.body || document.documentElement;
-    body.insertBefore(bar, body.firstChild);
-  }
+  if (window.__DATA_AGE_TICK__) window.__DATA_AGE_TICK__(at);
 }
 load();
+
+/* ===== 数据自动刷新（B2）：本机定时同步后，页面无需手动重开即可看到最新数据 =====
+   轮询比对 meta.fetched_at → 有更新则自动重绘；切回前台 / 手动按钮立即检查；
+   顶部显示「数据更新于 X」；白天超过 90 分钟无新数据判定同步失效并黄条告警。
+   自包含模块：不改动 init / load / 副标题逻辑，源文件与部署变体共用同一段代码。 */
+(function () {
+  var POLL_MS = 60000, MIN_GAP = 30000, STALE_MIN = 90, DAY_FROM = 8, DAY_TO = 20;
+  var lastCheck = 0, checking = false, busyUntil = 0;
+  var ageLine = null, staleBar = null, updateBar = null, toastTimer = null;
+
+  function stampOf(j) { return (j && j.meta && (j.meta.fetched_at || j.meta.generated_at)) || ''; }
+  function currentStamp() {
+    try { if (typeof raw !== 'undefined' && raw.meta && raw.meta.fetched_at) return raw.meta.fetched_at; } catch (_) {}
+    return window.__DATA_STAMP__ || '';
+  }
+  function parseAt(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(s || '');
+    return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime() : 0;
+  }
+  function ageText(s) {
+    var t = parseAt(s);
+    if (!t) return '';
+    var min = Math.max(0, Math.round((Date.now() - t) / 60000));
+    if (min < 1) return '（刚刚更新）';
+    if (min < 60) return '（' + min + ' 分钟前）';
+    var h = Math.floor(min / 60);
+    return h < 24 ? '（' + h + ' 小时前）' : '（' + Math.floor(h / 24) + ' 天前）';
+  }
+  function toast(msg, warn) {
+    var t = document.getElementById('data_toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'data_toast';
+      t.style.cssText = 'position:fixed;z-index:100000;left:50%;bottom:24px;transform:translateX(-50%);' +
+        'background:#0f172a;color:#fff;font-size:13px;padding:9px 18px;border-radius:20px;' +
+        'box-shadow:0 6px 20px rgba(0,0,0,.22);max-width:90vw;text-align:center';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.background = warn ? '#b45309' : '#0f172a';
+    t.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.style.display = 'none'; }, 3200);
+  }
+  function ensureAgeLine() {
+    if (ageLine && ageLine.parentNode) return ageLine;
+    var sub = document.querySelector('header .sub');
+    if (!sub) return null;
+    ageLine = document.createElement('div');
+    ageLine.id = 'data_age_line';
+    ageLine.style.cssText = 'font-size:12px;color:#64748b;margin-top:3px;line-height:1.5';
+    sub.parentNode.insertBefore(ageLine, sub.nextSibling);
+    return ageLine;
+  }
+  function renderAge() {
+    var el = ensureAgeLine(), at = currentStamp();
+    if (el) {
+      el.innerHTML = '🕒 数据更新于 <b>' + esc(at || '—') + '</b> ' + ageText(at) +
+        ' · 每 60 秒自动检查 <button type="button" id="data_check_btn" ' +
+        'style="margin-left:8px;padding:2px 9px;font-size:12px;border:1px solid #cbd5e1;' +
+        'background:#fff;color:#2563eb;border-radius:5px;cursor:pointer">🔄 立即检查</button>';
+      var b = document.getElementById('data_check_btn');
+      if (b) b.onclick = function () { check(true); };
+    }
+    var t = parseAt(at), hrs = t ? (Date.now() - t) / 3600000 : 0;
+    var h = new Date().getHours(), inDay = h >= DAY_FROM && h < DAY_TO;
+    var stale = at && (inDay ? (hrs * 60 > STALE_MIN) : (hrs > 24 * 7));
+    if (stale) {
+      if (!staleBar) {
+        staleBar = document.createElement('div');
+        staleBar.id = 'data_stale_bar';
+        staleBar.style.cssText = 'position:sticky;top:0;z-index:9999;background:#f59e0b;' +
+          'color:#3a2a00;font-size:13px;padding:8px 12px;text-align:center;line-height:1.4';
+        document.body.insertBefore(staleBar, document.body.firstChild);
+      }
+      staleBar.textContent = inDay
+        ? '⚠ 数据已 ' + Math.floor(hrs * 60) + ' 分钟未更新（正常应 15 分钟内），自动同步可能已中断，请联系管理员检查本机定时任务。'
+        : '⚠ 当前数据更新于 ' + at + '（已 ' + Math.floor(hrs / 24) + ' 天未更新），可能不是最新，请联系管理员刷新数据源。';
+    } else if (staleBar) { staleBar.remove(); staleBar = null; }
+  }
+  function isBusy() {
+    return Date.now() < busyUntil
+      || (typeof F !== 'undefined' && F && F.editPostUid)
+      || !!document.querySelector('.modal.show, .sug-box[style*="display: block"]');
+  }
+  function showUpdateBar(j) {
+    if (updateBar) updateBar.remove();
+    updateBar = document.createElement('div');
+    updateBar.id = 'data_update_bar';
+    updateBar.style.cssText = 'position:sticky;top:0;z-index:9998;background:#dbeafe;color:#1e40af;' +
+      'font-size:13px;padding:8px 12px;text-align:center;line-height:1.5';
+    updateBar.innerHTML = '🔄 检测到新数据（' + esc(stampOf(j)) + '） ' +
+      '<button type="button" id="data_apply_btn" style="margin-left:8px;padding:3px 12px;font-size:12px;' +
+      'border:0;background:#2563eb;color:#fff;border-radius:5px;cursor:pointer">立即刷新查看</button>';
+    document.body.insertBefore(updateBar, document.body.firstChild);
+    document.getElementById('data_apply_btn').onclick = function () { apply(j); };
+  }
+  function hideUpdateBar() { if (updateBar) { updateBar.remove(); updateBar = null; } }
+  function apply(j) {
+    try {
+      init(j);
+      if (typeof updateSubtitle === 'function') updateSubtitle(j);
+      window.__DATA_STAMP__ = stampOf(j);
+      hideUpdateBar();
+      renderAge();
+      toast('✅ 数据已更新：' + stampOf(j));
+    } catch (e) {
+      console.error('[auto-refresh] 渲染失败:', e);
+      toast('⚠ 数据已下载但渲染失败，请手动刷新页面', true);
+    }
+  }
+  async function timedFetchJson(url, ms) {
+    var ac = new AbortController();
+    var timer = setTimeout(function () { ac.abort(); }, ms || 9000);
+    try {
+      var sep = url.indexOf('?') < 0 ? '?ts=' : '&ts=';
+      var r = await fetch(url + sep + Date.now(), { signal: ac.signal, cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      var j = await r.json();
+      if (!j || !j.employees) throw new Error('数据不完整');
+      return j;
+    } finally { clearTimeout(timer); }
+  }
+  function remoteSources() {
+    var s = ['https://raw.githubusercontent.com/qopffw/xunliandaka/main/web/qiantaikx_data.json', 'https://fastly.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json', 'https://gcore.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json', 'https://cdn.jsdelivr.net/gh/qopffw/xunliandaka@main/web/qiantaikx_data.json'];
+    return (s && s.length) ? s : [];
+  }
+  async function check(manual) {
+    if (checking) return;
+    var now = Date.now();
+    if (!manual && now - lastCheck < MIN_GAP) return;
+    lastCheck = now; checking = true;
+    try {
+      var j;
+      try { j = await timedFetchJson('./data.json', 9000); }
+      catch (e1) {
+        var srcs = remoteSources();
+        if (!srcs.length) throw e1;
+        j = await timedFetchJson(srcs[0], 9000);
+      }
+      renderAge();
+      var at = stampOf(j), cur = currentStamp();
+      if (at && cur && at > cur) {
+        if (isBusy() && !manual) showUpdateBar(j); else apply(j);
+      } else if (!cur && at) {
+        window.__DATA_STAMP__ = at;      // 首屏尚未 init 完成，只记时间戳不重绘
+      } else if (manual) {
+        toast('已是最新数据 · ' + (cur || '—'));
+      }
+    } catch (e) {
+      if (manual) toast('⚠ 暂时连不上数据源，请稍后再试', true);
+      console.warn('[auto-refresh] 检查失败:', e && e.message);
+    } finally { checking = false; }
+  }
+  // 用户正在筛选/审核时不打断，改为顶部提示条，点一下才重绘
+  document.addEventListener('click', function () { busyUntil = Date.now() + 15000; }, true);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') check(false);
+  });
+  window.addEventListener('focus', function () { check(false); });
+  setInterval(function () { check(false); renderAge(); }, POLL_MS);
+  window.__DATA_AGE_TICK__ = renderAge;
+  window.__DATA_CHECK_MANUAL__ = function () { check(true); };
+  setTimeout(renderAge, 1500);
+  setTimeout(renderAge, 5000);
+})();
 
 /* ===== Service Worker 更新提示：国产 webview 缓存激进，主动探测并提示刷新 ===== */
 (function(){
