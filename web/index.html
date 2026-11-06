@@ -386,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-06 13:35:56 · 构建 v202611061335</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-06 16:15:18 · 构建 v202611061615</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -1510,8 +1510,10 @@ function storeCodeOf(name) {
   return c || '';
 }
 function storeLabel(name) {
-  const c = storeCodeOf(name);
-  return c ? `${c} ${name}` : (name || '');
+  // 11-06 老张确认：门店名不再显示编码前缀（下拉候选 / 门店标题 / datalist 统一只显示店名）。
+  // 编码仍保留在 e.storeCode 与 storeCodeOf() 里供内部使用；防混店靠 STORE_ALIAS 归一化，
+  // 「西安砂之船店」与「南京砂之船店」本就是两个不同的名字，不需要靠编码区分。
+  return name || '';
 }
 
 /* ==================== 图表（纯 SVG，零依赖） ==================== */
@@ -1900,7 +1902,9 @@ function termOf(e) {
 }
 /* 调整岗位单元格：参考「考核」列——先显示当前岗位徽章，点击后展开下拉提报 */
 function postCell(e) {
-  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核');
+  // OV 里已有确认岗位时不再显示「待审核」：云端 feedback 表万一没同步，也不让门店看板卡在旧状态
+  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核'
+    && !(OV[e.uid] && OV[e.uid].post));
   if (pend) return `<td data-label="调整岗位"><span class="st" style="background:#fef3c7;color:#b45309">待审核→${esc(fbDisplay(pend.to))}</span>
     <button class="btn sm gray post-rev" data-uid="${esc(e.uid)}">× 撤销</button></td>`;
   // 已审核调整：只显示调整后的岗位（绿色确认徽章）；点击徽章可重新调整，不再显示"撤销调整"按钮
@@ -3540,7 +3544,9 @@ function mpGrpStyle(g) {
 }
 /* 移动端卡片内联岗位：可点击徽章 / 下拉 / 待审核 / 已覆盖 */
 function mpPostInline(e) {
-  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核');
+  // OV 里已有确认岗位时不再显示「待审核」：云端 feedback 表万一没同步，也不让门店看板卡在旧状态
+  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核'
+    && !(OV[e.uid] && OV[e.uid].post));
   if (pend) {
     return `<span class="st" style="background:#fef3c7;color:#b45309">待审核→${esc(fbDisplay(pend.to))}</span>
       <button class="btn sm gray post-rev" data-uid="${esc(e.uid)}">× 撤销</button>`;
