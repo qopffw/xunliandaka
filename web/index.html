@@ -386,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-06 16:30:13 · 构建 v202611061630</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-06 16:45:12 · 构建 v202611061645</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -3167,6 +3167,41 @@ async function reconcileFbCloud() {
   fbToast(`✓ 已补同步 ${pend.length} 条本机审核结果到云端`);
   return pend.length;
 }
+
+/* 云端「已确认」→ 共享后端 /api/override 自愈回写。
+ * loadFeedbackCloud 只把审核结果并进本机 OV（localStorage），别设备/后端读不到，
+ * 会出现「总部已确认、门店仍按花名册算、人还留在异常名单（如段娥）」。
+ * 后端 _post_override 是合并式（data.update），只增不删，安全。
+ * 只补云端已确认记录，不替业务做审核判定；已离职按 ADJ_ROLE 仍保留在异常名单。 */
+async function persistConfirmedOV() {
+  const cloud = Array.isArray(App.feedback) ? App.feedback : [];
+  const clean = {};
+  cloud.forEach(x => {
+    if (!x || x.status !== '已确认' || !x.uid || !x.ovPost) return;
+    const uid = String(x.uid);
+    const post = String(x.ovPost), pos = String(x.ovPosition || '');
+    clean[uid] = {
+      post: post, position: pos,
+      note: x.note || '', reviewer: x.reviewer || '总部',
+      at: x.reviewed_at || x.at || ''
+    };
+    OV[uid] = { post: post, position: pos, note: x.note || '', at: x.reviewed_at || x.at || '' };
+  });
+  const n = Object.keys(clean).length;
+  if (!n) return 0;
+  setOV(OV);
+  try {
+    const r = await fetch(FEEDBACK_API + '/api/override', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ overrides: clean })
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!j.ok && !j.success) return 0;
+  } catch (e) { return 0; }
+  try { App.list = buildModel(raw.employees); render(); } catch (e) { }
+  return n;
+}
+
 async function confirmFb(id) {
   const l = getFeedback(); const x = l.find(v => String(v.id) === String(id));
   if (!x) return;
@@ -4102,10 +4137,16 @@ function init(data) {
   App.list = buildModel(raw.employees);
   App.feedback = getFeedback();
   if (FEEDBACK_API) {
-    // 启动即拉云端；随后把本机「已确认但云端仍待审核」的记录补推（修复跨设备不同步）
-    loadFeedbackCloud().then(() => { render(); reconcileFbCloud(); });
     loadTrainerStatusOverrides().then(() => render()); // 拉取带训追踪手动状态覆盖
-    loadOverrideCloud().then(() => render());   // 拉取岗位调整审核结果（A3），跨设备同步
+    // 串行自愈：云端OV → 反馈合并 → 已确认回写共享后端 → 本机审核补推 → 重绘
+    // 解决「总部已确认、门店/其他设备仍按花名册算、人还留在异常名单（如段娥）」
+    (async () => {
+      await loadOverrideCloud().catch(() => false);
+      await loadFeedbackCloud().catch(() => false);
+      await persistConfirmedOV().catch(() => 0);
+      try { App.list = buildModel(raw.employees); render(); } catch (e) { }
+      await reconcileFbCloud().catch(() => 0);
+    })();
   }
   App.ready = true;                                  // ★v1.2：数据就绪，允许各页重绘
   if (!monthOptions().includes(F.month) && F.month !== '全部') F.month = '全部';
