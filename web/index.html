@@ -386,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-08 17:04:55 · 构建 v202611081704</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-10 13:24:33 · 构建 v202611101324</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -437,7 +437,7 @@
       <div id="blk_f2_7"><span class="note">待填充 · 进度图</span></div>
     </div>
     <div class="card">
-      <h3>训练情况一览（合格看板 · 受上方筛选：区域 / 月份 / 学习 / 考核 / 状态 / 备注；默认本期新人，可展开全部）</h3>
+      <h3>训练情况一览（合格看板 · 受上方筛选：区域 / 月份 / 学习 / 考核 / 状态 / 备注；统计口径统一为 9/1 起入职的本期新人）</h3>
       <div class="tbl-scroll" id="blk_f2_4"><span class="note">待填充 · 表格</span></div>
     </div>
   </section>
@@ -1053,10 +1053,10 @@ CFG.data.recordKey = 'employees';
  *   A2 月度类图表只受「区域」影响，不受「月份」筛选影响（图不再被自己的筛选掐死）
  *   A3 岗位异常审核 → 独立映射 → 重跑状态机 → 剔除异常清单 → 持久化（本地落盘 + 导出）
  *   A4 异常清单口径收敛到「本期」（历史存量不计入；项目自 2026-09-01 起）
- *   B1 门店排行榜统计全部门店（存量可见，无本期新人的显示「老员工未统计」）
+ *   B1 门店排行榜按本期新人统计（统一口径，无本期新人的门店显示「本期无新人」）
  *   B2 月份下拉只列 2026-09 起有数据的月份
  *   B3 历史存量显示真实状态 + 「历史存量」标签（不计入闭环率）
- *   B4 训练一览默认只显示本期新人，可一键展开全部
+ *   B4 训练一览统一只统计本期新人，不再提供「查看全部」切换
  *   B5 搜索颗粒度到门店（不按员工搜）
  *   C1 门店名去掉编号前缀（数据层已归一化）
  *   C3 无门店 / 区域未匹配 → 「待核对门店」分组并列出人名
@@ -1067,7 +1067,7 @@ const GRADES       = ['服务岗', '迎宾岗', '传菜岗'];
 const LEARN_DAYS   = 7;                        // 入职 +7 天完成学习
 const EXAM_DAYS    = 14;                       // 入职 +14 天完成考核
 const STAT_START   = '2026-09-01';             // 正式统计起点
-const MGR_POS      = ['大店长', '店长', '见习店长', '经理', '主管'];
+const MGR_POS      = ['大店长', '店长', '见习店长', '经理', '主管', '前厅主管'];  // 花名册真实职称，归前厅管理组
 const STAFF_POS    = ['服务员', '传菜员', '揽客'];
 const PT_POS       = ['兼职', '实习生'];
 const POST_OF_POS  = { '服务员': '服务岗', '传菜员': '传菜岗', '揽客': '迎宾岗' };
@@ -1195,8 +1195,7 @@ function statusBadge(e) {
 }
 function remarkTag(e) {
   // 历史存量统一在备注列展示（覆盖原 remark）
-  let r = e.remark;
-  if (isHist(e)) r = '历史存量';
+  const r = e.remark;
   const c = remarkColor(r);
   return `<span class="st" style="background:${c}1a;color:${c}">${esc(r)}</span>`;
 }
@@ -1226,7 +1225,6 @@ const F = {
   editPostUid: ''        // Tab0/F2 表格内：正在编辑调整岗位的员工 uid
 };   // ★ 全站唯一筛选源（A1）
 let GRAIN = '月';                 // 月度页统计粒度
-let SHOW_ALL_F1 = false;          // 训练一览：是否展开全部人员（B4）
 let F1_SORT = 'hire';             // 训练一览：'hire' 按入职 / 'area' 按区域 / 'role' 按角色
 let OV = {};                      // uid -> {post, position, note, at}（A3）
 let TODAY = new Date();
@@ -1267,6 +1265,8 @@ function buildModel(employees) {
     const isStaff = STAFF_POS.includes(pos);
     const isPt = PT_POS.includes(pos);
     const rosterPost = POST_OF_POS[pos] || '';
+    // 花名册更新滞后：有学习/考核记录但花名册查无此人（数据层置 roster_missing）
+    const rosterMissing = !!e.roster_missing;
     // 注：excluded/left 改由下方角色分支（ADJ_ROLE）统一赋值
 
     // --- 学 / 考 岗位 ---
@@ -1291,8 +1291,9 @@ function buildModel(employees) {
       else if (isStaff) { role = '前厅员工'; need = STAFF_NEED; }
       else if (isPt) {
         if (learned.length || examPosts.length) { role = '前厅员工(兼)'; need = STAFF_NEED; }
-        else { role = '待确认'; need = 0; }
-      } else { role = '其他'; need = 0; }
+        else { role = '待确认'; need = STAFF_NEED; }   // 岗位待确认也进待办，不再被 need=0 吞掉
+      } else if (rosterMissing) { role = '待确认'; need = STAFF_NEED; }
+      else { role = '其他'; need = 0; }
     }
 
     // --- 岗位判定：花名册职位第一优先级，不再据学习内容推断岗位（★删除通岗概念） ---
@@ -1315,13 +1316,14 @@ function buildModel(employees) {
       }
     } else if (isPt) {
       const g = GRADES.find(g => (e.learn && e.learn[g] && e.learn[g].ok) || examPosts.includes(g));
-      post = g || '待定';
-      if (!g) { noRosterPost = true; flag = `兼职/实习，花名册未填具体岗位，请店长确认`; }
+      post = g || '待确认';
+      if (!g) { noRosterPost = true; flag = `花名册未填/未更新岗位，请门店确认岗位`; }
     } else if (pos && ADJ_ROLE[pos]) {
       post = '';   // 非前厅 / 已离职 / 其他 等已定义类别，不显示前厅判定岗位
     } else {
-      // 花名册职位为空或无法识别 → 无岗位，需店长提报正确岗位
+      // 花名册滞后/未填岗位 → 岗位待确认，门店可点选；花名册更新后自动补齐
       noRosterPost = true;
+      post = '待确认';
     }
     if (noRosterPost && !post) flag = flag || `花名册未填岗位，请店长提报正确岗位`;
 
@@ -1396,8 +1398,9 @@ function buildModel(employees) {
     else if (!examOk) { status2 = '异常'; remark = '未考核'; }
     else { status2 = '正常'; remark = '推进中'; }
 
-    const cohort = (!hire ? '入职缺失'
-      : (hire >= toDate(STAT_START) ? '本期(9/1起)' : '历史存量'));
+    // 花名册滞后人员入职日期未知，按本期新人对待，避免被统一口径过滤掉
+    const cohort = (rosterMissing ? '本期(9/1起)'
+      : (!hire ? '入职缺失' : (hire >= toDate(STAT_START) ? '本期(9/1起)' : '历史存量')));
 
     return {
       uid: e.uid, name: e.name, no: cleanNo(e.no),
@@ -1409,7 +1412,7 @@ function buildModel(employees) {
       learned, learnedAt, examPosts, matched, post, flag,
       learnOk, learnLate, examOk, examLate, status, cohort,
       learnStarted, status2, remark, closed, examDone,
-      mismatch, noRosterPost,
+      mismatch, noRosterPost, rosterMissing,
       isMgr, isStaff, isPt, excluded, left, confirmed: !!ov, adjusted
     };
   });
@@ -1425,6 +1428,7 @@ function filteredArea() {
 // 全量筛选（区域 + 门店搜索 + 月份 + 学习状态 + 考核状态 + 综合状态）
 function filtered() {
   return App.list.filter(e =>
+    isCurrent(e) && !e.excluded && !e.left &&
     (F.area === '全部' || e.area === F.area) &&
     (!F.storeKw || (e.store || '').includes(F.storeKw) || (e.area || '').includes(F.storeKw)) &&
     (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month) &&
@@ -1469,11 +1473,12 @@ function storeRank(list) {
     const store = e.store || '（花名册未填门店）';
     const k = area + '||' + store;
     const o = m.get(k) || { area, store, n: 0, closed: 0, late: 0, hist: 0, names: [] };
-    if (isCurrent(e)) {
+    // 统一口径：本期 + 在职（排除非前厅/已离职），与 stat()/门店追踪查询一致
+    if (isCurrent(e) && !e.excluded && !e.left) {
       o.n++;
       if (closedFlagOf(e)) o.closed++;
       if (e.learnLate || e.examLate) o.late++;
-    } else if (isHist(e)) o.hist++;
+    }
     o.names.push(e.name);
     m.set(k, o);
   });
@@ -1812,7 +1817,6 @@ const cellOf = e => {
   const closed = closedFlagOf(e);
   const c = closed ? '#16a34a' : '#dc2626';
   let s = `<span class="st" style="background:${c}1a;color:${c}">${closed ? '闭环' : '未闭环'}</span>`;
-  if (isHist(e)) s += ' <span class="st st-gray">历史存量</span>';
   if (e.confirmed) s += ' <span class="st" style="background:#dcfce7;color:#16a34a">已确认</span>';
   return s;
 };
@@ -1975,7 +1979,7 @@ function mTraineeCardHtml(e, cols) {
   return `<div class="mcard" style="border-left:4px solid ${sc}" onclick="if(!event.target.closest('button,select,a,input,.post-badge,.mhead')) showEmpDetail('${esc(e.uid)}')">
     <div class="mhead">
       <div class="ml1"><span class="mname">${esc(e.name)}</span><span class="mrole">${esc(roleShortOf(e))}</span>
-        <span class="st" style="background:${sc}1a;color:${sc}">${esc(e.status2)}</span>${isHist(e) ? '<span class="st st-gray">历史存量</span>' : ''}</div>
+        <span class="st" style="background:${sc}1a;color:${sc}">${esc(e.status2)}</span></div>
       <div class="ml2">
         <span class="st" style="background:${lc}1a;color:${lc}">学:${learn}</span>
         <span class="st" style="background:${ec}1a;color:${ec}">考:${exam}</span>
@@ -2170,24 +2174,23 @@ function render_f1() {
   renderFeedbackForm();
 }
 
-/* A5 选 B：输入门店名 → 呈现该门店全部员工（含历史存量），默认全显示 */
+/* A5 选 B：输入门店名 → 呈现该门店本期新人（9/1 起入职），统一口径 */
 function drawTableF1() {
   const el = document.getElementById('blk_f1_1');
   if (!el) return;
   const kw = F.storeKw.trim();
   if (!kw) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">请先输入门店名</div><div class="empty-state-desc">输入门店关键词后，自动呈现该门店全部员工的训练情况</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">请先输入门店名</div><div class="empty-state-desc">输入门店关键词后，自动呈现该门店本期新人（9/1 起入职）的训练情况</div></div>`;
     return;
   }
   let rs = App.list.filter(e =>
-    ((e.store || '').includes(kw) || (e.area || '').includes(kw)) &&
+    ((e.store || '').includes(kw) || (e.area || '').includes(kw)) && isCurrent(e)
+    && !e.excluded && !e.left &&
     (F.f1Learn === '全部' || learnStatusOf(e) === F.f1Learn) &&
     (F.f1Exam === '全部' || examStatusOf(e) === F.f1Exam) &&
     (F.f1Status === '全部' || statusGroupOf(e) === F.f1Status)
   );
   rs = sortTrainees(rs);   // 默认按入职时间从近到远
-  const curN = rs.filter(isCurrent).length;
-  const histN = rs.filter(isHist).length;
 
   const learnOpts = sel => ['全部', '已学习', '未学习', '学习中'].map(s => `<option${s === sel ? ' selected' : ''}>${esc(s)}</option>`).join('');
   const examOpts = sel => ['全部', '已考核', '未考核'].map(s => `<option${s === sel ? ' selected' : ''}>${esc(s)}</option>`).join('');
@@ -2197,7 +2200,7 @@ function drawTableF1() {
     <label class="fld">学习状态</label><select id="f1_learn">${learnOpts(F.f1Learn)}</select>
     <label class="fld">考核状态</label><select id="f1_exam">${examOpts(F.f1Exam)}</select>
     <label class="fld">完成状态</label><select id="f1_status">${statusOpts(F.f1Status)}</select>
-    <span class="note">当前${kw ? '门店含「' + esc(kw) + '」' : '全部门店'} · 共 <b>${rs.length}</b> 人（本期 ${curN} · 历史存量 ${histN}）</span>
+    <span class="note">当前${kw ? '门店含「' + esc(kw) + '」' : '全部门店'} · 共 <b>${rs.length}</b> 人 · 口径：本期新人（9/1 起入职）</span>
   </div>`;
   el.innerHTML = bar + traineeBodyHtml(rs, COLS_F1, { forceTable: true });
   bindPostPicks();
@@ -2481,13 +2484,12 @@ function statusBucketOf(e) {
   if (e.learnOk && !e.examOk) return '待考核';
   return '推进中';
 }
-/* 口径：受「区域 + 月份」筛选；cur=本期新人(9/1起) / all=所选月份入职的全部人员 */
-let F2_SCOPE = 'cur';
+/* 统一口径：全站仅统计本期新人(9/1 起入职) */
 function f2BaseList() {
   return App.list.filter(e =>
     (F.area === '全部' || e.area === F.area) &&
     (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month)
-  ).filter(e => (F2_SCOPE === 'all' ? true : isCurrent(e)) && !e.excluded && !e.left);
+  ).filter(e => isCurrent(e) && !e.excluded && !e.left);
 }
 function f2AreaRank(a) { const i = AREA_ORDER.indexOf(a); return i === -1 ? 999 : i; }
 function f2StoreAgg(list) {
@@ -2520,21 +2522,13 @@ function f2AreaAgg(list) {
 function drawF2Charts() {
   const list = f2BaseList();
   const scope = (F.month === '全部' ? '全部月份' : F.month) + (F.area === '全部' ? ' · 全部区域' : ' · ' + F.area);
-  const empty = list.length ? `暂无数据（${scope}）`
-    : (F2_SCOPE === 'cur'
-      ? `该月份没有「本期新人（9/1 起入职）」记录，可切换上方口径为「所选月份全部入职」查看`
-      : `暂无数据（${scope}）`);
+  const empty = `暂无数据（${scope} · 本期新人 9/1 起入职）`;
 
   // 口径切换条
   const sb = document.getElementById('f2_scope_bar');
   if (sb) {
-    sb.innerHTML = `<span class="fld">三图统计口径</span>`
-      + `<button class="btn sm ${F2_SCOPE === 'cur' ? '' : 'gray'}" id="f2_sc_cur">本期新人（9/1 起入职）</button>`
-      + `<button class="btn sm ${F2_SCOPE === 'all' ? '' : 'gray'}" id="f2_sc_all">所选月份全部入职</button>`
-      + `<span class="note">当前统计 <b>${list.length}</b> 人 · ${esc(scope)} · ${F2_SCOPE === 'cur' ? '仅本期（与闭环率口径一致）' : '含历史存量，用于追溯往月'}</span>`;
-    const bc = document.getElementById('f2_sc_cur'), ba = document.getElementById('f2_sc_all');
-    if (bc) bc.onclick = () => { F2_SCOPE = 'cur'; drawF2Charts(); };
-    if (ba) ba.onclick = () => { F2_SCOPE = 'all'; drawF2Charts(); };
+    sb.innerHTML = `<span class="fld">统计口径</span>`
+      + `<span class="note">全站统一：仅本期新人（9/1 起入职） · 当前统计 <b>${list.length}</b> 人 · ${esc(scope)}</span>`;
   }
 
   // ① 区域新人情况：柱状图 入职 / 学习完成 / 考核完成
@@ -2565,7 +2559,7 @@ function drawF2Charts() {
 
 /* ② 员工状态构成：人员明细表，按 STATUS_BUCKETS 四分类分组，每组可折叠；
    列：区域 / 门店 / 姓名 / 岗位 / 情况（备注，承载超期完成/未学先考/未确定岗位等细节）。
-   与饼图同口径（区域 + 月份 + F2_SCOPE），满足"分别看各类型明细：哪家门店、哪些人、什么情况"。 */
+   与饼图同口径（区域 + 月份 + 仅本期新人），满足"分别看各类型明细：哪家门店、哪些人、什么情况"。 */
 function drawF2StatusDetail(el, list, opts) {
   opts = opts || {};
   if (!el) return;
@@ -2630,6 +2624,7 @@ function drawF2table() {
   const el = document.getElementById('blk_f2_4');
   if (!el) return;
   let rs = App.list.filter(e =>
+    isCurrent(e) && !e.excluded && !e.left &&
     (F.area === '全部' || e.area === F.area) &&
     (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month) &&
     (F.learnStatus === '全部' || learnStatusOf(e) === F.learnStatus) &&
@@ -2637,24 +2632,14 @@ function drawF2table() {
     (F.status === '全部' || statusGroupOf(e) === F.status) &&
     (F.remark === '全部' || e.remark === F.remark)
   );
-  if (!SHOW_ALL_F1) rs = rs.filter(isCurrent);   // 默认只看本期新人
+  rs = rs.filter(isCurrent);   // 统一口径：仅本期新人
   rs = sortTrainees(rs);
-  const totalAll = App.list.filter(e =>
-    (F.area === '全部' || e.area === F.area) &&
-    (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month) &&
-    (F.learnStatus === '全部' || learnStatusOf(e) === F.learnStatus) &&
-    (F.examStatus === '全部' || examStatusOf(e) === F.examStatus) &&
-    (F.status === '全部' || statusGroupOf(e) === F.status) &&
-    (F.remark === '全部' || e.remark === F.remark)
-  ).length;
-  const curN = rs.filter(isCurrent).length;
 
   const bar = `<div class="tbl-opts" id="f2_tbl_opts">
-    <button class="btn sm ${SHOW_ALL_F1 ? 'gray' : ''}" id="f2_toggle">${SHOW_ALL_F1 ? '↩ 只看本期新人' : `👁 查看全部 ${totalAll} 人`}</button>
     <button class="btn sm ${F1_SORT === 'hire' ? '' : 'gray'}" id="f2_sort_hire">📅 按入职排序</button>
     <button class="btn sm ${F1_SORT === 'area' ? '' : 'gray'}" id="f2_sort_area">🗂 按区域排序</button>
     <button class="btn sm ${F1_SORT === 'role' ? '' : 'gray'}" id="f2_sort_role">👤 按角色排序</button>
-    <span class="note">当前显示：<b>${SHOW_ALL_F1 ? '全部人员（含历史存量）' : '仅本期新人'}</b> · 共 <b>${rs.length}</b> 人（本期 ${curN} 人）</span>
+    <span class="note">统计口径：<b>仅本期新人（9/1 起入职）</b> · 共 <b>${rs.length}</b> 人</span>
   </div>`;
   el.innerHTML = bar + traineeBodyHtml(rs, COLS_F2);
   bindPostPicks();
@@ -2663,8 +2648,6 @@ function drawF2table() {
   bindPostCancel();
   bindMCards();
 
-  const tg = document.getElementById('f2_toggle');
-  if (tg) tg.onclick = () => { SHOW_ALL_F1 = !SHOW_ALL_F1; drawF2table(); };
   const sH = document.getElementById('f2_sort_hire');
   if (sH) sH.onclick = () => { F1_SORT = 'hire'; drawF2table(); };
   const sA = document.getElementById('f2_sort_area');
@@ -2709,31 +2692,28 @@ function drawF3() {
 
 /* ==================== 渲染：业务模块 · 门店闭环追踪 ==================== */
 function render_f4() {
-  mountFilter('f4', { month: true, note: '门店榜含全部门店（存量可见）；选月份则只看该月入职的新人，老员工仍保留' });
+  mountFilter('f4', { month: true, note: '统一口径：仅统计 9/1 起入职的本期新人；选月份只缩窄本期新人的入职月' });
   drawF4();
 }
 function storeRowHTML(it) {
   if (it.n === 0) {
     return `<div class="rb rb-mute">
-      <div class="rb-l"><span class="rb-n">${esc(it.store)}</span><span class="rb-s">老员工未统计</span></div>
+      <div class="rb-l"><span class="rb-n">${esc(it.store)}</span><span class="rb-s">本期无新人</span></div>
       <div class="rb-bar"><i style="width:0"></i></div>
       <div class="rb-v" style="color:#94a3b8">—</div>
-      <div class="rb-x">存量 ${it.hist} 人</div></div>`;
+      <div class="rb-x">0/0</div></div>`;
   }
   const c = it.rate >= 0.8 ? '#16a34a' : it.rate >= 0.5 ? '#d97706' : '#dc2626';
   return `<div class="rb">
-    <div class="rb-l"><span class="rb-n">${esc(it.store)}</span>${it.hist ? `<span class="rb-s">存量 ${it.hist}</span>` : ''}</div>
+    <div class="rb-l"><span class="rb-n">${esc(it.store)}</span></div>
     <div class="rb-bar"><i style="width:${Math.min(100, it.rate * 100).toFixed(1)}%;background:${c}"></i></div>
     <div class="rb-v" style="color:${c}">${pct1(it.rate)}</div>
     <div class="rb-x">${it.closed}/${it.n}</div></div>`;
 }
 function drawF4() {
-  // 存量视角：F4 的月份筛选只缩窄「本期新人」的入职月；历史存量(老员工)始终保留以维持"存量可见"
-  const list = filteredArea().filter(e => {
-    if (F.month === '全部') return true;
-    if (isHist(e)) return true;
-    return (e.hire || '').slice(0, 7) === F.month;
-  });
+  // 统一口径：仅本期新人；月份筛选只缩窄本期新人的入职月
+  const list = filteredArea().filter(e => isCurrent(e) &&
+    (F.month === '全部' || (e.hire || '').slice(0, 7) === F.month));
   const rows = storeRank(list);             // B1：全部门店
 
   // --- 1. 门店排行榜：按区域分组，组内「有本期的按闭环率从低到高」在前，无本期的在后 ---
@@ -2805,15 +2785,13 @@ function render_f5() {
   const list = filtered();
   const s = stat(list);
   kpiCards(document.getElementById('blk_f5_0'), [
-    { k: '前厅总人数', v: s.total, c: '#64748b' },
     { k: '本期新人(9/1起)', v: s.cur, c: '#2563eb' },
     { k: '已闭环', v: s.closed, c: '#16a34a' },
     { k: '闭环率', v: pct1(s.rate), c: s.rate >= 0.8 ? '#16a34a' : s.rate >= 0.5 ? '#d97706' : '#dc2626' },
     { k: '待考核', v: s.wait, c: '#d97706' },
     { k: '超时未完成', v: s.lateTimeout, c: '#dc2626' },
     { k: '学习中', v: s.studying, c: '#0891b2' },
-    { k: '待门店确认', v: s.confirm, c: '#7c3aed' },
-    { k: '历史存量', v: s.hist, c: '#94a3b8' }
+    { k: '待门店确认', v: s.confirm, c: '#7c3aed' }
   ]);
 
   renderFeedbackReview();
@@ -3467,7 +3445,7 @@ let MP_VIEW = 'todo';                                  // 'todo' 待办 | 'all' 
 const MP_F = { name: '', post: '全部', status: '全部' };   // 第二层筛选（独立于全局 F）
 
 const mpInJob   = e => !e.left && !e.excluded;                     // 在职（排除离职 / 非前厅）
-const mpTodoable = e => mpInJob(e) && !isHist(e) && e.need > 0;    // 历史存量不计入待办
+const mpTodoable = e => mpInJob(e) && isCurrent(e) && e.need > 0;  // 统一口径：仅本期(9/1起)
 function mpStatus(e) {                                             // 仅 闭环 / 未闭环
   return closedFlagOf(e) ? '闭环' : '未闭环';
 }
@@ -3477,7 +3455,7 @@ function mpTaskOf(e) {
   if (e.post === '管理岗' || (e.need || 0) >= 3) return '全学';
   const p = e.post || '';
   if (GRADES.includes(p)) return shortGrade(p);   // 服务 / 迎宾 / 传菜
-  if (p === '待定') return '待定';
+  if (p === '待定' || p === '待确认') return '待确认';
   return '本岗';
 }
 const mpRemainLearn = e => e.d7 ? dayDiff(TODAY, e.d7) : null;     // >0 剩余 / <0 超期
@@ -3531,7 +3509,7 @@ function mpCell(e, c) {
     case '学习进度': return `<td data-label="学习进度">${e.learned.length}/${e.need}${e.need ? (e.learnOk ? ' ✓' : '') : ''}</td>`;
     case '已学岗位': return `<td data-label="已学岗位">${e.learned.map(g => `<span class="ck ok">${g[0]}${g[1]}</span>`).join('') || '<span class="ck no">未学</span>'}</td>`;
     case '考核岗位': return `<td data-label="考核岗位">${e.examPosts.map(g => `<span class="ck ok">${g[0]}${g[1]}</span>`).join('') || '<span class="ck no">未考</span>'}</td>`;
-    case '备注': return `<td data-label="备注">${esc(e.remark)}${isHist(e) ? ' <span class="st st-gray">历史存量</span>' : ''}</td>`;
+    case '备注': return `<td data-label="备注">${esc(e.remark)}</td>`;
     default: return '';
   }
 }
@@ -3572,9 +3550,12 @@ function mpGroups(all) {
   // 异常集合：学习不匹配岗位(mismatch) / 岗位待确认(unconf) / 已离职(left)
   // 已离职不进待学习/待考核/已闭环，仅保留在异常人员，闭环率统计也已剔除
   const mismatch = base.filter(e => e.mismatch);
-  // 岗位待确认：仅限「尚未做过岗位调整」的人；已通过「调整岗位」确认过岗位（管理岗等）的，
-  // 视为岗位已确认，移出异常组转为正常跟踪（否则会出现"已调成管理岗✓却仍标待确认"的矛盾）
-  const unconf   = all.filter(e => e.status2 === '待确认' && !(OV[e.uid] && OV[e.uid].post));
+  // 岗位待确认分流：已有学习/考核记录 → 留在待学习/待考核栏（岗位显示「待确认」，门店可点选）；
+  // 完全没有记录 → 进异常人员栏，需门店先确认岗位再看学习完成情况。
+  // 已通过「调整岗位」确认过的（OV 有 post）一律视为已确认，不再进异常组。
+  const hasTrace = e => (e.learnStarted && e.learnStarted.length) || (e.examPosts && e.examPosts.length);
+  const unconf   = all.filter(e => e.status2 === '待确认' && !hasTrace(e)
+                    && !(OV[e.uid] && OV[e.uid].post));
   const lefts    = all.filter(e => e.left);
   const anomUids = new Set([...mismatch, ...unconf, ...lefts].map(e => e.uid));
   // 异常人员去重（同一人可能同时命中多个异常类别）
@@ -3625,7 +3606,7 @@ function mpGrpState(g, e) {
 /* 异常原因文本 */
 function mpAnomReason(e) {
   if (e.left) return `已离职：该员工已离岗，不计入待学习/待考核与闭环率`;
-  if (e.status2 === '待确认') return `岗位待确认：暂无法确定学习任务，请先确认岗位`;
+  if (e.status2 === '待确认') return `岗位待确认：花名册未更新/未填岗位，请门店先选择岗位，再核对学习完成情况`;
   if (!e.isMgr && e.examPosts.length && !e.learnOk)
     return `未学先考：已考核 ${e.examPosts.join('、')}，但学习未完成（已学 ${e.learned.length}/${e.need}）`;
   return esc(e.remark) || '—';
@@ -3768,25 +3749,30 @@ function drawMp() {
       <div class="empty-state-desc">在上方输入或点选门店名，即可看到本店需要立即跟进的人员</div></div></div>`;
     return;
   }
+  // 已离职的人保留在 all 里（异常人员栏要展示），非前厅仍排除；
+  // 待办四栏由 mpTodoable 再排除离职，保证「已离职只进异常栏」
   const all = App.list.filter(e =>
-    ((e.store || '').includes(kw) || (e.area || '').includes(kw)) && mpInJob(e));
+    ((e.store || '').includes(kw) || (e.area || '').includes(kw)) && !e.excluded && isCurrent(e));
 
+  const statN = all.filter(e => !e.left).length;          // 与 F4 分母同口径（已离职不计）
+  const leftN = all.length - statN;
   const seg = `<div class="card"><div class="mp-seg">
       <button class="btn sm ${MP_VIEW === 'todo' ? '' : 'gray'}" id="mp_v_todo">📌 待办跟进</button>
-      <button class="btn sm ${MP_VIEW === 'all' ? '' : 'gray'}" id="mp_v_all">👥 在职全员</button>
-      <span class="note">${esc(storeLabel(kw))} · 在职 <b>${all.length}</b> 人${MP_VIEW === 'todo' ? '（默认只看需立即跟进的人）' : ''}</span>
+      <button class="btn sm ${MP_VIEW === 'all' ? '' : 'gray'}" id="mp_v_all">👥 本期全员</button>
+      <span class="note">${esc(storeLabel(kw))} · 本期新人 <b>${statN}</b> 人（9/1 起入职）${leftN ? ` · 另有已离职 <b>${leftN}</b> 人仅列异常栏` : ''}${MP_VIEW === 'todo' ? '（默认只看需立即跟进的人）' : ''}</span>
     </div></div>`;
 
   if (MP_VIEW === 'all') {
     const posts = ['全部', ...new Set(all.map(e => e.post).filter(Boolean))];
     let rs = all.filter(e =>
+      !e.left &&
       (!MP_F.name || (e.name || '').includes(MP_F.name)) &&
       (MP_F.post === '全部' || e.post === MP_F.post) &&
       (MP_F.status === '全部' || mpStatus(e) === MP_F.status)
     ).sort(mpSort);
     const sel = (id, opts, cur) => `<select id="${id}">${opts.map(o => `<option${o === cur ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
     el.innerHTML = seg + `<div class="card">
-      <h3>在职全员学习明细（共 ${rs.length} 人）</h3>
+      <h3>本期新人学习明细（共 ${rs.length} 人）</h3>
       <div class="fbar">
         <label class="fld">姓名</label><input type="text" id="mp_name" value="${esc(MP_F.name)}" placeholder="输入姓名关键词">
         <label class="fld">岗位</label>${sel('mp_post', posts, MP_F.post)}
@@ -4186,7 +4172,7 @@ function init(data) {
   }
 
   document.getElementById('footer').textContent =
-    `数据基准 ${raw.meta.fetched_at || '—'} · 前厅 ${App.list.length} 人 · 门店 ${App.list.filter(e => e.store).length ? storeOptions().length : 0} 家 · 考核卡 ${raw.meta.exam_records || 0} 条 · 岗位修正 ${Object.keys(OV).length} 条`;
+    `数据基准 ${raw.meta.fetched_at || '—'} · 本期新人 ${App.list.filter(isCurrent).length} 人 · 门店 ${App.list.filter(e => e.store).length ? storeOptions().length : 0} 家 · 考核卡 ${raw.meta.exam_records || 0} 条 · 岗位修正 ${Object.keys(OV).length} 条`;
   switchTab(State.tab);
 }
 
