@@ -386,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-10 13:35:53 · 构建 v202611101343</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-10 13:35:53 · 构建 v202611131041</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -1143,11 +1143,29 @@ function learnStatusOf(e) {
   if (e.learnStarted && e.learnStarted.length) return '学习中';
   return '未学习';
 }
-/* 学习是否「按规定岗位全部合格」—— 忽略 SLA 超期，与闭环 closed 口径一致。
-   用于「学习」列 / 筛选 / 分组归属：只要 required 岗位都合格即视为「已学」，
-   超期只影响 状态/备注（超时未完成），不篡改「学习已完成」的事实。 */
+/* 按「当前确认岗位」判定学习 / 考核是否完成（用户规则 2026-11-13）
+   岗位优先级：门店审核调整(OV) > 花名册 > 待确认。
+   调岗 / 转岗后，原岗位的学习与考核记录一律不再计入；新岗位没学 → 回退「待学习」。
+   管理岗(need=3) 要求三岗全学全考；岗位待确认时按数量兜底，避免误伤花名册滞后人员。 */
+function postMatchLearn(o) {
+  const need = o.need || 0, learned = o.learned || [], post = o.post || '';
+  if (!need) return false;
+  if (post === '管理岗' || need >= 3) return GRADES.every(g => learned.includes(g));
+  if (GRADES.includes(post)) return learned.includes(post);
+  return learned.length >= need;
+}
+function postMatchExam(o) {
+  const need = o.need || 0, ex = o.examPosts || [], post = o.post || '';
+  if (!need) return false;
+  if (post === '管理岗' || need >= 3)
+    return ex.includes('管理岗') || GRADES.every(g => ex.includes(g));
+  if (GRADES.includes(post)) return ex.includes(post);
+  return ex.length >= need;
+}
+/* 学习是否「按当前岗位全部合格」—— 与闭环 closed 同源，忽略 SLA 超期。
+   用于「学习」列 / 筛选 / 分组归属；超期只影响 状态/备注，不篡改「已学」事实。 */
 function learnDoneOf(e) {
-  return e.need > 0 && e.learned.length >= e.need;
+  return postMatchLearn(e);
 }
 /* 训练是否「闭环」：规定岗位全部合格 + 考核达标（含超期完成，即超期也计入闭环率）。
    非前厅(已排除) / 已离职 不计入闭环口径。这是「状态栏 = 闭环/未闭环」的唯一判据。 */
@@ -1168,7 +1186,7 @@ function examBeforeLearnOf(e) {
 /* 状态栏二元值：闭环 / 未闭环（超期闭环仍算闭环） */
 function statusBinOf(e) { return closedFlagOf(e) ? '闭环' : '未闭环'; }
 function examStatusOf(e) {
-  return e.examPosts.length ? '已考核' : '未考核';
+  return postMatchExam(e) ? '已考核' : '未考核';
 }
 function statusGroupOf(e) { return statusBinOf(e); }
 function timeoutDimOf(e) { return (e.learnLate || e.examLate) ? '已超时' : '未超时'; }
@@ -1374,12 +1392,11 @@ function buildModel(employees) {
 
     // --- 三维度标记 + 状态(正常/异常) + 备注 ---
     const learnStarted = GRADES.filter(g => e.learn && e.learn[g]);   // 有学习记录（不论是否合格）
-    const closed = need > 0 && learned.length >= need
-      && (hasMgrExam || (examG.length >= need
-        && matched.length >= Math.min(need, examG.length)));
-    // 考核「实际达标」（与 closed 同源，忽略 SLA 超期；用于图表"考核完成"与主看板口径一致）
-    const examDone = need > 0 && (hasMgrExam || (examG.length >= need
-        && matched.length >= Math.min(need, examG.length)));
+    // 闭环 = 当前确认岗位「已学」且「已考」，与明细表两列 / 待办四栏完全同源
+    const pmArgs = { need, post, learned, examPosts };
+    const closed = postMatchLearn(pmArgs) && postMatchExam(pmArgs);
+    // 考核「实际达标」（与 closed 同源；用于图表"考核完成"与详情卡"去考核"按钮）
+    const examDone = postMatchExam(pmArgs);
     // 顺序异常：已考核三岗，但应学未完成 / 或考了未学的岗（管理岗考核不属于顺序异常）
     const seqErr = examG.length > 0 && !closed
       && (learned.length < need || matched.length < examG.length);
@@ -1394,7 +1411,7 @@ function buildModel(employees) {
     else if (seqErr) { status2 = '异常'; remark = '顺序异常'; }
     else if (examOk && (learnLate || examLate)) { status2 = '异常'; remark = '学习超期·已考核'; }
     else if (learnLate || examLate) { status2 = '异常'; remark = '超时未完成'; }
-    else if (!learnDoneOf(e)) { status2 = '异常'; remark = (learnStarted.length ? '学习中' : '未学习'); }
+    else if (!postMatchLearn(pmArgs)) { status2 = '异常'; remark = (learnStarted.length ? '学习中' : '未学习'); }
     else if (!examOk) { status2 = '异常'; remark = '未考核'; }
     else { status2 = '正常'; remark = '推进中'; }
 
@@ -1444,7 +1461,7 @@ function stat(list) {
   return {
     total: list.length, cur: cur.length, closed,
     rate: safeDiv(closed, cur.length),
-    wait: cur.filter(e => learnDoneOf(e) && !closedFlagOf(e)).length,
+    wait: cur.filter(e => postMatchLearn(e) && !postMatchExam(e)).length,
     lateTimeout: cur.filter(e => e.remark === '超时未完成').length,
     lateLearn: cur.filter(e => e.remark === '超时未完成' && e.learnLate).length,
     lateExam: cur.filter(e => e.remark === '超时未完成' && e.examLate && !e.learnLate).length,
@@ -3500,7 +3517,7 @@ function mpCell(e, c) {
     case '应完成时间': return `<td data-label="应完成时间" class="mono">${e.d7 ? esc(ymd(e.d7)) : '—'}</td>`;
     case '完成状态': return `<td data-label="完成状态">${mpLearnState(e)}</td>`;
     case '学习状态': return `<td data-label="学习状态">${mpLearnState(e)}</td>`;
-    case '考核状态': return `<td data-label="考核状态">${e.examPosts.length ? '<span class="st" style="background:#dcfce7;color:#16a34a">已考核</span>' : '<span class="st" style="background:#f1f5f9;color:#94a3b8">未考核</span>'}</td>`;
+    case '考核状态': return `<td data-label="考核状态">${postMatchExam(e) ? '<span class="st" style="background:#dcfce7;color:#16a34a">已考核</span>' : '<span class="st" style="background:#f1f5f9;color:#94a3b8">未考核</span>'}</td>`;
     case '剩余/超期': return `<td data-label="剩余/超期">${mpUrgTag(e)}</td>`;
     case '考核截止': return `<td data-label="考核截止" class="mono">${mpExamDueTxt(e)}</td>`;
     case '状态': return `<td data-label="状态">${mpStatusTag(e)}</td>`;
@@ -3565,17 +3582,17 @@ function mpGroups(all) {
   }
   return [
     { key: 'learn', icon: '📚', title: '待学习', color: '#0891b2',
-      desc: '尚未完成规定岗位学习（含学习中 / 超期），岗位可点选调整',
+      desc: '当前确认岗位尚未学完（含调岗后需补学 / 学习中 / 超期），岗位可点选调整',
       empty: '✅ 本店暂无待学习人员（新员工入职 7 天内需完成学习）',
-      rs: base.filter(e => !learnDoneOf(e) && !anomUids.has(e.uid)).sort(mpSort) },
+      rs: base.filter(e => !postMatchLearn(e) && !anomUids.has(e.uid)).sort(mpSort) },
     { key: 'exam', icon: '📝', title: '待考核', color: '#d97706',
       desc: '学习已完成、等待考核（含待考核 / 超期）',
       empty: '✅ 本店没有待考核人员',
-      rs: base.filter(e => learnDoneOf(e) && !closedFlagOf(e) && !anomUids.has(e.uid)).sort(mpSort) },
+      rs: base.filter(e => postMatchLearn(e) && !postMatchExam(e) && !anomUids.has(e.uid)).sort(mpSort) },
     { key: 'closed', icon: '✅', title: '已闭环', color: '#16a34a',
       desc: '规定岗位已学且已考核（含超期完成 / 未学先考，计入闭环率）',
       empty: '本店暂无已闭环人员', cols: ['姓名', '岗位', '状态', '备注'],
-      rs: base.filter(e => closedFlagOf(e) && !anomUids.has(e.uid)).sort(mpSort) },
+      rs: base.filter(e => closedFlagOf(e) && postMatchLearn(e) && !anomUids.has(e.uid)).sort(mpSort) },
     { key: 'anom', icon: '⚠️', title: '异常人员', color: '#dc2626',
       desc: '学习不匹配岗位 / 岗位待确认 / 已离职，需核实处理',
       empty: '✅ 本店无异常人员',
@@ -3773,6 +3790,7 @@ function drawMp() {
     const sel = (id, opts, cur) => `<select id="${id}">${opts.map(o => `<option${o === cur ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
     el.innerHTML = seg + `<div class="card">
       <h3>本期新人学习明细（共 ${rs.length} 人）</h3>
+      <p class="note" style="margin:-6px 0 10px">学习 / 考核状态均按<b>当前确认岗位</b>判定；调岗后原岗位的学习与考核不再计入，需完成后才进入下一栏</p>
       <div class="fbar">
         <label class="fld">姓名</label><input type="text" id="mp_name" value="${esc(MP_F.name)}" placeholder="输入姓名关键词">
         <label class="fld">岗位</label>${sel('mp_post', posts, MP_F.post)}
@@ -4030,10 +4048,10 @@ function drawRegionTracking() {
   if (RA_VIEW === 'store') {
     // 异常只保留真正的异常：学习不匹配岗位 / 岗位待确认；未学先考（无论是否已闭环）不再算异常
     const isAnom = e => e.mismatch || e.status2 === '待确认';
-    const learnStores = regionStoreGroup(list, e => !isAnom(e) && !learnDoneOf(e));
-    const examStores = regionStoreGroup(list, e => !isAnom(e) && learnDoneOf(e) && !closedFlagOf(e));
+    const learnStores = regionStoreGroup(list, e => !isAnom(e) && !postMatchLearn(e));
+    const examStores = regionStoreGroup(list, e => !isAnom(e) && postMatchLearn(e) && !postMatchExam(e));
     const anomStores = regionStoreGroup(list, isAnom);
-    const closedStores = regionStoreGroup(list, e => !isAnom(e) && closedFlagOf(e));
+    const closedStores = regionStoreGroup(list, e => !isAnom(e) && closedFlagOf(e) && postMatchLearn(e));
     const groups = [
       { key: 'learn', icon: '📚', title: '待学习', color: '#16a34a', desc: '尚未完成规定岗位学习（不含已考核异常）',
         empty: '✅ 本区域暂无待学习人员', cols: ['姓名','岗位','学习任务','完成状态','剩余/超期'],
