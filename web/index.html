@@ -386,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-17 08:59:58 · 构建 v202611170859</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-17 09:31:04 · 构建 v202611170931</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -3347,6 +3347,38 @@ function renderUnmatchedExams() {
 const isLocalHost = () => ['localhost', '127.0.0.1'].includes(location.hostname);
 const REFRESH_CMD = `cd /d "D:\\1-工作\\BaiduSyncdisk\\workbuddy\\2026-09-10-09-10-58\\前厅新员工训练看板" && 启动看板.bat`;
 
+function renderRefreshReport(rep) {
+  const f = rep.files || [], okN = f.filter(x => x.ok).length, lp = rep.learn || {};
+  const line = (ok, txt) => {
+    const st = ok === true ? 'ok' : (ok === false ? 'bad' : '');
+    const icon = ok === true ? '✓' : (ok === false ? '✗' : '⏳');
+    return '<div class="sync-step ' + st + '">' + icon + ' ' + esc(txt) + '</div>';
+  };
+  let h = '<div style="border-top:1px dashed #e2e8f0;margin-top:6px;padding-top:6px">'
+        + '<b>本次更新回执 · ' + esc(String(rep.at || '').slice(5, 16)) + '</b>'
+        + ' <b style="color:' + (okN === f.length ? '#16a34a' : '#b45309') + '">'
+        + okN + '/' + f.length + ' 份已生效</b></div>';
+  h += '<div style="max-height:210px;overflow:auto;margin-top:4px">';
+  f.forEach(x => {
+    h += '<div class="sync-step ' + (x.ok ? 'ok' : 'bad') + '">'
+       + (x.ok ? '✓' : '✗') + ' ' + esc(x.label) + '｜' + esc(x.name)
+       + '<br><span style="font-size:11px;color:#94a3b8;line-height:1.35">'
+       + esc(x.mtime || '时间未知') + (x.rows ? ' · ' + x.rows + ' 行' : '')
+       + (x.changed ? ' · <b style="color:#b45309">本次新换</b>' : '')
+       + '</span></div>';
+  });
+  h += '</div>';
+  h += line(lp.ok, '带训认证 → 钉钉「前厅带训学习」：' + (lp.reason || '—')
+       + (lp.total ? '（现有 ' + lp.total + ' 条，新增 ' + (lp.created || 0)
+         + ' / 更新 ' + (lp.updated || 0) + ' / 保留 ' + (lp.kept || 0) + '）' : ''));
+  h += line(rep.fetch_ok, '抓取本地 8 份导出');
+  h += line(rep.build_ok, '重建部署产物' + (rep.build_msg ? '：' + rep.build_msg : ''));
+  h += line(rep.sync_ok, '推送线上' + (rep.sync_msg ? '：' + rep.sync_msg : ''));
+  h += '<div style="margin-top:6px"><button class="btn sm" onclick="location.reload()">查看最新数据</button>'
+     + ' <span class="note">回执已存到 data/refresh_report.json</span></div>';
+  return h;
+}
+
 function ensureSyncUI() {
   if (document.getElementById('sync_log_float')) return;
   const style = document.createElement('style');
@@ -3410,10 +3442,27 @@ async function doSyncFlow(opts = {}) {
     }
   }
   const f = document.getElementById('sync_foot');
-  if (f) f.textContent = allOk ? '✓ 全部完成，页面即将自动重载…' : '✗ ' + foot;
   if (btn) btn.innerHTML = allOk ? '✓ 已同步' : '✗ 失败';
-  if (allOk) setTimeout(() => location.reload(), 1500);
-  else if (btn) setTimeout(() => { btn.disabled = false; btn.innerHTML = originalText || '🔄 刷新'; }, 4000);
+  if (!allOk) {
+    if (f) f.textContent = '✗ ' + foot;
+    if (btn) setTimeout(() => { btn.disabled = false; btn.innerHTML = originalText || '🔄 刷新'; }, 4000);
+  } else {
+    if (f) f.innerHTML = '⏳ 正在推送线上并生成更新回执…';
+    let rep = null;
+    for (let k = 0; k < 40; k++) {
+      await new Promise(r => setTimeout(r, 3000));
+      try {
+        const rr = await fetch('/api/report', { cache: 'no-store' });
+        const j = await rr.json();
+        rep = j;
+        if (j && j.sync_ok !== null && j.sync_ok !== undefined) break;
+      } catch (_) { /* 静态链接无此接口 */ }
+    }
+    if (f) f.innerHTML = rep ? renderRefreshReport(rep)
+                             : '✓ 同步完成（未读到回执，请查看 data/refresh_report.json）';
+    window.__refreshReport = rep;
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText || '🔄 刷新'; }
+  }
 }
 
 function renderSyncPanel() {
@@ -4172,6 +4221,12 @@ function init(data) {
       await reconcileFbCloud().catch(() => 0);
     })();
   }
+  if (isLocalHost()) {
+    fetch('/api/report', { cache: 'no-store' }).then(r => r.json()).then(j => {
+      window.__refreshReport = j;
+      try { renderAge(); } catch (_) { }
+    }).catch(() => { });
+  }
   App.ready = true;                                  // ★v1.2：数据就绪，允许各页重绘
   if (!monthOptions().includes(F.month) && F.month !== '全部') F.month = '全部';
   if (F.area !== '全部' && !areaOptions().includes(F.area)) F.area = '全部';
@@ -4352,6 +4407,12 @@ load();
       }
       if (m.sources && m.sources.exam && m.sources.exam.kind === 'dingtalk_aitable')
         bits.push('考核卡来自钉钉');
+      var rp = window.__refreshReport;
+      if (rp && rp.at) {
+        var fl = rp.files || [], good = fl.filter(function (x) { return x.ok; }).length;
+        bits.push('上次刷新 ' + String(rp.at).slice(5, 16) + ' · ' + good + '/' + fl.length + ' 份已生效'
+                  + (rp.sync_ok === false ? ' · 推线上失败' : ''));
+      }
       var warn = !!(m.stale_sources && m.stale_sources.length);
       if (warn) bits.push('导出文件已超 7 天未更新，请重新导出');
       return { text: bits.join(' · '), warn: warn };
