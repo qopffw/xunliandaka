@@ -386,7 +386,7 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-17 10:49:09 · 构建 v202611171051</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-19 17:27:07 · 构建 v202611191727</div>
   </div>
   <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
 </header>
@@ -1101,6 +1101,20 @@ const EXAM_PREFILL  = { name: '被考核人', store: '门店', storeUseRaw: true
 // 岗位调整共享后端：门店提交 → 总部可见 → 钉钉通知。
 // feedback_api.py 已部署到 WorkBuddy 托管，此即其服务域名。
 const FEEDBACK_API = 'https://post-feedback-api.app.workbuddy.host';
+// 2026-11-17：WorkBuddy 分享网关要求请求带 sharecode，裸 /api/* 会被 403 挡在门外
+// （本地 .lnk 主看板跨域调线上后端尤其明显）。页面 URL 带 sharecode 时优先沿用，
+// 否则退回当前活链接的固定码；链接若变更只需改这一处。
+const FEEDBACK_SHARECODE = 'H7CHSUVIV4';
+function fbApi(path) {
+  let sc = FEEDBACK_SHARECODE;
+  try {
+    const qs = (typeof location !== 'undefined' && location.search) || '';
+    const m = qs.match(/[?&]sharecode=([^&]+)/);
+    if (m) sc = decodeURIComponent(m[1]);
+  } catch (e) { /* 非浏览器环境（回归脚本）沿用默认码 */ }
+  return FEEDBACK_API + path + (path.indexOf('?') >= 0 ? '&' : '?')
+    + 'sharecode=' + encodeURIComponent(sc);
+}
 
 // 反馈可选项：展示名 → 判定岗位 / 修正后的花名册职位
 const FB_OPTIONS = [
@@ -2283,7 +2297,7 @@ function fbToast(msg) {
 async function loadFeedbackCloud() {
   if (!FEEDBACK_API) return false;
   try {
-    const r = await fetch(FEEDBACK_API + '/api/feedback', { cache: 'no-store' });
+    const r = await fetch(fbApi('/api/feedback'), { cache: 'no-store' });
     const j = await r.json();
     if (j.ok && Array.isArray(j.list)) {
       App.feedback = j.list;
@@ -2305,7 +2319,7 @@ async function loadFeedbackCloud() {
 async function loadOverrideCloud() {
   if (!FEEDBACK_API) return false;
   try {
-    const r = await fetch(FEEDBACK_API + '/api/override', { cache: 'no-store' });
+    const r = await fetch(fbApi('/api/override'), { cache: 'no-store' });
     const j = await r.json();
     if (j.ok && j.data && typeof j.data === 'object') {
       OV = Object.assign({}, OV, j.data);   // 云端审核结果优先
@@ -2325,7 +2339,7 @@ function getTrainerDisplayStatus(t) {
 async function loadTrainerStatusOverrides() {
   if (!FEEDBACK_API) return false;
   try {
-    const r = await fetch(FEEDBACK_API + '/api/trainer_status', { cache: 'no-store' });
+    const r = await fetch(fbApi('/api/trainer_status'), { cache: 'no-store' });
     const j = await r.json();
     if (j.ok && j.data) { trainerStatusOverrides = j.data; return true; }
   } catch (e) { /* 网络不可达：用空覆盖，按原始状态显示 */ }
@@ -2334,7 +2348,7 @@ async function loadTrainerStatusOverrides() {
 async function saveTrainerStatusOverride(store, trainer, status, note, reviewer) {
   if (!FEEDBACK_API) { fbToast('未配置共享后端，无法保存手动调整'); return false; }
   try {
-    const r = await fetch(FEEDBACK_API + '/api/trainer_status', {
+    const r = await fetch(fbApi('/api/trainer_status'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ store, trainer, status, note: note || '', reviewer: reviewer || '总部' })
     });
@@ -2384,7 +2398,7 @@ function drawFeedbackTail() {
   el.innerHTML = '<div class="sub-t">已提交 ' + list.length + ' 条</div>' + list.slice(0, 8).map(x =>
     `<div class="li"><div class="li-h">${esc(x.name)} · ${esc(x.store) || '-'}
       <span class="li-tag" style="background:${x.status === '待审核' ? '#fef3c7;color:#b45309' : '#dcfce7;color:#16a34a'}">${esc(x.status)}</span></div>
-     <div class="li-m">${esc(x.from)} → <b>${esc(fbDisplay(x.to))}</b> ${x.note ? '· ' + esc(x.note) : ''}</div></div>`).join('');
+     <div class="li-m">${esc(x.from)} → <b>${esc(fbDisplay(x.to))}</b> ${x.note ? '· ' + esc(x.note) : ''}${x.revise_count ? ' · <b>已更正 ' + Number(x.revise_count) + ' 次</b>' : ''}</div></div>`).join('');
 }
 
 /* B5：表格内联「调整岗位」下拉提交；点击岗位徽章后展开，选择后进入待审核流 */
@@ -2422,10 +2436,9 @@ function bindPostBadges() {
 }
 async function submitInlinePost(uid, store, to) {
   const p = App.list.find(x => x.uid === uid) || {};
-  const list = getFeedback();
-  if (list.some(x => x.uid === uid && x.status === '待审核')) {
-    alert('该员工已有一条待审核反馈'); return;
-  }
+  // 2026-11-17 A1：允许二次更正。本地乐观更新同样「覆盖原条」，
+  // 避免网络失败时同一个人出现两条待审核；云端返回后由 loadFeedbackCloud 对齐。
+  const list = getFeedback().filter(x => !(x.uid === uid && x.status === '待审核'));
   const rec = {
     id: Date.now(), uid, name: p.name, store, area: p.area,
     from: p.post || p.position || '', to, note: '表格内联提交', status: '待审核',
@@ -2434,7 +2447,7 @@ async function submitInlinePost(uid, store, to) {
   list.unshift(rec); setFeedback(list); App.feedback = list; render();   // 乐观更新 + 离线缓存
   if (!FEEDBACK_API) { fbToast('已提交（未配置云端，仅本机可见）'); return; }
   try {
-    const r = await fetch(FEEDBACK_API + '/api/feedback', {
+    const r = await fetch(fbApi('/api/feedback'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ uid, name: p.name, store, area: p.area,
         from: p.post || p.position || '', to, note: '表格内联提交' })
@@ -3054,7 +3067,7 @@ function renderFeedbackReview() {
     const chk = isPend ? `<input type="checkbox" class="fb-check" value="${x.id}">` : '';
     return `<div class="li${isPend ? ' has-chk' : ''}">${chk}<div class="li-body"><div class="li-h">${esc(x.name)} · ${esc(x.store) || '-'}
         <span class="li-tag" style="background:${isPend ? '#fef3c7;color:#b45309' : x.status === '已确认' ? '#dcfce7;color:#16a34a' : '#f1f5f9;color:#94a3b8'}">${esc(x.status)}</span></div>
-        <div class="li-m">${esc(x.from)} → <b>${esc(x.to)}</b> ${x.note ? '· ' + esc(x.note) : ''} · ${esc(x.at)}</div>
+        <div class="li-m">${esc(x.from)} → <b>${esc(x.to)}</b> ${x.note ? '· ' + esc(x.note) : ''} · ${esc(x.at)}${x.revise_count ? ' · <b>已更正 ' + Number(x.revise_count) + ' 次</b>' : ''}</div>
         ${isPend ? `<div class="li-a"><button class="btn sm" onclick="confirmFb(${x.id})">确认修改</button>
           <button class="btn sm gray" onclick="dropFb(${x.id})">驳回</button></div>` : ''}</div></div>`;
   }).join('') : '<div class="empty">暂无门店提交的岗位异常反馈</div>';
@@ -3109,7 +3122,7 @@ async function syncFbCloud(x, postVal, posVal) {
   const ctrl = new AbortController();
   const to = setTimeout(() => ctrl.abort(), 25000);
   try {
-    const r = await fetch(FEEDBACK_API + '/api/feedback/confirm', {
+    const r = await fetch(fbApi('/api/feedback/confirm'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: x.id, ovPost: postVal, ovPosition: posVal, reviewer: '总部' }),
       signal: ctrl.signal
@@ -3189,7 +3202,7 @@ async function persistConfirmedOV() {
   // 否则每次打开页面都 POST 全量，多门店并发写同一 GitHub 文件会 sha 冲突。
   let cloudOV = null;
   try {
-    const g = await fetch(FEEDBACK_API + '/api/override', { cache: 'no-store' });
+    const g = await fetch(fbApi('/api/override'), { cache: 'no-store' });
     const gj = await g.json();
     if (gj.ok && gj.data && typeof gj.data === 'object') cloudOV = gj.data;
   } catch (e) { }
@@ -3206,7 +3219,7 @@ async function persistConfirmedOV() {
   const n = Object.keys(payload).length;
   if (!n) { try { App.list = buildModel(raw.employees); render(); } catch (e) { } return 0; }
   try {
-    const r = await fetch(FEEDBACK_API + '/api/override', {
+    const r = await fetch(fbApi('/api/override'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ overrides: payload })
     });
