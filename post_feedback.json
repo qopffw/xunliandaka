@@ -1,23 +1,5 @@
 [
   {
-    "id": 1795093390561,
-    "uid": "17903551126229321",
-    "name": "樊欣怡",
-    "store": "南京砂之船店",
-    "area": "闫",
-    "from": "服务岗",
-    "to": "已经离职",
-    "note": "表格内联提交",
-    "status": "待审核",
-    "ovPost": "",
-    "ovPosition": "",
-    "reviewer": "",
-    "reviewed_at": "",
-    "revise_count": 0,
-    "revise_history": [],
-    "at": "2026-11-19 21:03:10"
-  },
-  {
     "id": 1795093364073,
     "uid": "17933520065484315",
     "name": "庞丽丽",
@@ -111,9 +93,17 @@
     "ovPosition": "",
     "reviewer": "",
     "reviewed_at": "",
-    "revise_count": 0,
-    "revise_history": [],
-    "at": "2026-11-17 13:39:51"
+    "revise_count": 1,
+    "revise_history": [
+      {
+        "at": "2026-11-19 21:03:14",
+        "to": "已经离职",
+        "from": "服务岗",
+        "note": "表格内联提交"
+      }
+    ],
+    "at": "2026-11-17 13:39:51",
+    "revised_at": "2026-11-19 21:03:14"
   },
   {
     "id": 1794893978917,
