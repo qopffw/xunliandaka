@@ -16,6 +16,18 @@
   .header-refresh{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12.5px;white-space:nowrap;backdrop-filter:blur(2px)}
   .header-refresh:hover{background:rgba(255,255,255,.28)}
   .header-refresh:disabled{opacity:.6;cursor:not-allowed}
+  /* 2026-11-21 老张拍板：顶部公告 + 右上角「最后更新时间」 */
+  .hdr-note{font-size:11.5px;color:rgba(255,255,255,.95);margin-top:5px;line-height:1.55;max-width:760px}
+  .hdr-right{display:flex;align-items:center;gap:12px;flex:none}
+  .hdr-updated{text-align:right;line-height:1.4;white-space:nowrap}
+  .hdr-updated .lbl{display:block;font-size:11px;color:rgba(255,255,255,.8);letter-spacing:.5px}
+  .hdr-updated b{display:block;font-size:13px;color:#fff;font-weight:700;font-variant-numeric:tabular-nums}
+  @media(max-width:640px){
+    header{flex-wrap:wrap;gap:8px}
+    .hdr-note{font-size:11px;max-width:100%}
+    .hdr-right{width:100%;justify-content:space-between}
+    .hdr-updated{text-align:left}
+  }
   nav{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 10px;display:flex;gap:2px;overflow-x:auto}
   .tab-btn{background:none;border:none;padding:10px 12px;font-size:13px;color:#64748b;cursor:pointer;
            border-bottom:2px solid transparent;white-space:nowrap}
@@ -386,9 +398,13 @@
 <header data-page-node-id="e3QV3P6Hav2cCcyATi47Jp">
   <div>
     <h1 data-page-node-id="n7cotAcWBBAvnftQUHGKyF">【前厅】新员工训练看板</h1>
-    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-21 10:34:33 · 构建 v202611211034</div>
+    <div class="sub" id="sub_date">在线版（手机随时打开）· 数据更新：2026-11-21 14:45:08 · 构建 v202611211445</div>
+    <div class="hdr-note" id="hdr_note">学习数据以总部最近一次更新（见右上角最后更新时间）；离职人员按花名册，离职后剔除。</div>
   </div>
-  <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
+  <div class="hdr-right">
+    <div class="hdr-updated" id="hdr_updated"><span class="lbl">最后更新时间</span><b id="hdr_updated_at">2026-11-21 14:45:08</b></div>
+    <button class="header-refresh" id="header_sync_btn" title="刷新数据（重抓钉钉 + 重建看板）">🔄 刷新</button>
+  </div>
 </header>
 
 <nav data-page-node-id="Sn2sha77aplG7J9jIJPrIx">
@@ -400,6 +416,7 @@
   <button class="tab-btn active" data-tab="6">📋 门店追踪查询</button>
   <button class="tab-btn" data-tab="5">🧑‍🏫 带教追踪</button>
   <button class="tab-btn" data-tab="7">🌐 区域追踪查询</button>
+  <button class="tab-btn" data-tab="8">📈 入职留存</button>
   <!--/__NAV_TABS__-->
 </nav>
 
@@ -559,6 +576,39 @@
       <div class="fbar-host" id="fbar_f8"></div>
     </div>
     <div id="blk_f8_body"></div>
+  </section>
+
+  <section class="tab" id="tab-8">
+    <style>
+      .f9-kpi{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+      .f9-kpi>div{flex:1 1 118px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:9px;padding:9px 12px}
+      .f9-kpi b{display:block;font-size:19px;color:#1e40af;line-height:1.3}
+      .f9-kpi span{font-size:11.5px;color:#6b7280}
+      .f9-pills{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+      .f9-pills button{border:1px solid #d1d5db;background:#fff;border-radius:99px;padding:5px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+      .f9-pills button.on{background:#2563eb;color:#fff;border-color:#2563eb}
+      .f9-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #eef2f7;border-radius:9px}
+      .f9-tbl{width:100%;border-collapse:collapse;min-width:660px;font-size:13px}
+      .f9-tbl th,.f9-tbl td{border-bottom:1px solid #eef2f7;padding:8px 7px;text-align:center;white-space:nowrap}
+      .f9-tbl th{background:#f8fafc;font-size:11.5px;color:#475569;font-weight:800}
+      .f9-tbl td:first-child,.f9-tbl th:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:1}
+      .f9-tbl tbody tr:hover td{background:#fafcff}
+      .f9-mut{color:#9ca3af;font-size:11.5px}
+      .f9-sub2{font-size:10.5px;color:#9ca3af;margin-top:2px;font-weight:400}
+      .f9-warn{background:#fffbeb;border:1px solid #fde68a;color:#78350f;border-radius:8px;padding:10px 14px;font-size:12.5px;margin-bottom:12px;line-height:1.7}
+      .f9-note{font-size:11.5px;color:#6b7280;line-height:1.75;margin-top:10px}
+      .f9-note b{color:#374151}
+      .f9-rec{font-size:11.5px;color:#6b7280;background:#f8fafc;border:1px dashed #e5e7eb;border-radius:8px;padding:9px 12px;margin-top:10px;line-height:1.8}
+    </style>
+    <div class="card blk-head" style="display:flex;align-items:center;gap:8px;padding:12px 16px">
+      <h2 style="font-size:17px;margin:0">入职留存</h2>
+      <span class="badge sm" style="background:#0d9488;margin-left:8px">📈 同期群</span>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:6px">各区域 / 门店 · 入职与留存</h3>
+      <p class="note" style="margin:0 0 12px">按<b>入职月份</b>分同期群，看入职后 30 / 60 / 90 / 180 / 365 天还有多少人在册。数值是<b>推断在册率</b>，离职靠快照差分推断，只给区间不给精确日。</p>
+      <div id="blk_f9_body"><span class="note">数据加载中…</span></div>
+    </div>
   </section>
 
   <!--/__PAGE_SECTIONS__-->
@@ -1030,6 +1080,24 @@ const CFG = {
     }
    ],
    "default": false
+  },
+  {
+   "id": "f9",
+   "name": "入职留存",
+   "module": "control",
+   "moduleName": "留存模块",
+   "icon": "📈",
+   "blocks": [
+    {
+     "id": "kpi",
+     "info": "入职与留存概览（入职总数 / 非兼职 / 训练闭环 / 快照数）"
+    },
+    {
+     "id": "cohort-table",
+     "info": "同期群留存表（按月 / 按区域 / 按门店 × 30/60/90/180/365 天）"
+    }
+   ],
+   "default": false
   }
 ],
  "defaultTab": 4,
@@ -1105,6 +1173,12 @@ const FEEDBACK_API = 'https://post-feedback-api.app.workbuddy.host';
 // （本地 .lnk 主看板跨域调线上后端尤其明显）。页面 URL 带 sharecode 时优先沿用，
 // 否则退回当前活链接的固定码；链接若变更只需改这一处。
 const FEEDBACK_SHARECODE = 'H7CHSUVIV4';
+// 2026-11-21 C1：同一个活链接加参数即可切到总部审批视图，不新增对外链接。
+try {
+  if (typeof location !== 'undefined' && /[?&]review=1(&|$)/.test(location.search || '')) {
+    location.replace('review.html' + location.search);
+  }
+} catch (e) { /* 非浏览器环境（回归脚本）忽略 */ }
 function fbApi(path) {
   let sc = FEEDBACK_SHARECODE;
   try {
@@ -1937,10 +2011,9 @@ function termOf(e) {
 }
 /* 调整岗位单元格：参考「考核」列——先显示当前岗位徽章，点击后展开下拉提报 */
 function postCell(e) {
-  // OV 里已有确认岗位时不再显示「待审核」：云端 feedback 表万一没同步，也不让门店看板卡在旧状态
-  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核'
-    && !(OV[e.uid] && OV[e.uid].post));
-  if (pend) return `<td data-label="调整岗位"><span class="st" style="background:#fef3c7;color:#b45309">待审核→${esc(fbDisplay(pend.to))}</span>
+  // 2026-11-21 B1/B3：已确认后允许再改，新的待审核必须显示（旧逻辑被 OV 挡住导致门店无提示）
+  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核');
+  if (pend) return `<td data-label="调整岗位"><span class="st" style="background:#fef3c7;color:#b45309">待审核</span>
     <button class="btn sm gray post-rev" data-uid="${esc(e.uid)}">× 撤销</button></td>`;
   // 已审核调整：只显示调整后的岗位（绿色确认徽章）；点击徽章可重新调整，不再显示"撤销调整"按钮
   const ov = OV[e.uid];
@@ -2453,7 +2526,7 @@ async function submitInlinePost(uid, store, to) {
         from: p.post || p.position || '', to, note: '表格内联提交' })
     });
     const j = await r.json();
-    if (j.ok) { await loadFeedbackCloud(); fbToast('已提交，总部后台可见'); }
+    if (j.ok) { await loadFeedbackCloud(); fbToast('已提交，待审核'); }
     else if (j.message) fbToast('提交提醒：' + j.message);
   } catch (e) { fbToast('本地已保存，网络恢复后自动同步'); }
 }
@@ -3062,12 +3135,13 @@ function renderFeedbackReview() {
   const list = getFeedback();
   const pend = list.filter(x => x.status === '待审核');
   const ovN = Object.keys(OV).length;
+  updateFbBadge(pend.length);
   const items = list.length ? list.map(x => {
     const isPend = x.status === '待审核';
     const chk = isPend ? `<input type="checkbox" class="fb-check" value="${x.id}">` : '';
     return `<div class="li${isPend ? ' has-chk' : ''}">${chk}<div class="li-body"><div class="li-h">${esc(x.name)} · ${esc(x.store) || '-'}
         <span class="li-tag" style="background:${isPend ? '#fef3c7;color:#b45309' : x.status === '已确认' ? '#dcfce7;color:#16a34a' : '#f1f5f9;color:#94a3b8'}">${esc(x.status)}</span></div>
-        <div class="li-m">${esc(x.from)} → <b>${esc(x.to)}</b> ${x.note ? '· ' + esc(x.note) : ''} · ${esc(x.at)}${x.revise_count ? ' · <b>已更正 ' + Number(x.revise_count) + ' 次</b>' : ''}</div>
+        <div class="li-m">${esc(x.from)} → <b>${esc(x.to)}</b> ${x.note ? '· ' + esc(x.note) : ''} · ${esc(x.at)}${x.revise_count ? ' · <b>已更正 ' + Number(x.revise_count) + ' 次</b>' : ''}${x.amend_no > 1 ? ' · <b style="color:#b45309">第 ' + Number(x.amend_no) + ' 次修改（原身份：' + esc(x.prev_to || '—') + '）</b>' : ''}</div>
         ${isPend ? `<div class="li-a"><button class="btn sm" onclick="confirmFb(${x.id})">确认修改</button>
           <button class="btn sm gray" onclick="dropFb(${x.id})">驳回</button></div>` : ''}</div></div>`;
   }).join('') : '<div class="empty">暂无门店提交的岗位异常反馈</div>';
@@ -3096,6 +3170,21 @@ function renderFeedbackReview() {
   const bDrop = document.getElementById('fb_batch_drop');
   if (bDrop) bDrop.onclick = batchDropFb;
 }
+/* B4：后台版导航上的待审核条数红点；门店版不暴露总部待审核数。 */
+function updateFbBadge(n) {
+  if (true === true) return;
+  const btn = document.querySelector('.tab-btn[data-tab="4"]');
+  if (!btn) return;
+  let b = btn.querySelector('.fb-nav-dot');
+  if (!n) { if (b) b.remove(); return; }
+  if (!b) {
+    b = document.createElement('span'); b.className = 'fb-nav-dot';
+    b.style.cssText = 'display:inline-block;min-width:17px;height:17px;line-height:17px;text-align:center;' +
+      'background:#dc2626;color:#fff;border-radius:9px;font-size:11px;font-weight:700;margin-left:5px;padding:0 4px';
+    btn.appendChild(b);
+  }
+  b.textContent = String(n);
+}
 function fbUpdateSelCount() {
   const n = document.querySelectorAll('#blk_f5_3 .fb-check:checked').length;
   const el = document.getElementById('fb_selcount');
@@ -3115,6 +3204,18 @@ function applyFbLocal(x) {
   OV[x.uid] = { post: postVal, position: posVal, note: x.note || '', at: new Date().toLocaleString('zh-CN') };
   return { postVal, posVal };
 }
+/* 2026-11-21 C2：审批码只存后端配置，前端首次输入后缓存本机，源码里不写死。 */
+const REVIEW_KEY = 'qt_review_code_v1';
+function getReviewCode(ask) {
+  let c = '';
+  try { c = localStorage.getItem(REVIEW_KEY) || ''; } catch (e) { }
+  if (!c && ask) {
+    c = (prompt('请输入总部审批码（首次输入后本机记住）') || '').trim();
+    if (c) { try { localStorage.setItem(REVIEW_KEY, c); } catch (e) { } }
+  }
+  return c;
+}
+function clearReviewCode() { try { localStorage.removeItem(REVIEW_KEY); } catch (e) { } }
 // 推云端确认。后端每次 confirm 都要重写 GitHub 上同一个文件，耗时可能超过 8 秒，
 // 旧版 8 秒超时 + 静默失败正是「总部显示已确认、门店看板仍待审核」的根因。
 async function syncFbCloud(x, postVal, posVal) {
@@ -3124,10 +3225,12 @@ async function syncFbCloud(x, postVal, posVal) {
   try {
     const r = await fetch(fbApi('/api/feedback/confirm'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: x.id, ovPost: postVal, ovPosition: posVal, reviewer: '总部' }),
+      body: JSON.stringify({ id: x.id, ovPost: postVal, ovPosition: posVal,
+                             reviewer: '总部', code: getReviewCode(false) }),
       signal: ctrl.signal
     });
     const j = await r.json().catch(() => ({}));
+    if (r.status === 403) { clearReviewCode(); fbToast('审批码不正确，请重新输入'); }
     return !!j.ok;
   } catch (e) { return false; }
   finally { clearTimeout(to); }
@@ -3233,6 +3336,7 @@ async function persistConfirmedOV() {
 async function confirmFb(id) {
   const l = getFeedback(); const x = l.find(v => String(v.id) === String(id));
   if (!x) return;
+  if (!getReviewCode(true)) { fbToast('审批码不能为空'); return; }
   const r = applyFbLocal(x);
   if (!r) { fbToast('无法解析该岗位调整'); return; }
   markReviewed(id, '已确认');
@@ -3247,6 +3351,7 @@ async function confirmFb(id) {
 async function batchConfirmFb() {
   const ids = getCheckedFbIds();
   if (!ids.length) { fbToast('请先勾选待审核记录'); return; }
+  if (!getReviewCode(true)) { fbToast('审批码不能为空'); return; }
   const l = getFeedback();
   let n = 0; const cloud = [];
   for (const id of ids) {
@@ -3268,20 +3373,39 @@ async function batchConfirmFb() {
 }
 function dropFb(id) {
   const l = getFeedback(); const x = l.find(v => String(v.id) === String(id));
-  if (!x) return; markReviewed(id, '已驳回'); render();
+  if (!x) return;
+  if (!getReviewCode(true)) { fbToast('审批码不能为空'); return; }
+  markReviewed(id, '已驳回'); render();
+  syncFbReject(x);
+}
+/* 2026-11-21：旧版驳回只写本机 localStorage，总部换台设备看不到；补上云端写入。 */
+async function syncFbReject(x) {
+  if (!FEEDBACK_API) return false;
+  try {
+    const r = await fetch(fbApi('/api/feedback/reject'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: x.id, reviewer: '总部', code: getReviewCode(false) })
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 403) { clearReviewCode(); fbToast('审批码不正确，请重新输入'); }
+    return !!j.ok;
+  } catch (e) { return false; }
 }
 async function batchDropFb() {
   const ids = getCheckedFbIds();
   if (!ids.length) { fbToast('请先勾选待审核记录'); return; }
+  if (!getReviewCode(true)) { fbToast('审批码不能为空'); return; }
   const l = getFeedback();
-  let n = 0;
+  let n = 0; const cloud = [];
   for (const id of ids) {
     const x = l.find(v => String(v.id) === String(id));
-    if (x && x.status === '待审核') { markReviewed(id, '已驳回'); n++; }
+    if (x && x.status === '待审核') { markReviewed(id, '已驳回'); n++; cloud.push(x); }
   }
   if (!n) { fbToast('勾选的记录无可驳回项'); return; }
   fbToast('已批量驳回 ' + n + ' 条');
   render();
+  // 串行推送：后端每写一条都重写同一个 GitHub 文件，并发会触发 sha 冲突
+  (async () => { for (const x of cloud) await syncFbReject(x); })();
 }
 function exportOV() {
   const txt = JSON.stringify({ overrides: OV }, null, 2);
@@ -3385,6 +3509,12 @@ function renderRefreshReport(rep) {
        + (lp.total ? '（现有 ' + lp.total + ' 条，新增 ' + (lp.created || 0)
          + ' / 更新 ' + (lp.updated || 0) + ' / 保留 ' + (lp.kept || 0) + '）' : ''));
   h += line(rep.fetch_ok, '抓取本地 8 份导出');
+  const rt = rep.retention;
+  if (rt && rt.archived != null) {
+    h += line(true, '留存归档：本次 ' + rt.archived + ' 人 · 新增 ' + (rt.added || 0)
+             + ' · 判离职 ' + (rt.disappeared || 0) + ' · 主表累计 ' + (rt.total_master || 0)
+             + (rt.guarded ? '（人数骤降，本次已启动保护、不判离职）' : ''));
+  }
   h += line(rep.build_ok, '重建部署产物' + (rep.build_msg ? '：' + rep.build_msg : ''));
   h += line(rep.sync_ok, '推送线上' + (rep.sync_msg ? '：' + rep.sync_msg : ''));
   h += '<div style="margin-top:6px"><button class="btn sm" onclick="location.reload()">查看最新数据</button>'
@@ -3699,11 +3829,10 @@ function mpGrpStyle(g) {
 }
 /* 移动端卡片内联岗位：可点击徽章 / 下拉 / 待审核 / 已覆盖 */
 function mpPostInline(e) {
-  // OV 里已有确认岗位时不再显示「待审核」：云端 feedback 表万一没同步，也不让门店看板卡在旧状态
-  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核'
-    && !(OV[e.uid] && OV[e.uid].post));
+  // 2026-11-21 B1/B3：同桌面版，已确认后再改也要看到「待审核」
+  const pend = (App.feedback || []).find(x => x.uid === e.uid && x.status === '待审核');
   if (pend) {
-    return `<span class="st" style="background:#fef3c7;color:#b45309">待审核→${esc(fbDisplay(pend.to))}</span>
+    return `<span class="st" style="background:#fef3c7;color:#b45309">待审核</span>
       <button class="btn sm gray post-rev" data-uid="${esc(e.uid)}">× 撤销</button>`;
   }
   const ov = OV[e.uid];
@@ -4155,7 +4284,117 @@ const STORE_DEFAULT = '6';
     document.querySelectorAll('.tab').forEach((s, n) => s.classList.toggle('active', n === d));
   } catch(e) { console.error('[earlyPublicTab]', e); }
 })();
-const RENDERERS = { f1: render_f1, f2: render_f2, f3: render_f3, f4: render_f4, f5: render_f5, f6: render_f6, f7: render_f7, f8: render_f8 };
+
+/* ==================== 入职留存（同期群） ==================== */
+let F9DIM = 'month';      // month | area | store
+let F9SEC = null;         // formal | trial
+
+function f9Cell(x, label) {
+  if (!x) return '<span class="f9-mut">—</span>';
+  if (x.elig > 0) {
+    if (x.elig < 5) return '<span class="f9-mut">样本不足<br>(' + x.elig + '人)</span>';
+    const c = x.rate >= 90 ? '#0f766e' : x.rate >= 70 ? '#b45309' : '#b91c1c';
+    return '<b style="color:' + c + ';font-size:14px">' + x.rate + '%</b>'
+         + '<div class="f9-sub2">' + x.ret + '/' + x.elig + (x.cens ? ' · 删失' + x.cens : '') + '</div>';
+  }
+  if (x.cens > 0) return '<span class="f9-mut">待满' + label + '天<br>(' + x.cens + '人)</span>';
+  return '<span class="f9-mut">数据不足</span>';
+}
+
+function f9Table(rows, dimName) {
+  const HS = [30, 60, 90, 180, 365];
+  let h = '<div class="f9-scroll"><table class="f9-tbl"><thead><tr>'
+        + '<th>' + dimName + '</th><th>入职</th>'
+        + HS.map(n => '<th>' + n + '天</th>').join('')
+        + '<th>训练闭环</th></tr></thead><tbody>';
+  if (!rows.length) {
+    h += '<tr><td colspan="8" style="text-align:center;padding:22px" class="f9-mut">暂无数据</td></tr>';
+  }
+  rows.forEach(r => {
+    const sub = r.excluded_parttime ? '<div class="f9-sub2">含兼职' + r.excluded_parttime + '人</div>' : '';
+    h += '<tr><td><b>' + esc(r.key || '—') + '</b>' + sub + '</td>'
+       + '<td><b>' + (r.hired_total || 0) + '</b><div class="f9-sub2">非兼职 ' + (r.hired || 0) + '</div></td>'
+       + HS.map(n => '<td>' + f9Cell(r.h && r.h[n], n) + '</td>').join('')
+       + '<td>' + (r.train ? r.train.closed : 0)
+       + (r.train && r.train.closed_30 ? '<div class="f9-sub2">30天内 ' + r.train.closed_30 + '</div>' : '')
+       + '</td></tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+
+function render_f9() {
+  const host = document.getElementById('blk_f9_body');
+  if (!host) return;
+  const c = raw.cohort;
+  if (!c || !c.meta) {
+    host.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📈</div>'
+      + '<div class="empty-state-title">还没有留存数据</div>'
+      + '<div class="empty-state-desc">点右上角「刷新数据」后会自动生成首份快照；' + '正式统计自 2026-12-01 起累积。</div></div>';
+    return;
+  }
+  const m = c.meta;
+  if (!F9SEC) F9SEC = (m.formal_hired > 0) ? 'formal' : 'trial';
+  const sec = c[F9SEC] || c.trial || {};
+  const tot = sec.total || {};
+  const rows = F9DIM === 'month' ? (sec.by_month || [])
+             : F9DIM === 'area' ? (sec.by_area || [])
+             : (sec.by_store || []);
+
+  let html = '<div class="f9-kpi">'
+    + '<div><b>' + (tot.hired_total || 0) + '</b><span>入职人数（含兼职）</span></div>'
+    + '<div><b>' + (tot.hired || 0) + '</b><span>纳入留存分析（非兼职）</span></div>'
+    + '<div><b>' + ((tot.train && tot.train.closed) || 0) + '</b><span>训练闭环</span></div>'
+    + '<div><b>' + (m.snapshots || 0) + '</b><span>快照份数</span></div>'
+    + '</div>';
+
+  if (F9SEC === 'trial') {
+    html += '<div class="f9-warn"><b>试算视图（不可用于决策）</b><br>'
+      + '正式统计自 <b>' + esc(m.formal_start || '2026-12-01') + '</b> 起；现在展示的是基于 '
+      + (m.snapshots || 0) + ' 份历史快照的试算。'
+      + '其中 10-08 / 10-19 两份用的是 9 月花名册（<b>10 月新入职的人不在里面</b>），'
+      + '所以「数据不足」很多、部分月份不可评——这是数据覆盖问题，不是真实流失。</div>';
+  }
+
+  html += '<div class="f9-pills">'
+    + [['month', '按月'], ['area', '按区域'], ['store', '按门店']]
+        .map(x => '<button class="' + (F9DIM === x[0] ? 'on' : '') + '" onclick="f9SetDim(\'' + x[0] + '\')">' + x[1] + '</button>').join('')
+    + '<span style="flex:1"></span>'
+    + [['formal', '正式'], ['trial', '试算']]
+        .map(x => '<button class="' + (F9SEC === x[0] ? 'on' : '') + '" onclick="f9SetSec(\'' + x[0] + '\')">' + x[1] + '</button>').join('')
+    + '</div>';
+
+  html += f9Table(rows, F9DIM === 'month' ? '入职月份' : F9DIM === 'area' ? '区域' : '门店');
+
+  html += '<div class="f9-note">'
+    + '<b>口径：</b>按入职日期划自然月同期群（左闭右开），30/60/90/180/365 天为固定窗口；'
+    + '未满窗口标「待满」，可评样本不足 5 人标「样本不足」，均不给率。<br>'
+    + '<b>留存：</b>推断在册率——离职以花名册缺失推断，只给区间不给精确日（' + esc(m.parttime_rule || '') + '）。<br>'
+    + '<b>训练：</b>沿用现有闭环定义（三岗学习 + 岗位考核），完成日取最晚一项。'
+    + '<b>重要：</b>训练与留存只作相关性观察，未控混杂（用工性质 / 门店 / 季节），'
+    + '<b style="color:#b45309">不可解释为「训练提升留存」</b>。<br>'
+    + '<b>数据：</b>' + (m.snapshots || 0) + ' 份快照（' + esc((m.snapshot_range || []).join(' ~ ')) + '）· '
+    + '主表 ' + (m.persons_master || 0) + ' 人 · 数据截止 ' + esc(m.as_of || '') + '。<br>'
+    + '<b>用工性质：</b>以花名册「员工类型」为准；兼职 / 实习生 / 劳务外包不纳入留存分母（训练仍统计）。'
+    + '若兼职被打成全职标签会混入分母，可在 data/emp_type_overrides.json 按 uid 修正。'
+    + '</div>';
+
+  const rc = raw.reconcile;
+  if (rc) {
+    html += '<div class="f9-rec"><b>花名册对账</b>：'
+      + '花名册 ' + rc.roster_rows + ' 行 → 有效 ' + rc.valid_uid + ' 人 → '
+      + '区域对照表过滤 ' + rc.excluded_not_brand + ' 人（'
+      + Object.keys(rc.excluded_reasons || {}).map(k => esc(k) + ' ' + rc.excluded_reasons[k]).join(' / ')
+      + '）→ 补入花名册滞后 ' + rc.roster_pending + ' 人 → 合计 <b>' + rc.employees_all + '</b> 人'
+      + (rc.balanced ? ' <span style="color:#0f766e">✓ 已平衡</span>' : ' <span style="color:#b91c1c">⚠ 未平衡</span>')
+      + '</div>';
+  }
+  host.innerHTML = html;
+}
+
+function f9SetDim(d) { F9DIM = d; render_f9(); }
+function f9SetSec(s) { F9SEC = s; render_f9(); }
+
+const RENDERERS = { f1: render_f1, f2: render_f2, f3: render_f3, f4: render_f4, f5: render_f5, f6: render_f6, f7: render_f7, f8: render_f8, f9: render_f9 };
 
 function renderPage(i) {
   const p = CFG.pages[i];
@@ -4217,6 +4456,8 @@ function init(data) {
   raw.trainers = data.trainers || [];
   raw.exam_unmatched = data.exam_unmatched || [];   // 未匹配考核记录（「未匹配考核记录」面板用）
   raw.storeTabs = data.storeTabs || [];     // 门店版可见 Tab 配置（来自 data/store_config.json，构建时并入）
+  raw.cohort = data.cohort || null;         // 入职留存：同期群结果（fetch_data 由 retention_store 派生）
+  raw.reconcile = data.reconcile || null;   // 花名册全量对账
   if (raw.meta.fetched_at) { const d = toDate(raw.meta.fetched_at); if (d) TODAY = d; }
   // 审核映射：文件里的（权威）+ 本机的（最新），本机优先
   OV = Object.assign({}, raw.overrides, getOV());
@@ -4258,19 +4499,21 @@ function init(data) {
     }
   }
 
-  document.getElementById('footer').textContent =
-    `数据基准 ${raw.meta.fetched_at || '—'} · 本期新人 ${App.list.filter(isCurrent).length} 人 · 门店 ${App.list.filter(e => e.store).length ? storeOptions().length : 0} 家 · 考核卡 ${raw.meta.exam_records || 0} 条 · 岗位修正 ${Object.keys(OV).length} 条`;
+  document.getElementById('footer').innerHTML =
+    `数据基准 ${raw.meta.fetched_at || '—'} · 本期新人 ${App.list.filter(isCurrent).length} 人 · 门店 ${App.list.filter(e => e.store).length ? storeOptions().length : 0} 家 · 考核卡 ${raw.meta.exam_records || 0} 条 · 岗位修正 ${Object.keys(OV).length} 条`
+    + ` <a href="review.html?sharecode=${encodeURIComponent(FEEDBACK_SHARECODE)}" style="color:#94a3b8;font-size:11px;margin-left:10px;text-decoration:underline">总部审批</a>`;
   switchTab(State.tab);
 }
 
 /* ==================== 数据加载（部署版：快照优先 + 远程多源回退） ==================== */
 // 副标题日期随真实数据时间走：之前写死 2026-09-11，刷新后永远不更新，误以为数据没刷新
 function updateSubtitle(j) {
-  const el = document.getElementById('sub_date');
-  if (!el) return;
   const m = (j && j.meta) || {};
   const at = m.fetched_at || m.generated_at || '';
-  el.textContent = '【前厅】新员工训练看板 · 区域 → 门店 · ' + (at || '—');
+  const el = document.getElementById('sub_date');
+  if (el) el.textContent = '【前厅】新员工训练看板 · 区域 → 门店 · ' + (at || '—');
+  const hi = document.getElementById('hdr_updated_at');  // 随数据实时走，不用构建时写死
+  if (hi) hi.textContent = at || '—';
 }
 async function load() {
   // 1) 先渲染部署自带 ./data.json（秒开、必定可用）
@@ -4544,6 +4787,17 @@ load();
   });
   window.addEventListener('focus', function () { check(false); });
   setInterval(function () { check(false); renderAge(); }, POLL_MS);
+  // 2026-11-21 B4：feedback 30 秒轮询，门店新提交/二次修改后台自动可见
+  setInterval(async function () {
+    try {
+      const sig = a => JSON.stringify((a || []).map(x => [x.id, x.status, x.to]));
+      const before = sig(App.feedback);
+      const ok = await loadFeedbackCloud();
+      if (!ok || sig(App.feedback) === before) return;
+      if (typeof renderFeedbackReview === 'function') renderFeedbackReview();
+      if (!isBusy() && typeof render === 'function') render();
+    } catch (e) { }
+  }, 30000);
   window.__DATA_AGE_TICK__ = renderAge;
   window.__DATA_CHECK_MANUAL__ = function () { check(true); };
   setTimeout(renderAge, 1500);
