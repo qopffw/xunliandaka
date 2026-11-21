@@ -13,9 +13,17 @@
     "ovPosition": "",
     "reviewer": "",
     "reviewed_at": "",
-    "revise_count": 0,
-    "revise_history": [],
-    "at": "2026-11-21 10:35:30"
+    "revise_count": 1,
+    "revise_history": [
+      {
+        "at": "2026-11-21 10:35:35",
+        "to": "已经离职",
+        "from": "管理岗",
+        "note": "表格内联提交"
+      }
+    ],
+    "at": "2026-11-21 10:35:30",
+    "revised_at": "2026-11-21 10:35:35"
   },
   {
     "id": 1795228174714,
