@@ -13,11 +13,19 @@
     "ovPosition": "",
     "reviewer": "",
     "reviewed_at": "",
-    "revise_count": 0,
-    "revise_history": [],
+    "revise_count": 1,
+    "revise_history": [
+      {
+        "at": "2026-11-22 21:27:14",
+        "to": "其他：其他",
+        "from": "传菜岗",
+        "note": "表格内联提交"
+      }
+    ],
     "amend_no": 1,
     "prev_to": "",
-    "at": "2026-11-22 21:26:51"
+    "at": "2026-11-22 21:26:51",
+    "revised_at": "2026-11-22 21:27:14"
   },
   {
     "id": 1795351136812,
