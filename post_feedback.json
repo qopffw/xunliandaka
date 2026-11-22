@@ -6,18 +6,26 @@
     "store": "宜家荟聚店",
     "area": "王",
     "from": "待确认",
-    "to": "非前厅员工（厨房/其他）",
+    "to": "已经离职",
     "note": "表格内联提交",
     "status": "待审核",
     "ovPost": "",
     "ovPosition": "",
     "reviewer": "",
     "reviewed_at": "",
-    "revise_count": 0,
-    "revise_history": [],
+    "revise_count": 1,
+    "revise_history": [
+      {
+        "at": "2026-11-22 20:18:01",
+        "to": "非前厅员工（厨房/其他）",
+        "from": "待确认",
+        "note": "表格内联提交"
+      }
+    ],
     "amend_no": 1,
     "prev_to": "",
-    "at": "2026-11-22 20:17:52"
+    "at": "2026-11-22 20:17:52",
+    "revised_at": "2026-11-22 20:18:01"
   },
   {
     "id": 1795349859872,
