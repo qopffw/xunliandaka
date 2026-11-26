@@ -6,18 +6,26 @@
     "store": "熙地港店",
     "area": "牛",
     "from": "待确认",
-    "to": "其他：兼职",
+    "to": "其他：兼职服务员",
     "note": "表格内联提交",
     "status": "待审核",
     "ovPost": "",
     "ovPosition": "",
     "reviewer": "",
     "reviewed_at": "",
-    "revise_count": 0,
-    "revise_history": [],
+    "revise_count": 1,
+    "revise_history": [
+      {
+        "at": "2026-11-26 11:22:47",
+        "to": "其他：兼职",
+        "from": "待确认",
+        "note": "表格内联提交"
+      }
+    ],
     "amend_no": 1,
     "prev_to": "",
-    "at": "2026-11-26 07:59:26"
+    "at": "2026-11-26 07:59:26",
+    "revised_at": "2026-11-26 11:22:47"
   },
   {
     "id": 1795621917245,
