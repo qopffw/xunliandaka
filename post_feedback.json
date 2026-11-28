@@ -6,18 +6,26 @@
     "store": "汉中吾悦店",
     "area": "牛",
     "from": "迎宾岗",
-    "to": "其他：离职人员",
+    "to": "已经离职",
     "note": "表格内联提交",
     "status": "待审核",
     "ovPost": "",
     "ovPosition": "",
     "reviewer": "",
     "reviewed_at": "",
-    "revise_count": 0,
-    "revise_history": [],
+    "revise_count": 1,
+    "revise_history": [
+      {
+        "at": "2026-11-28 11:33:40",
+        "to": "其他：离职人员",
+        "from": "迎宾岗",
+        "note": "表格内联提交"
+      }
+    ],
     "amend_no": 1,
     "prev_to": "",
-    "at": "2026-11-28 11:32:55"
+    "at": "2026-11-28 11:32:55",
+    "revised_at": "2026-11-28 11:33:40"
   },
   {
     "id": 1795836754884,
